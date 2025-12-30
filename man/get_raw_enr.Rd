@@ -15,6 +15,6 @@ Raw data frame as downloaded from CDE
 \description{
 Downloads the raw enrollment data file for a given year from the California
 Department of Education website. Uses modern Census Day files for 2024+
-and historical school-level files for 2017-2023.
+and historical school-level files for 1982-2023.
 }
 \keyword{internal}

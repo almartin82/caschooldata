@@ -2,7 +2,7 @@
 % Please edit documentation in R/get_raw_enrollment.R
 \name{get_raw_enr_historical}
 \alias{get_raw_enr_historical}
-\title{Download historical format (2017-2023) CDE data}
+\title{Download historical format (1982-2023) CDE data}
 \usage{
 get_raw_enr_historical(end_year)
 }
@@ -14,6 +14,11 @@ Raw data frame
 }
 \description{
 Historical files contain school-level data only with race/ethnicity and
-gender breakdown. Files are organized by year ranges.
+gender breakdown. Files are organized by year ranges with different formats:
+\itemize{
+\item 1982-1993: 4-char year format, letter race codes, has names
+\item 1994-2007: 7-char year format, no names in file
+\item 2008-2023: 7-char year format, has names
+}
 }
 \keyword{internal}

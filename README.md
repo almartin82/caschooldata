@@ -11,7 +11,7 @@ Fetch and analyze California public school enrollment data from the California D
 
 ## What can you find with caschooldata?
 
-Eight years of enrollment data. 5.8 million students. Over 1,000 districts. Here are ten stories hiding in the numbers:
+**44 years of enrollment data (1982-2025).** 5.8 million students today. Over 1,000 districts. Here are ten stories hiding in the numbers:
 
 ---
 
@@ -189,8 +189,11 @@ library(dplyr)
 # Fetch one year
 enr_2025 <- fetch_enr(2025)
 
-# Fetch all available years (2018-2025)
-enr_all <- fetch_enr_multi(2018:2025)
+# Fetch recent years (2018-2025)
+enr_recent <- fetch_enr_multi(2018:2025)
+
+# Fetch ALL 44 years of data (1982-2025)
+enr_all <- fetch_enr_multi(1982:2025)
 
 # State totals
 enr_2025 %>%
@@ -213,7 +216,9 @@ enr_2025 %>%
 | Years | Format | Details |
 |-------|--------|---------|
 | 2024-2025 | Modern Census Day | Full demographics, all aggregation levels, TK data |
-| 2018-2023 | Historical | School-level race/ethnicity and gender |
+| 2008-2023 | Historical | School-level data with names, race/ethnicity, gender |
+| 1994-2007 | Historical | School-level data (no names), race/ethnicity, gender |
+| 1982-1993 | Historical | School-level data with names, legacy race codes |
 
 ## Data source
 

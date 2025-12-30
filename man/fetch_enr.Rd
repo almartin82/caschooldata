@@ -8,10 +8,12 @@ fetch_enr(end_year, tidy = TRUE, use_cache = TRUE)
 }
 \arguments{
 \item{end_year}{A school year. Year is the end of the academic year - e.g., 2024
-for the 2023-24 school year. Supports 2018-2025:
+for the 2023-24 school year. Supports 1982-2025:
 \itemize{
 \item 2024-2025: Modern Census Day files with full demographic breakdowns
-\item 2018-2023: Historical school-level files with race/gender data
+\item 2008-2023: Historical files with race/gender data and entity names
+\item 1994-2007: Historical files with race/gender data (no entity names)
+\item 1982-1993: Historical files with letter-based race codes
 }}
 
 \item{tidy}{If TRUE (default), returns data in long (tidy) format with grade
@@ -31,7 +33,7 @@ A tibble with enrollment data. In tidy format, includes columns:
 \item \code{agg_level}: Aggregation level (T=State, C=County, D=District, S=School)
 \item \code{county_name}, \code{district_name}, \code{school_name}: Entity names
 \item \code{charter_status}: Charter indicator (Y/N/All)
-\item \code{grade_level}: Grade (TK, K, 01-12, or TOTAL). Note: TK is NA for 2017-2023.
+\item \code{grade_level}: Grade (TK, K, 01-12, or TOTAL). Note: TK is NA for 1982-2023.
 \item \code{reporting_category}: CDE demographic category code
 \item \code{subgroup}: Human-readable subgroup name
 \item \code{n_students}: Enrollment count
@@ -43,12 +45,14 @@ Education DataQuest data files. Data is based on Census Day enrollment
 (first Wednesday in October).
 }
 \details{
-Historical data (2018-2023) differs from modern data in several ways:
+Historical data differs from modern (2024+) data in several ways:
 \itemize{
 \item Transitional Kindergarten (TK) data is not available (grade_tk is NA)
 \item Charter status is not available (charter_status is "All")
 \item District and county aggregates are computed from school-level data
-\item Some student group categories (SG_*) are not available
+\item Student group categories (SG_*) are not available
+\item For 1994-2007: Entity names are not available (use CDS code to look up)
+\item For 1982-1993: Race categories use different coding (mapped to modern codes)
 }
 }
 \examples{
@@ -58,6 +62,9 @@ enr_2024 <- fetch_enr(2024)
 
 # Get historical data (2019-20 school year)
 enr_2020 <- fetch_enr(2020)
+
+# Get data from the 1990s
+enr_1995 <- fetch_enr(1995)
 
 # Get wide format (one column per grade)
 enr_wide <- fetch_enr(2024, tidy = FALSE)

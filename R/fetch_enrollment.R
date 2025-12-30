@@ -14,9 +14,11 @@
 #' (first Wednesday in October).
 #'
 #' @param end_year A school year. Year is the end of the academic year - e.g., 2024
-#'   for the 2023-24 school year. Supports 2018-2025:
+#'   for the 2023-24 school year. Supports 1982-2025:
 #'   - 2024-2025: Modern Census Day files with full demographic breakdowns
-#'   - 2018-2023: Historical school-level files with race/gender data
+#'   - 2008-2023: Historical files with race/gender data and entity names
+#'   - 1994-2007: Historical files with race/gender data (no entity names)
+#'   - 1982-1993: Historical files with letter-based race codes
 #' @param tidy If TRUE (default), returns data in long (tidy) format with grade
 #'   and subgroup columns. If FALSE, returns wide format with grade columns.
 #' @param use_cache If TRUE (default), uses locally cached data when available.
@@ -31,17 +33,19 @@
 #'     \item \code{agg_level}: Aggregation level (T=State, C=County, D=District, S=School)
 #'     \item \code{county_name}, \code{district_name}, \code{school_name}: Entity names
 #'     \item \code{charter_status}: Charter indicator (Y/N/All)
-#'     \item \code{grade_level}: Grade (TK, K, 01-12, or TOTAL). Note: TK is NA for 2017-2023.
+#'     \item \code{grade_level}: Grade (TK, K, 01-12, or TOTAL). Note: TK is NA for 1982-2023.
 #'     \item \code{reporting_category}: CDE demographic category code
 #'     \item \code{subgroup}: Human-readable subgroup name
 #'     \item \code{n_students}: Enrollment count
 #'   }
 #' @details
-#' Historical data (2018-2023) differs from modern data in several ways:
+#' Historical data differs from modern (2024+) data in several ways:
 #' - Transitional Kindergarten (TK) data is not available (grade_tk is NA)
 #' - Charter status is not available (charter_status is "All")
 #' - District and county aggregates are computed from school-level data
-#' - Some student group categories (SG_*) are not available
+#' - Student group categories (SG_*) are not available
+#' - For 1994-2007: Entity names are not available (use CDS code to look up)
+#' - For 1982-1993: Race categories use different coding (mapped to modern codes)
 #'
 #' @export
 #' @examples
@@ -51,6 +55,9 @@
 #'
 #' # Get historical data (2019-20 school year)
 #' enr_2020 <- fetch_enr(2020)
+#'
+#' # Get data from the 1990s
+#' enr_1995 <- fetch_enr(1995)
 #'
 #' # Get wide format (one column per grade)
 #' enr_wide <- fetch_enr(2024, tidy = FALSE)
@@ -66,15 +73,15 @@
 fetch_enr <- function(end_year, tidy = TRUE, use_cache = TRUE) {
 
   # Validate year
-  # Historical enrollment files: 2018-2023 (2017-18 through 2022-23)
+  # Historical enrollment files: 1982-2023 (1981-82 through 2022-23)
   # Modern Census Day enrollment files: 2024-2025
-  min_year <- 2018
+  min_year <- 1982
   max_year <- 2025
 
   if (end_year < min_year || end_year > max_year) {
     stop(paste0(
       "end_year must be between ", min_year, " and ", max_year, ". ",
-      "Historical data is available from 2018-2023 (school years 2017-18 to 2022-23), ",
+      "Historical data is available from 1982-2023 (school years 1981-82 to 2022-23), ",
       "Census Day files from 2024-2025."
     ))
   }

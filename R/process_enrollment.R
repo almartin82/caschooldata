@@ -187,11 +187,17 @@ process_enr_modern <- function(raw_data, end_year) {
 }
 
 
-#' Process historical format (2017-2023) CDE data
+#' Process historical format (1982-2023) CDE data
 #'
 #' Historical files contain school-level data with race/ethnicity and gender
 #' breakdown. This function aggregates the data to create reporting categories
 #' similar to the modern format and synthesizes district/county/state aggregates.
+#'
+#' File format varies by era:
+#' - 2015-2023: Has names, ENR_TYPE column, numeric race codes 0-9
+#' - 2008-2014: Has names, no ENR_TYPE, numeric race codes 0-9
+#' - 1994-2007: No names (just CDS_CODE), numeric race codes 1-8
+#' - 1982-1993: Has names (DISTRICT_NAME, SCHOOL_NAME), letter race codes
 #'
 #' @param raw_data Raw data frame from get_raw_enr_historical()
 #' @param end_year The school year end for context
@@ -199,36 +205,55 @@ process_enr_modern <- function(raw_data, end_year) {
 #' @keywords internal
 process_enr_historical <- function(raw_data, end_year) {
 
-  # Historical file columns:
-  # ACADEMIC_YEAR, CDS_CODE, COUNTY, DISTRICT, SCHOOL, ENR_TYPE,
-  # RACE_ETHNICITY (0-9), GENDER (M/F/X/Z), GR_KN, GR_1-12,
-  # UNGR_ELM, UNGR_SEC, ENR_TOTAL, ADULT
+  # Race/ethnicity mapping depends on era
+  # 2008+: Numeric codes 0-9
+  # 1994-2007: Numeric codes 1-8
+  # 1982-1993: Letter codes (A=American Indian, B=Black, F=Filipino, H=Hispanic,
+  #            I=Indochinese, P=Pacific Islander, W=White, O=Other)
+  #            Note: codes changed over time within this period
 
-  # Race/ethnicity codes:
-  # 0 = Not Reported
-  # 1 = American Indian or Alaska Native
-  # 2 = Asian
-  # 3 = Pacific Islander
-  # 4 = Filipino
-  # 5 = Hispanic or Latino
-  # 6 = African American
-  # 7 = White
-  # 8 = Two or More Races
-  # 9 = Not Reported (duplicate?)
-
-  # Map race codes to reporting categories (similar to modern RE_* codes)
-  race_map <- c(
-    "0" = "RE_D",  # Not Reported
-    "1" = "RE_I",  # American Indian
-    "2" = "RE_A",  # Asian
-    "3" = "RE_P",  # Pacific Islander
-    "4" = "RE_F",  # Filipino
-    "5" = "RE_H",  # Hispanic
-    "6" = "RE_B",  # Black/African American
-    "7" = "RE_W",  # White
-    "8" = "RE_T",  # Two or More Races
-    "9" = "RE_D"   # Not Reported
-  )
+  if (end_year >= 2008) {
+    # Modern numeric codes (0-9)
+    race_map <- c(
+      "0" = "RE_D",  # Not Reported
+      "1" = "RE_I",  # American Indian
+      "2" = "RE_A",  # Asian
+      "3" = "RE_P",  # Pacific Islander
+      "4" = "RE_F",  # Filipino
+      "5" = "RE_H",  # Hispanic
+      "6" = "RE_B",  # Black/African American
+      "7" = "RE_W",  # White
+      "8" = "RE_T",  # Two or More Races
+      "9" = "RE_D"   # Not Reported
+    )
+  } else if (end_year >= 1994) {
+    # 1994-2007 numeric codes (1-8, slightly different)
+    race_map <- c(
+      "1" = "RE_I",  # American Indian
+      "2" = "RE_A",  # Asian
+      "3" = "RE_P",  # Pacific Islander
+      "4" = "RE_F",  # Filipino
+      "5" = "RE_H",  # Hispanic
+      "6" = "RE_B",  # Black/African American
+      "7" = "RE_W",  # White
+      "8" = "RE_T"   # Multiple/No Response (treated as Two or More)
+    )
+  } else {
+    # 1982-1993 letter codes
+    race_map <- c(
+      "A" = "RE_I",  # American Indian (or Alaska Native)
+      "B" = "RE_B",  # Black
+      "C" = "RE_A",  # Chinese (grouped with Asian)
+      "F" = "RE_F",  # Filipino
+      "H" = "RE_H",  # Hispanic
+      "I" = "RE_A",  # Indochinese (grouped with Asian)
+      "J" = "RE_A",  # Japanese (grouped with Asian)
+      "K" = "RE_A",  # Korean (grouped with Asian)
+      "O" = "RE_D",  # Other (treated as Not Reported)
+      "P" = "RE_P",  # Pacific Islander
+      "W" = "RE_W"   # White
+    )
+  }
 
   # Map gender codes to reporting categories
   gender_map <- c(
@@ -238,41 +263,38 @@ process_enr_historical <- function(raw_data, end_year) {
     "Z" = "GN_Z"
   )
 
-  # Filter to Combined enrollment (C) which includes short-term
-  # Most analyses want C rather than P (Primary only)
-  raw_data <- raw_data %>%
-    dplyr::filter(ENR_TYPE == "C")
+  # Filter to Combined enrollment (C) for years that have ENR_TYPE
+  # 2015+ files have ENR_TYPE column; older files don't
+  if ("ENR_TYPE" %in% names(raw_data)) {
+    raw_data <- raw_data %>%
+      dplyr::filter(ENR_TYPE == "C")
+  }
+
+  # Handle different name column conventions
+  # 2008+: COUNTY, DISTRICT, SCHOOL
+  # 1982-1993: DISTRICT_NAME, SCHOOL_NAME (no COUNTY)
+  # 1994-2007: No name columns at all
+  if ("COUNTY" %in% names(raw_data)) {
+    # 2008+ format
+    raw_data <- raw_data %>%
+      dplyr::rename(county_name = COUNTY, district_name = DISTRICT, school_name = SCHOOL)
+  } else if ("DISTRICT_NAME" %in% names(raw_data)) {
+    # 1982-1993 format
+    raw_data <- raw_data %>%
+      dplyr::rename(district_name = DISTRICT_NAME, school_name = SCHOOL_NAME) %>%
+      dplyr::mutate(county_name = NA_character_)
+  } else {
+    # 1994-2007 format - no names
+    raw_data <- raw_data %>%
+      dplyr::mutate(
+        county_name = NA_character_,
+        district_name = NA_character_,
+        school_name = NA_character_
+      )
+  }
 
   # Grade columns in historical format
   grade_cols_hist <- c("GR_KN", paste0("GR_", 1:12), "UNGR_ELM", "UNGR_SEC")
-
-  # Create grade columns for output
-  result_grades <- list(
-    grade_k = "GR_KN",
-    grade_01 = "GR_1",
-    grade_02 = "GR_2",
-    grade_03 = "GR_3",
-    grade_04 = "GR_4",
-    grade_05 = "GR_5",
-    grade_06 = "GR_6",
-    grade_07 = "GR_7",
-    grade_08 = "GR_8",
-    grade_09 = "GR_9",
-    grade_10 = "GR_10",
-    grade_11 = "GR_11",
-    grade_12 = "GR_12"
-  )
-
-  # Helper function to extract CDS components
-  extract_cds <- function(cds_code) {
-    cds_code <- sprintf("%014s", as.character(cds_code))
-    cds_code <- gsub(" ", "0", cds_code)
-    list(
-      county_code = substr(cds_code, 1, 2),
-      district_code = substr(cds_code, 3, 7),
-      school_code = substr(cds_code, 8, 14)
-    )
-  }
 
   # === SCHOOL-LEVEL PROCESSING ===
 
@@ -289,8 +311,9 @@ process_enr_historical <- function(raw_data, end_year) {
     dplyr::mutate(
       reporting_category = race_map[RACE_ETHNICITY]
     ) %>%
+    dplyr::filter(!is.na(reporting_category)) %>%
     dplyr::group_by(
-      CDS_CODE, COUNTY, DISTRICT, SCHOOL, reporting_category
+      CDS_CODE, county_name, district_name, school_name, reporting_category
     ) %>%
     dplyr::summarize(
       total_enrollment = sum(ENR_TOTAL, na.rm = TRUE),
@@ -315,8 +338,9 @@ process_enr_historical <- function(raw_data, end_year) {
     dplyr::mutate(
       reporting_category = gender_map[GENDER]
     ) %>%
+    dplyr::filter(!is.na(reporting_category)) %>%
     dplyr::group_by(
-      CDS_CODE, COUNTY, DISTRICT, SCHOOL, reporting_category
+      CDS_CODE, county_name, district_name, school_name, reporting_category
     ) %>%
     dplyr::summarize(
       total_enrollment = sum(ENR_TOTAL, na.rm = TRUE),
@@ -342,7 +366,7 @@ process_enr_historical <- function(raw_data, end_year) {
       reporting_category = "TA"
     ) %>%
     dplyr::group_by(
-      CDS_CODE, COUNTY, DISTRICT, SCHOOL, reporting_category
+      CDS_CODE, county_name, district_name, school_name, reporting_category
     ) %>%
     dplyr::summarize(
       total_enrollment = sum(ENR_TOTAL, na.rm = TRUE),
@@ -372,7 +396,7 @@ process_enr_historical <- function(raw_data, end_year) {
       county_code = substr(CDS_CODE, 1, 2),
       district_code = substr(CDS_CODE, 3, 7)
     ) %>%
-    dplyr::group_by(county_code, district_code, COUNTY, DISTRICT, reporting_category) %>%
+    dplyr::group_by(county_code, district_code, county_name, district_name, reporting_category) %>%
     dplyr::summarize(
       total_enrollment = sum(total_enrollment, na.rm = TRUE),
       grade_k = sum(grade_k, na.rm = TRUE),
@@ -392,19 +416,17 @@ process_enr_historical <- function(raw_data, end_year) {
     ) %>%
     dplyr::mutate(
       CDS_CODE = paste0(county_code, district_code, "0000000"),
-      SCHOOL = NA_character_,
+      school_name = NA_character_,
       agg_level = "D"
     ) %>%
-    dplyr::rename(county_name = COUNTY, district_name = DISTRICT) %>%
     dplyr::select(-county_code, -district_code)
 
   # === CREATE COUNTY AGGREGATES ===
-  # Create aggregates for all reporting categories (TA, RE_*, GN_*)
   counties <- schools %>%
     dplyr::mutate(
       county_code = substr(CDS_CODE, 1, 2)
     ) %>%
-    dplyr::group_by(county_code, COUNTY, reporting_category) %>%
+    dplyr::group_by(county_code, county_name, reporting_category) %>%
     dplyr::summarize(
       total_enrollment = sum(total_enrollment, na.rm = TRUE),
       grade_k = sum(grade_k, na.rm = TRUE),
@@ -424,15 +446,13 @@ process_enr_historical <- function(raw_data, end_year) {
     ) %>%
     dplyr::mutate(
       CDS_CODE = paste0(county_code, "000000000000"),
-      DISTRICT = NA_character_,
-      SCHOOL = NA_character_,
+      district_name = NA_character_,
+      school_name = NA_character_,
       agg_level = "C"
     ) %>%
-    dplyr::rename(county_name = COUNTY) %>%
     dplyr::select(-county_code)
 
   # === CREATE STATE AGGREGATE ===
-  # Create aggregates for all reporting categories (TA, RE_*, GN_*)
   state <- schools %>%
     dplyr::group_by(reporting_category) %>%
     dplyr::summarize(
@@ -454,29 +474,11 @@ process_enr_historical <- function(raw_data, end_year) {
     ) %>%
     dplyr::mutate(
       CDS_CODE = "00000000000000",
-      COUNTY = NA_character_,
-      DISTRICT = NA_character_,
-      SCHOOL = NA_character_,
+      county_name = NA_character_,
+      district_name = NA_character_,
+      school_name = NA_character_,
       agg_level = "T"
     )
-
-  # Rename school columns for consistency
-  schools <- schools %>%
-    dplyr::rename(
-      county_name = COUNTY,
-      district_name = DISTRICT,
-      school_name = SCHOOL
-    )
-
-  # Add missing columns to state and counties for binding
-  state$county_name <- NA_character_
-  state$district_name <- NA_character_
-  state$school_name <- NA_character_
-
-  counties$district_name <- NA_character_
-  counties$school_name <- NA_character_
-
-  districts$school_name <- NA_character_
 
   # Combine all levels
   all_data <- dplyr::bind_rows(state, counties, districts, schools)

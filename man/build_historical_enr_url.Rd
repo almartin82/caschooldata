@@ -14,6 +14,6 @@ URL string
 }
 \description{
 Constructs the download URL for historical school-level enrollment files
-(2018-2023). These files cover multiple years each.
+(1982-2023). These files cover multiple years each.
 }
 \keyword{internal}
