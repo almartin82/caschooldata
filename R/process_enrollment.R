@@ -27,13 +27,32 @@ safe_numeric <- function(x) {
 #' Process raw enrollment data to standard schema
 #'
 #' Takes raw enrollment data from CDE and standardizes column names, types,
-#' and handles any year-specific format differences.
+#' and handles any year-specific format differences. Uses modern processing
+#' for 2024+ Census Day files and historical processing for 2017-2023 files.
 #'
 #' @param raw_data Raw data frame from get_raw_enr()
 #' @param end_year The school year end for context
 #' @return Processed data frame with standard schema
 #' @keywords internal
 process_enr <- function(raw_data, end_year) {
+
+  # Modern format (2024+): Census Day files with aggregation levels and subgroups
+  # Historical format (2017-2023): School-level files with race/gender breakdown
+  if (end_year >= 2024) {
+    process_enr_modern(raw_data, end_year)
+  } else {
+    process_enr_historical(raw_data, end_year)
+  }
+}
+
+
+#' Process modern Census Day format (2024+) CDE data
+#'
+#' @param raw_data Raw data frame from get_raw_enr_modern()
+#' @param end_year The school year end for context
+#' @return Processed data frame with standard schema
+#' @keywords internal
+process_enr_modern <- function(raw_data, end_year) {
 
   # CDE Census Day Enrollment file columns:
   # Academic Year, Aggregate Level, County Code, District Code, School Code,
@@ -160,6 +179,330 @@ process_enr <- function(raw_data, end_year) {
       result[[grade_name]] <- safe_numeric(raw_data[[grade_col]])
     }
   }
+
+  # Convert to tibble for consistency
+  result <- dplyr::as_tibble(result)
+
+  result
+}
+
+
+#' Process historical format (2017-2023) CDE data
+#'
+#' Historical files contain school-level data with race/ethnicity and gender
+#' breakdown. This function aggregates the data to create reporting categories
+#' similar to the modern format and synthesizes district/county/state aggregates.
+#'
+#' @param raw_data Raw data frame from get_raw_enr_historical()
+#' @param end_year The school year end for context
+#' @return Processed data frame with standard schema
+#' @keywords internal
+process_enr_historical <- function(raw_data, end_year) {
+
+  # Historical file columns:
+  # ACADEMIC_YEAR, CDS_CODE, COUNTY, DISTRICT, SCHOOL, ENR_TYPE,
+  # RACE_ETHNICITY (0-9), GENDER (M/F/X/Z), GR_KN, GR_1-12,
+  # UNGR_ELM, UNGR_SEC, ENR_TOTAL, ADULT
+
+  # Race/ethnicity codes:
+  # 0 = Not Reported
+  # 1 = American Indian or Alaska Native
+  # 2 = Asian
+  # 3 = Pacific Islander
+  # 4 = Filipino
+  # 5 = Hispanic or Latino
+  # 6 = African American
+  # 7 = White
+  # 8 = Two or More Races
+  # 9 = Not Reported (duplicate?)
+
+  # Map race codes to reporting categories (similar to modern RE_* codes)
+  race_map <- c(
+    "0" = "RE_D",  # Not Reported
+    "1" = "RE_I",  # American Indian
+    "2" = "RE_A",  # Asian
+    "3" = "RE_P",  # Pacific Islander
+    "4" = "RE_F",  # Filipino
+    "5" = "RE_H",  # Hispanic
+    "6" = "RE_B",  # Black/African American
+    "7" = "RE_W",  # White
+    "8" = "RE_T",  # Two or More Races
+    "9" = "RE_D"   # Not Reported
+  )
+
+  # Map gender codes to reporting categories
+  gender_map <- c(
+    "M" = "GN_M",
+    "F" = "GN_F",
+    "X" = "GN_X",
+    "Z" = "GN_Z"
+  )
+
+  # Filter to Combined enrollment (C) which includes short-term
+  # Most analyses want C rather than P (Primary only)
+  raw_data <- raw_data %>%
+    dplyr::filter(ENR_TYPE == "C")
+
+  # Grade columns in historical format
+  grade_cols_hist <- c("GR_KN", paste0("GR_", 1:12), "UNGR_ELM", "UNGR_SEC")
+
+  # Create grade columns for output
+  result_grades <- list(
+    grade_k = "GR_KN",
+    grade_01 = "GR_1",
+    grade_02 = "GR_2",
+    grade_03 = "GR_3",
+    grade_04 = "GR_4",
+    grade_05 = "GR_5",
+    grade_06 = "GR_6",
+    grade_07 = "GR_7",
+    grade_08 = "GR_8",
+    grade_09 = "GR_9",
+    grade_10 = "GR_10",
+    grade_11 = "GR_11",
+    grade_12 = "GR_12"
+  )
+
+  # Helper function to extract CDS components
+  extract_cds <- function(cds_code) {
+    cds_code <- sprintf("%014s", as.character(cds_code))
+    cds_code <- gsub(" ", "0", cds_code)
+    list(
+      county_code = substr(cds_code, 1, 2),
+      district_code = substr(cds_code, 3, 7),
+      school_code = substr(cds_code, 8, 14)
+    )
+  }
+
+  # === SCHOOL-LEVEL PROCESSING ===
+
+  # Convert numeric columns
+  for (col in c(grade_cols_hist, "ENR_TOTAL", "ADULT")) {
+    if (col %in% names(raw_data)) {
+      raw_data[[col]] <- safe_numeric(raw_data[[col]])
+    }
+  }
+
+  # Create school-level data by reporting category
+  # First, aggregate by race/ethnicity (creating RE_* categories)
+  school_by_race <- raw_data %>%
+    dplyr::mutate(
+      reporting_category = race_map[RACE_ETHNICITY]
+    ) %>%
+    dplyr::group_by(
+      CDS_CODE, COUNTY, DISTRICT, SCHOOL, reporting_category
+    ) %>%
+    dplyr::summarize(
+      total_enrollment = sum(ENR_TOTAL, na.rm = TRUE),
+      grade_k = sum(GR_KN, na.rm = TRUE),
+      grade_01 = sum(GR_1, na.rm = TRUE),
+      grade_02 = sum(GR_2, na.rm = TRUE),
+      grade_03 = sum(GR_3, na.rm = TRUE),
+      grade_04 = sum(GR_4, na.rm = TRUE),
+      grade_05 = sum(GR_5, na.rm = TRUE),
+      grade_06 = sum(GR_6, na.rm = TRUE),
+      grade_07 = sum(GR_7, na.rm = TRUE),
+      grade_08 = sum(GR_8, na.rm = TRUE),
+      grade_09 = sum(GR_9, na.rm = TRUE),
+      grade_10 = sum(GR_10, na.rm = TRUE),
+      grade_11 = sum(GR_11, na.rm = TRUE),
+      grade_12 = sum(GR_12, na.rm = TRUE),
+      .groups = "drop"
+    )
+
+  # Create school-level data by gender (creating GN_* categories)
+  school_by_gender <- raw_data %>%
+    dplyr::mutate(
+      reporting_category = gender_map[GENDER]
+    ) %>%
+    dplyr::group_by(
+      CDS_CODE, COUNTY, DISTRICT, SCHOOL, reporting_category
+    ) %>%
+    dplyr::summarize(
+      total_enrollment = sum(ENR_TOTAL, na.rm = TRUE),
+      grade_k = sum(GR_KN, na.rm = TRUE),
+      grade_01 = sum(GR_1, na.rm = TRUE),
+      grade_02 = sum(GR_2, na.rm = TRUE),
+      grade_03 = sum(GR_3, na.rm = TRUE),
+      grade_04 = sum(GR_4, na.rm = TRUE),
+      grade_05 = sum(GR_5, na.rm = TRUE),
+      grade_06 = sum(GR_6, na.rm = TRUE),
+      grade_07 = sum(GR_7, na.rm = TRUE),
+      grade_08 = sum(GR_8, na.rm = TRUE),
+      grade_09 = sum(GR_9, na.rm = TRUE),
+      grade_10 = sum(GR_10, na.rm = TRUE),
+      grade_11 = sum(GR_11, na.rm = TRUE),
+      grade_12 = sum(GR_12, na.rm = TRUE),
+      .groups = "drop"
+    )
+
+  # Create school-level totals (TA category)
+  school_totals <- raw_data %>%
+    dplyr::mutate(
+      reporting_category = "TA"
+    ) %>%
+    dplyr::group_by(
+      CDS_CODE, COUNTY, DISTRICT, SCHOOL, reporting_category
+    ) %>%
+    dplyr::summarize(
+      total_enrollment = sum(ENR_TOTAL, na.rm = TRUE),
+      grade_k = sum(GR_KN, na.rm = TRUE),
+      grade_01 = sum(GR_1, na.rm = TRUE),
+      grade_02 = sum(GR_2, na.rm = TRUE),
+      grade_03 = sum(GR_3, na.rm = TRUE),
+      grade_04 = sum(GR_4, na.rm = TRUE),
+      grade_05 = sum(GR_5, na.rm = TRUE),
+      grade_06 = sum(GR_6, na.rm = TRUE),
+      grade_07 = sum(GR_7, na.rm = TRUE),
+      grade_08 = sum(GR_8, na.rm = TRUE),
+      grade_09 = sum(GR_9, na.rm = TRUE),
+      grade_10 = sum(GR_10, na.rm = TRUE),
+      grade_11 = sum(GR_11, na.rm = TRUE),
+      grade_12 = sum(GR_12, na.rm = TRUE),
+      .groups = "drop"
+    )
+
+  # Combine school-level data
+  schools <- dplyr::bind_rows(school_totals, school_by_race, school_by_gender) %>%
+    dplyr::mutate(agg_level = "S")
+
+  # === CREATE DISTRICT AGGREGATES ===
+  districts <- schools %>%
+    dplyr::mutate(
+      county_code = substr(CDS_CODE, 1, 2),
+      district_code = substr(CDS_CODE, 3, 7)
+    ) %>%
+    dplyr::group_by(county_code, district_code, COUNTY, DISTRICT, reporting_category) %>%
+    dplyr::summarize(
+      total_enrollment = sum(total_enrollment, na.rm = TRUE),
+      grade_k = sum(grade_k, na.rm = TRUE),
+      grade_01 = sum(grade_01, na.rm = TRUE),
+      grade_02 = sum(grade_02, na.rm = TRUE),
+      grade_03 = sum(grade_03, na.rm = TRUE),
+      grade_04 = sum(grade_04, na.rm = TRUE),
+      grade_05 = sum(grade_05, na.rm = TRUE),
+      grade_06 = sum(grade_06, na.rm = TRUE),
+      grade_07 = sum(grade_07, na.rm = TRUE),
+      grade_08 = sum(grade_08, na.rm = TRUE),
+      grade_09 = sum(grade_09, na.rm = TRUE),
+      grade_10 = sum(grade_10, na.rm = TRUE),
+      grade_11 = sum(grade_11, na.rm = TRUE),
+      grade_12 = sum(grade_12, na.rm = TRUE),
+      .groups = "drop"
+    ) %>%
+    dplyr::mutate(
+      CDS_CODE = paste0(county_code, district_code, "0000000"),
+      SCHOOL = NA_character_,
+      agg_level = "D"
+    ) %>%
+    dplyr::rename(county_name = COUNTY, district_name = DISTRICT) %>%
+    dplyr::select(-county_code, -district_code)
+
+  # === CREATE COUNTY AGGREGATES ===
+  # Create aggregates for all reporting categories (TA, RE_*, GN_*)
+  counties <- schools %>%
+    dplyr::mutate(
+      county_code = substr(CDS_CODE, 1, 2)
+    ) %>%
+    dplyr::group_by(county_code, COUNTY, reporting_category) %>%
+    dplyr::summarize(
+      total_enrollment = sum(total_enrollment, na.rm = TRUE),
+      grade_k = sum(grade_k, na.rm = TRUE),
+      grade_01 = sum(grade_01, na.rm = TRUE),
+      grade_02 = sum(grade_02, na.rm = TRUE),
+      grade_03 = sum(grade_03, na.rm = TRUE),
+      grade_04 = sum(grade_04, na.rm = TRUE),
+      grade_05 = sum(grade_05, na.rm = TRUE),
+      grade_06 = sum(grade_06, na.rm = TRUE),
+      grade_07 = sum(grade_07, na.rm = TRUE),
+      grade_08 = sum(grade_08, na.rm = TRUE),
+      grade_09 = sum(grade_09, na.rm = TRUE),
+      grade_10 = sum(grade_10, na.rm = TRUE),
+      grade_11 = sum(grade_11, na.rm = TRUE),
+      grade_12 = sum(grade_12, na.rm = TRUE),
+      .groups = "drop"
+    ) %>%
+    dplyr::mutate(
+      CDS_CODE = paste0(county_code, "000000000000"),
+      DISTRICT = NA_character_,
+      SCHOOL = NA_character_,
+      agg_level = "C"
+    ) %>%
+    dplyr::rename(county_name = COUNTY) %>%
+    dplyr::select(-county_code)
+
+  # === CREATE STATE AGGREGATE ===
+  # Create aggregates for all reporting categories (TA, RE_*, GN_*)
+  state <- schools %>%
+    dplyr::group_by(reporting_category) %>%
+    dplyr::summarize(
+      total_enrollment = sum(total_enrollment, na.rm = TRUE),
+      grade_k = sum(grade_k, na.rm = TRUE),
+      grade_01 = sum(grade_01, na.rm = TRUE),
+      grade_02 = sum(grade_02, na.rm = TRUE),
+      grade_03 = sum(grade_03, na.rm = TRUE),
+      grade_04 = sum(grade_04, na.rm = TRUE),
+      grade_05 = sum(grade_05, na.rm = TRUE),
+      grade_06 = sum(grade_06, na.rm = TRUE),
+      grade_07 = sum(grade_07, na.rm = TRUE),
+      grade_08 = sum(grade_08, na.rm = TRUE),
+      grade_09 = sum(grade_09, na.rm = TRUE),
+      grade_10 = sum(grade_10, na.rm = TRUE),
+      grade_11 = sum(grade_11, na.rm = TRUE),
+      grade_12 = sum(grade_12, na.rm = TRUE),
+      .groups = "drop"
+    ) %>%
+    dplyr::mutate(
+      CDS_CODE = "00000000000000",
+      COUNTY = NA_character_,
+      DISTRICT = NA_character_,
+      SCHOOL = NA_character_,
+      agg_level = "T"
+    )
+
+  # Rename school columns for consistency
+  schools <- schools %>%
+    dplyr::rename(
+      county_name = COUNTY,
+      district_name = DISTRICT,
+      school_name = SCHOOL
+    )
+
+  # Add missing columns to state and counties for binding
+  state$county_name <- NA_character_
+  state$district_name <- NA_character_
+  state$school_name <- NA_character_
+
+  counties$district_name <- NA_character_
+  counties$school_name <- NA_character_
+
+  districts$school_name <- NA_character_
+
+  # Combine all levels
+  all_data <- dplyr::bind_rows(state, counties, districts, schools)
+
+  # Build final result with standard schema
+  result <- all_data %>%
+    dplyr::mutate(
+      end_year = as.integer(end_year),
+      academic_year = paste0(end_year - 1, "-", substr(end_year, 3, 4)),
+      cds_code = CDS_CODE,
+      county_code = substr(CDS_CODE, 1, 2),
+      district_code = substr(CDS_CODE, 3, 7),
+      school_code = substr(CDS_CODE, 8, 14),
+      charter_status = "All",  # Not available in historical data
+      # Note: Historical data does not have TK
+      grade_tk = NA_integer_
+    ) %>%
+    dplyr::select(
+      end_year, academic_year, agg_level,
+      cds_code, county_code, district_code, school_code,
+      county_name, district_name, school_name,
+      charter_status, reporting_category, total_enrollment,
+      grade_tk, grade_k, grade_01, grade_02, grade_03, grade_04,
+      grade_05, grade_06, grade_07, grade_08, grade_09, grade_10,
+      grade_11, grade_12
+    )
 
   # Convert to tibble for consistency
   result <- dplyr::as_tibble(result)
