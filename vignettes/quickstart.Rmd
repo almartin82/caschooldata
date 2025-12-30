@@ -1,0 +1,191 @@
+---
+title: "Getting Started with caschooldata"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Getting Started with caschooldata}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  echo = TRUE,
+  message = FALSE,
+  warning = FALSE,
+  fig.width = 7,
+  fig.height = 4
+)
+```
+
+## Installation
+
+Install from GitHub:
+
+```r
+# install.packages("remotes")
+remotes::install_github("almartin82/caschooldata")
+```
+
+## Quick Example
+
+Fetch the most recent year of California enrollment data:
+
+```{r fetch-data}
+library(caschooldata)
+library(dplyr)
+
+# Fetch 2024 enrollment data (2023-24 school year)
+enr <- fetch_enr(2024)
+
+head(enr)
+```
+
+## Understanding the Data
+
+The data is returned in **tidy (long) format** by default:
+
+- Each row is one subgroup for one school/district/county/state
+- `reporting_category` is the CDE demographic category code (e.g., "TA", "RE_H")
+- `subgroup` is the human-readable name (e.g., "total", "hispanic")
+- `grade_level` shows the grade ("TOTAL", "TK", "K", "01"-"12")
+- `n_students` is the enrollment count
+- `agg_level` indicates the level: T (State), C (County), D (District), S (School)
+
+```{r data-structure}
+enr %>%
+  filter(is_state) %>%
+  select(end_year, agg_level, subgroup, grade_level, n_students) %>%
+  head(10)
+```
+
+## Filtering by Level
+
+Use the aggregation flags to filter data:
+```{r filter-levels}
+# State totals
+state <- enr %>% filter(is_state, subgroup == "total", grade_level == "TOTAL")
+state %>% select(end_year, n_students)
+
+# All counties
+counties <- enr %>% filter(is_county, subgroup == "total", grade_level == "TOTAL")
+nrow(counties)
+
+# All districts
+districts <- enr %>% filter(is_district, subgroup == "total", grade_level == "TOTAL")
+nrow(districts)
+
+# All schools
+schools <- enr %>% filter(is_school, subgroup == "total", grade_level == "TOTAL")
+nrow(schools)
+```
+
+## Simple Analysis: Top 10 Districts
+
+```{r top-districts}
+enr %>%
+  filter(is_district, subgroup == "total", grade_level == "TOTAL") %>%
+  arrange(desc(n_students)) %>%
+  select(district_name, county_name, n_students) %>%
+  head(10)
+```
+
+## Demographic Breakdown
+
+California enrollment data includes detailed demographic subgroups:
+
+```{r demographics}
+# State-level demographics for 2024
+enr %>%
+  filter(is_state, grade_level == "TOTAL") %>%
+  select(subgroup, n_students) %>%
+  arrange(desc(n_students))
+```
+
+## Wide Format
+
+If you prefer wide format (one column per grade), set `tidy = FALSE`:
+
+```{r wide-format}
+enr_wide <- fetch_enr(2024, tidy = FALSE)
+
+enr_wide %>%
+  filter(agg_level == "T") %>%
+  select(end_year, reporting_category, total_enrollment,
+         starts_with("grade_")) %>%
+  head(5)
+```
+
+## Historical Data
+
+Fetch multiple years to analyze trends:
+
+```{r multi-year, eval=FALSE}
+# Fetch multiple years of data
+years <- 2024:2025
+all_enr <- fetch_enr_multi(years)
+
+# State enrollment trend
+all_enr %>%
+  filter(is_state, subgroup == "total", grade_level == "TOTAL") %>%
+  select(end_year, n_students)
+```
+
+## CDS Codes
+
+California uses a 14-digit County-District-School (CDS) code system:
+
+- 2 digits: County code (01-58, California's 58 counties)
+- 5 digits: District code
+- 7 digits: School code
+
+You can parse CDS codes using the `parse_cds_code()` function:
+
+```{r cds-codes}
+# Example: Parse a school's CDS code
+parse_cds_code("19647331932334")
+```
+
+## Visualization Example
+
+```{r visualization, eval=require("ggplot2")}
+library(ggplot2)
+
+# Top 10 counties by enrollment
+county_enr <- enr %>%
+  filter(is_county, subgroup == "total", grade_level == "TOTAL") %>%
+  arrange(desc(n_students)) %>%
+  head(10)
+
+ggplot(county_enr, aes(x = reorder(county_name, n_students), y = n_students)) +
+  geom_col(fill = "steelblue") +
+  coord_flip() +
+  scale_y_continuous(labels = scales::comma) +
+  labs(
+    title = "Top 10 California Counties by Enrollment",
+    x = NULL,
+    y = "Total Enrollment"
+  ) +
+  theme_minimal()
+```
+
+## Cache Management
+
+The package caches downloaded data locally to speed up repeated queries:
+
+```{r cache, eval=FALSE}
+# Check cache status
+cache_status()
+
+# Clear cache for a specific year
+clear_enr_cache(2024)
+
+# Force fresh download (bypass cache)
+enr_fresh <- fetch_enr(2024, use_cache = FALSE)
+```
+
+## Next Steps
+
+- Use `?fetch_enr` for full function documentation
+- See `?tidy_enr` for details on the tidy transformation
+- See `?id_enr_aggs` for aggregation level identification
+- See `?enr_grade_aggs` for grade-level aggregations (K-8, HS, K-12)

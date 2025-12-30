@@ -52,6 +52,7 @@ California uses a 14-digit County-District-School (CDS) code system:
 \seealso{
 Useful links:
 \itemize{
+  \item \url{https://almartin82.github.io/caschooldata/}
   \item \url{https://github.com/almartin82/caschooldata}
   \item Report bugs at \url{https://github.com/almartin82/caschooldata/issues}
 }

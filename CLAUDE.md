@@ -1,28 +1,40 @@
 # Claude Code Instructions for caschooldata
 
-## Commit Messages
+## Commit and PR Guidelines
+
 - Do NOT include "Generated with Claude Code" in commit messages
 - Do NOT include "Co-Authored-By: Claude" in commit messages
-- Keep commit messages concise and descriptive
-
-## Pull Requests
 - Do NOT mention Claude or AI assistance in PR descriptions
-- Focus PR descriptions on the changes and their purpose
+- Keep commit messages clean and professional
 
-## Code Style
-- Follow tidyverse style guide
-- Use roxygen2 documentation for all exported functions
-- Prefer pipe-based workflows with dplyr
+## Project Context
 
-## Testing
-- Write testthat tests for all exported functions
-- Use snapshot tests for data processing output validation
+This is an R package for fetching and processing California school enrollment data from CDE (California Department of Education).
 
-## Data Sources
-- Primary data source: California Department of Education (CDE)
-- DataQuest URL: https://dq.cde.ca.gov/dataquest/
+### Key Files
+
+- `R/fetch_enrollment.R` - Main `fetch_enr()` function
+- `R/get_raw_enrollment.R` - Downloads raw data from CDE
+- `R/process_enrollment.R` - Transforms raw data to standard schema
+- `R/tidy_enrollment.R` - Converts to long/tidy format
+- `R/cache.R` - Local caching layer
+
+### Data Sources
+
+Data comes from the California Department of Education:
+- DataQuest: https://dq.cde.ca.gov/dataquest/
 - Data files: https://www.cde.ca.gov/ds/
+- Census Day enrollment (first Wednesday in October)
+- Currently supports 2024-2025 data files
 
-## CDS Code Format
-- 14-digit identifier: 2 (county) + 5 (district) + 7 (school)
+### CDS Code Format
+
+California uses a 14-digit County-District-School (CDS) code:
+- 2 digits: County code (01-58, California's 58 counties)
+- 5 digits: District code
+- 7 digits: School code
 - Example: 01611920130229
+
+### Related Package
+
+This package follows patterns from [ilschooldata](https://github.com/almartin82/ilschooldata).

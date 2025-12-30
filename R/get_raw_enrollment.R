@@ -48,11 +48,13 @@ if (end_year < min_year) {
 
   # Read tab-delimited file
   # CDE files are tab-delimited with headers
+  # Use locale to handle non-UTF-8 characters in school/district names
   df <- readr::read_tsv(
     tname,
     col_types = readr::cols(.default = readr::col_character()),
     show_col_types = FALSE,
-    progress = FALSE
+    progress = FALSE,
+    locale = readr::locale(encoding = "latin1")
   )
 
   # Add end_year column
