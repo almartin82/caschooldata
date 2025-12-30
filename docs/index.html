@@ -52,8 +52,136 @@
   </div>
 </nav><div class="container template-home">
 <div class="row">
-  <main id="main" class="col-md-9">
-Downloads and processes school data from the California Department of Education (CDE). Provides functions for fetching enrollment data and transforming it into tidy format for analysis.
+  <main id="main" class="col-md-9"><div class="section level1">
+<div class="page-header"><h1 id="caschooldata">caschooldata<a class="anchor" aria-label="anchor" href="#caschooldata"></a>
+</h1></div>
+<!-- badges: start -->
+
+<p>An R package for fetching and processing California school enrollment data from the California Department of Education (CDE).</p>
+<div class="section level2">
+<h2 id="overview">Overview<a class="anchor" aria-label="anchor" href="#overview"></a>
+</h2>
+<p><code>caschooldata</code> provides a simple interface to download, process, and analyze California public school enrollment data. The package handles: - Downloading enrollment data from CDE DataQuest - Processing raw data into a standardized schema - Converting to tidy (long) format for analysis - Local caching to speed up repeated queries</p>
+</div>
+<div class="section level2">
+<h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
+</h2>
+<p>Install from GitHub using the <code>remotes</code> package:</p>
+<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># install.packages("remotes")</span></span>
+<span><span class="fu">remotes</span><span class="fu">::</span><span class="fu"><a href="https://remotes.r-lib.org/reference/install_github.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"almartin82/caschooldata"</span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level2">
+<h2 id="quick-start">Quick Start<a class="anchor" aria-label="anchor" href="#quick-start"></a>
+</h2>
+<div class="section level3">
+<h3 id="fetch-enrollment-data">Fetch enrollment data<a class="anchor" aria-label="anchor" href="#fetch-enrollment-data"></a>
+</h3>
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://almartin82.github.io/caschooldata/">caschooldata</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org" class="external-link">dplyr</a></span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Fetch 2024 enrollment data (2023-24 school year)</span></span>
+<span><span class="va">enr</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/fetch_enr.html">fetch_enr</a></span><span class="op">(</span><span class="fl">2024</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># View the data</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">enr</span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level3">
+<h3 id="filter-to-specific-levels">Filter to specific levels<a class="anchor" aria-label="anchor" href="#filter-to-specific-levels"></a>
+</h3>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># State totals</span></span>
+<span><span class="va">state_total</span> <span class="op">&lt;-</span> <span class="va">enr</span> <span class="op"><a href="reference/pipe.html">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">is_state</span>, <span class="va">subgroup</span> <span class="op">==</span> <span class="st">"total"</span>, <span class="va">grade_level</span> <span class="op">==</span> <span class="st">"TOTAL"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># All districts</span></span>
+<span><span class="va">districts</span> <span class="op">&lt;-</span> <span class="va">enr</span> <span class="op"><a href="reference/pipe.html">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">is_district</span>, <span class="va">subgroup</span> <span class="op">==</span> <span class="st">"total"</span>, <span class="va">grade_level</span> <span class="op">==</span> <span class="st">"TOTAL"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># All schools</span></span>
+<span><span class="va">schools</span> <span class="op">&lt;-</span> <span class="va">enr</span> <span class="op"><a href="reference/pipe.html">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">is_school</span>, <span class="va">subgroup</span> <span class="op">==</span> <span class="st">"total"</span>, <span class="va">grade_level</span> <span class="op">==</span> <span class="st">"TOTAL"</span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level3">
+<h3 id="analyze-demographics">Analyze demographics<a class="anchor" aria-label="anchor" href="#analyze-demographics"></a>
+</h3>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># State-level demographic breakdown</span></span>
+<span><span class="va">enr</span> <span class="op"><a href="reference/pipe.html">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">is_state</span>, <span class="va">grade_level</span> <span class="op">==</span> <span class="st">"TOTAL"</span><span class="op">)</span> <span class="op"><a href="reference/pipe.html">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">subgroup</span>, <span class="va">n_students</span><span class="op">)</span> <span class="op"><a href="reference/pipe.html">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/arrange.html" class="external-link">arrange</a></span><span class="op">(</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/desc.html" class="external-link">desc</a></span><span class="op">(</span><span class="va">n_students</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level3">
+<h3 id="work-with-wide-format">Work with wide format<a class="anchor" aria-label="anchor" href="#work-with-wide-format"></a>
+</h3>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Get wide format (one column per grade)</span></span>
+<span><span class="va">enr_wide</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/fetch_enr.html">fetch_enr</a></span><span class="op">(</span><span class="fl">2024</span>, tidy <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level3">
+<h3 id="fetch-multiple-years">Fetch multiple years<a class="anchor" aria-label="anchor" href="#fetch-multiple-years"></a>
+</h3>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Get data for multiple years</span></span>
+<span><span class="va">all_years</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/fetch_enr_multi.html">fetch_enr_multi</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2024</span>, <span class="fl">2025</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+</div>
+</div>
+<div class="section level2">
+<h2 id="available-data">Available Data<a class="anchor" aria-label="anchor" href="#available-data"></a>
+</h2>
+<div class="section level3">
+<h3 id="years">Years<a class="anchor" aria-label="anchor" href="#years"></a>
+</h3>
+<p>Currently supports Census Day enrollment data for: - <strong>2024</strong> (2023-24 school year) - <strong>2025</strong> (2024-25 school year)</p>
+</div>
+<div class="section level3">
+<h3 id="aggregation-levels">Aggregation Levels<a class="anchor" aria-label="anchor" href="#aggregation-levels"></a>
+</h3>
+<ul>
+<li>
+<strong>State</strong> (<code>agg_level = "T"</code>, <code>is_state = TRUE</code>): Statewide totals</li>
+<li>
+<strong>County</strong> (<code>agg_level = "C"</code>, <code>is_county = TRUE</code>): 58 California counties</li>
+<li>
+<strong>District</strong> (<code>agg_level = "D"</code>, <code>is_district = TRUE</code>): All school districts</li>
+<li>
+<strong>School</strong> (<code>agg_level = "S"</code>, <code>is_school = TRUE</code>): Individual schools</li>
+</ul>
+</div>
+<div class="section level3">
+<h3 id="demographic-subgroups">Demographic Subgroups<a class="anchor" aria-label="anchor" href="#demographic-subgroups"></a>
+</h3>
+<p>The <code>reporting_category</code> and <code>subgroup</code> columns include: - <strong>Total enrollment</strong> (<code>TA</code> / <code>total</code>) - <strong>Race/Ethnicity</strong>: Hispanic, White, Asian, Black, Filipino, Pacific Islander, Native American, Multiracial - <strong>Gender</strong>: Female, Male, Nonbinary - <strong>Student Groups</strong>: English Learners, Students with Disabilities, Socioeconomically Disadvantaged, Foster Youth, Homeless, Migrant</p>
+</div>
+<div class="section level3">
+<h3 id="grade-levels">Grade Levels<a class="anchor" aria-label="anchor" href="#grade-levels"></a>
+</h3>
+<ul>
+<li>Individual grades: TK, K, 01-12</li>
+<li>Total: TOTAL</li>
+<li>Grade band aggregations available via <code><a href="reference/enr_grade_aggs.html">enr_grade_aggs()</a></code>: K8, HS, K12</li>
+</ul>
+</div>
+</div>
+<div class="section level2">
+<h2 id="data-source">Data Source<a class="anchor" aria-label="anchor" href="#data-source"></a>
+</h2>
+<p>Data is sourced from the California Department of Education: - <strong>DataQuest</strong>: <a href="https://dq.cde.ca.gov/dataquest/" class="external-link uri">https://dq.cde.ca.gov/dataquest/</a> - <strong>Data Files</strong>: <a href="https://www.cde.ca.gov/ds/" class="external-link uri">https://www.cde.ca.gov/ds/</a></p>
+<p>Enrollment counts are based on Census Day (first Wednesday in October).</p>
+</div>
+<div class="section level2">
+<h2 id="documentation">Documentation<a class="anchor" aria-label="anchor" href="#documentation"></a>
+</h2>
+<p>For full documentation, see the <a href="https://almartin82.github.io/caschooldata/">pkgdown site</a>.</p>
+</div>
+<div class="section level2">
+<h2 id="license">License<a class="anchor" aria-label="anchor" href="#license"></a>
+</h2>
+<p>MIT License</p>
+</div>
+</div>
   </main><aside class="col-md-3"><div class="links">
 <h2 data-toc-skip>Links</h2>
 <ul class="list-unstyled">
@@ -86,7 +214,13 @@ Downloads and processes school data from the California Department of Education 
 </ul>
 </div>
 
-
+<div class="dev-status">
+<h2 data-toc-skip>Dev status</h2>
+<ul class="list-unstyled">
+<li><a href="https://github.com/almartin82/caschooldata/actions/workflows/R-CMD-check.yaml" class="external-link"><img src="https://github.com/almartin82/caschooldata/actions/workflows/R-CMD-check.yaml/badge.svg" alt="R-CMD-check"></a></li>
+<li><a href="https://github.com/almartin82/caschooldata/actions/workflows/pkgdown.yaml" class="external-link"><img src="https://github.com/almartin82/caschooldata/actions/workflows/pkgdown.yaml/badge.svg" alt="pkgdown"></a></li>
+</ul>
+</div>
 
   </aside>
 </div>

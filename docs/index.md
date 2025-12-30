@@ -1,3 +1,126 @@
-Downloads and processes school data from the California Department of
-Education (CDE). Provides functions for fetching enrollment data and
-transforming it into tidy format for analysis.
+# caschooldata
+
+An R package for fetching and processing California school enrollment
+data from the California Department of Education (CDE).
+
+## Overview
+
+`caschooldata` provides a simple interface to download, process, and
+analyze California public school enrollment data. The package handles: -
+Downloading enrollment data from CDE DataQuest - Processing raw data
+into a standardized schema - Converting to tidy (long) format for
+analysis - Local caching to speed up repeated queries
+
+## Installation
+
+Install from GitHub using the `remotes` package:
+
+``` r
+# install.packages("remotes")
+remotes::install_github("almartin82/caschooldata")
+```
+
+## Quick Start
+
+### Fetch enrollment data
+
+``` r
+library(caschooldata)
+library(dplyr)
+
+# Fetch 2024 enrollment data (2023-24 school year)
+enr <- fetch_enr(2024)
+
+# View the data
+head(enr)
+```
+
+### Filter to specific levels
+
+``` r
+# State totals
+state_total <- enr %>%
+  filter(is_state, subgroup == "total", grade_level == "TOTAL")
+
+# All districts
+districts <- enr %>%
+  filter(is_district, subgroup == "total", grade_level == "TOTAL")
+
+# All schools
+schools <- enr %>%
+  filter(is_school, subgroup == "total", grade_level == "TOTAL")
+```
+
+### Analyze demographics
+
+``` r
+# State-level demographic breakdown
+enr %>%
+  filter(is_state, grade_level == "TOTAL") %>%
+  select(subgroup, n_students) %>%
+  arrange(desc(n_students))
+```
+
+### Work with wide format
+
+``` r
+# Get wide format (one column per grade)
+enr_wide <- fetch_enr(2024, tidy = FALSE)
+```
+
+### Fetch multiple years
+
+``` r
+# Get data for multiple years
+all_years <- fetch_enr_multi(c(2024, 2025))
+```
+
+## Available Data
+
+### Years
+
+Currently supports Census Day enrollment data for: - **2024** (2023-24
+school year) - **2025** (2024-25 school year)
+
+### Aggregation Levels
+
+- **State** (`agg_level = "T"`, `is_state = TRUE`): Statewide totals
+- **County** (`agg_level = "C"`, `is_county = TRUE`): 58 California
+  counties
+- **District** (`agg_level = "D"`, `is_district = TRUE`): All school
+  districts
+- **School** (`agg_level = "S"`, `is_school = TRUE`): Individual schools
+
+### Demographic Subgroups
+
+The `reporting_category` and `subgroup` columns include: - **Total
+enrollment** (`TA` / `total`) - **Race/Ethnicity**: Hispanic, White,
+Asian, Black, Filipino, Pacific Islander, Native American, Multiracial -
+**Gender**: Female, Male, Nonbinary - **Student Groups**: English
+Learners, Students with Disabilities, Socioeconomically Disadvantaged,
+Foster Youth, Homeless, Migrant
+
+### Grade Levels
+
+- Individual grades: TK, K, 01-12
+- Total: TOTAL
+- Grade band aggregations available via
+  [`enr_grade_aggs()`](https://almartin82.github.io/caschooldata/reference/enr_grade_aggs.md):
+  K8, HS, K12
+
+## Data Source
+
+Data is sourced from the California Department of Education: -
+**DataQuest**: <https://dq.cde.ca.gov/dataquest/> - **Data Files**:
+<https://www.cde.ca.gov/ds/>
+
+Enrollment counts are based on Census Day (first Wednesday in October).
+
+## Documentation
+
+For full documentation, see the [pkgdown
+site](https://almartin82.github.io/caschooldata/).
+
+## License
+
+MIT License
