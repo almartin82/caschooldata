@@ -57,11 +57,18 @@ get_raw_enr_modern <- function(end_year) {
   # Download file to temp location
   tname <- tempfile(pattern = "cde_enr", tmpdir = tempdir(), fileext = ".txt")
 
+  # Set longer timeout for large files
+  old_timeout <- getOption("timeout")
+  options(timeout = 300)  # 5 minutes
+
   tryCatch({
     downloader::download(url, dest = tname, mode = "wb", quiet = TRUE)
   }, error = function(e) {
+    options(timeout = old_timeout)
     stop(paste("Failed to download enrollment data from CDE:", e$message))
   })
+
+  options(timeout = old_timeout)
 
   # Check if download was successful (file should be reasonably large)
   file_info <- file.info(tname)
@@ -222,14 +229,10 @@ build_historical_enr_url <- function(end_year) {
 
   # Historical files are organized by 3-year ranges:
   # enr201719-v2.txt contains: 2017-18, 2018-19, 2019-20 (end_year 2018, 2019, 2020)
-  # enr202022-v2.txt contains: 2020-21, 2021-22 (end_year 2021, 2022)
-  # enr202023.txt contains: 2022-23 (end_year 2023)
+  # enr202022-v2.txt contains: 2020-21, 2021-22, 2022-23 (end_year 2021, 2022, 2023)
 
-  if (end_year == 2023) {
-    # 2022-23 school year
-    filename <- "enr202023.txt"
-  } else if (end_year >= 2021 && end_year <= 2022) {
-    # 2020-21, 2021-22
+  if (end_year >= 2021 && end_year <= 2023) {
+    # 2020-21, 2021-22, 2022-23
     filename <- "enr202022-v2.txt"
   } else if (end_year >= 2018 && end_year <= 2020) {
     # 2017-18, 2018-19, 2019-20

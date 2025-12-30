@@ -16,6 +16,7 @@ Processed data frame with standard schema
 }
 \description{
 Takes raw enrollment data from CDE and standardizes column names, types,
-and handles any year-specific format differences.
+and handles any year-specific format differences. Uses modern processing
+for 2024+ Census Day files and historical processing for 2017-2023 files.
 }
 \keyword{internal}

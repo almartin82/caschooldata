@@ -25,7 +25,13 @@ Data comes from the California Department of Education:
 - DataQuest: https://dq.cde.ca.gov/dataquest/
 - Data files: https://www.cde.ca.gov/ds/
 - Census Day enrollment (first Wednesday in October)
-- Currently supports 2024-2025 data files
+
+Supported year ranges:
+- **2024-2025**: Modern Census Day files with full demographic breakdowns
+- **2018-2023**: Historical school-level files with race/ethnicity and gender data
+  - District/county/state aggregates are computed from school data
+  - TK data not available
+  - Charter status not available
 
 ### CDS Code Format
 

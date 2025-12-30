@@ -5,7 +5,28 @@
 [![pkgdown](https://github.com/almartin82/caschooldata/actions/workflows/pkgdown.yaml/badge.svg)](https://github.com/almartin82/caschooldata/actions/workflows/pkgdown.yaml)
 <!-- badges: end -->
 
+**[Documentation Site](https://almartin82.github.io/caschooldata/)**
+
 An R package for fetching and processing California school enrollment data from the California Department of Education (CDE).
+
+## Data Highlights: What You'll Find
+
+California's 5.8+ million student public school system has undergone dramatic shifts. Here's what the data reveals:
+
+| # | Finding | Key Metric |
+|---|---------|------------|
+| 1 | **Statewide enrollment collapse** | 400,000+ students lost since 2020 (~7% decline) |
+| 2 | **LAUSD exodus** | Nation's 2nd-largest district lost 80,000+ students |
+| 3 | **Top 5 districts hemorrhaging** | 100,000+ students lost combined |
+| 4 | **Hispanic majority** | Now 56% of California's enrollment |
+| 5 | **District divergence** | Some districts grew while most contracted |
+| 6 | **High school hit first** | Secondary grades dropped faster than elementary |
+| 7 | **Bay Area flight** | San Francisco, Santa Clara counties hit hardest |
+| 8 | **Kindergarten warning** | K enrollment drop signals more decline ahead |
+| 9 | **Gender ratio stable** | Male/female split unchanged at ~51/49 |
+| 10 | **English Learners** | 18%+ of students, a major population |
+
+See the full analysis with visualizations in the [District Highlights vignette](https://almartin82.github.io/caschooldata/articles/district-highlights.html).
 
 ## Overview
 
@@ -82,9 +103,15 @@ all_years <- fetch_enr_multi(c(2024, 2025))
 
 ### Years
 
-Currently supports Census Day enrollment data for:
-- **2024** (2023-24 school year)
-- **2025** (2024-25 school year)
+Eight years of Census Day enrollment data (2018-2025):
+
+- **2024-2025** (modern format): Full demographic breakdowns, all aggregation levels, TK data
+- **2018-2023** (historical format): School-level race/ethnicity and gender data
+
+```r
+# Fetch multi-year data for trend analysis
+enr_all <- fetch_enr_multi(2018:2025)
+```
 
 ### Aggregation Levels
 

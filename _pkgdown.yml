@@ -3,6 +3,13 @@ url: https://almartin82.github.io/caschooldata/
 template:
   bootstrap: 5
 
+home:
+  links:
+  - text: CDE DataQuest
+    href: https://dq.cde.ca.gov/dataquest/
+  - text: CDE Data Files
+    href: https://www.cde.ca.gov/ds/
+
 navbar:
   structure:
     left: [intro, reference, articles]
@@ -13,6 +20,8 @@ navbar:
       menu:
       - text: Getting Started
         href: articles/quickstart.html
+      - text: "District Trends & Demographics"
+        href: articles/district-highlights.html
       - text: Data Quality QA
         href: articles/data-quality-qa.html
 

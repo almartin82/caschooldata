@@ -8,7 +8,11 @@ fetch_enr(end_year, tidy = TRUE, use_cache = TRUE)
 }
 \arguments{
 \item{end_year}{A school year. Year is the end of the academic year - e.g., 2024
-for the 2023-24 school year. Currently supports 2024-2025 (Census Day files).}
+for the 2023-24 school year. Supports 2018-2025:
+\itemize{
+\item 2024-2025: Modern Census Day files with full demographic breakdowns
+\item 2018-2023: Historical school-level files with race/gender data
+}}
 
 \item{tidy}{If TRUE (default), returns data in long (tidy) format with grade
 and subgroup columns. If FALSE, returns wide format with grade columns.}
@@ -27,7 +31,7 @@ A tibble with enrollment data. In tidy format, includes columns:
 \item \code{agg_level}: Aggregation level (T=State, C=County, D=District, S=School)
 \item \code{county_name}, \code{district_name}, \code{school_name}: Entity names
 \item \code{charter_status}: Charter indicator (Y/N/All)
-\item \code{grade_level}: Grade (TK, K, 01-12, or TOTAL)
+\item \code{grade_level}: Grade (TK, K, 01-12, or TOTAL). Note: TK is NA for 2017-2023.
 \item \code{reporting_category}: CDE demographic category code
 \item \code{subgroup}: Human-readable subgroup name
 \item \code{n_students}: Enrollment count
@@ -38,10 +42,22 @@ Downloads and processes enrollment data from the California Department of
 Education DataQuest data files. Data is based on Census Day enrollment
 (first Wednesday in October).
 }
+\details{
+Historical data (2018-2023) differs from modern data in several ways:
+\itemize{
+\item Transitional Kindergarten (TK) data is not available (grade_tk is NA)
+\item Charter status is not available (charter_status is "All")
+\item District and county aggregates are computed from school-level data
+\item Some student group categories (SG_*) are not available
+}
+}
 \examples{
 \dontrun{
 # Get 2024 enrollment data (2023-24 school year)
 enr_2024 <- fetch_enr(2024)
+
+# Get historical data (2019-20 school year)
+enr_2020 <- fetch_enr(2020)
 
 # Get wide format (one column per grade)
 enr_wide <- fetch_enr(2024, tidy = FALSE)
