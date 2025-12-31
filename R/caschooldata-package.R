@@ -16,6 +16,7 @@ utils::globalVariables(c(
 #' \itemize{
 #'   \item \code{\link{fetch_enr}}: Download and process enrollment data
 #'   \item \code{\link{fetch_enr_multi}}: Download enrollment for multiple years
+#'   \item \code{\link{get_available_years}}: Get available data years (1982-2025)
 #'   \item \code{\link{tidy_enr}}: Convert wide enrollment to tidy format
 #'   \item \code{\link{id_enr_aggs}}: Identify aggregation levels in data
 #'   \item \code{\link{parse_cds_code}}: Parse CDS codes into components

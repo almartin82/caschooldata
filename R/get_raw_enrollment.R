@@ -20,16 +20,16 @@
 #' @keywords internal
 get_raw_enr <- function(end_year) {
 
-  # Validate year
-  min_year <- 1982  # Historical enrollment files start at 1981-82
-  max_year <- 2025  # Current Census Day files
+  # Validate year using get_available_years()
+  available_years <- get_available_years()
+  min_year <- min(available_years)
+  max_year <- max(available_years)
 
-  if (end_year < min_year) {
-    stop(paste("end_year must be", min_year, "or later."))
-  }
-
-  if (end_year > max_year) {
-    stop(paste("end_year must be", max_year, "or earlier."))
+  if (end_year < min_year || end_year > max_year) {
+    stop(paste0(
+      "end_year must be between ", min_year, " and ", max_year, ".\n",
+      "Use get_available_years() to see all available years."
+    ))
   }
 
   # Modern format (2024+): Census Day files with aggregation levels and subgroups

@@ -9,6 +9,8 @@ home:
     href: https://dq.cde.ca.gov/dataquest/
   - text: CDE Data Files
     href: https://www.cde.ca.gov/ds/
+  - text: "Part of the 50 State Schooldata Family"
+    href: https://github.com/almartin82/njschooldata
 
 navbar:
   structure:

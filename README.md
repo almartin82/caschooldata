@@ -246,6 +246,14 @@ enr_2025 %>%
 
 California Department of Education: [DataQuest](https://dq.cde.ca.gov/dataquest/) | [Data Files](https://www.cde.ca.gov/ds/)
 
+## Part of the 50 State Schooldata Family
+
+This package is part of a family of R packages providing school enrollment data for all 50 US states. Each package fetches data directly from the state's Department of Education.
+
+**See also:** [njschooldata](https://github.com/almartin82/njschooldata) - The original state schooldata package for New Jersey.
+
+**All packages:** [github.com/almartin82](https://github.com/almartin82?tab=repositories&q=schooldata)
+
 ## Author
 
 [Andy Martin](https://github.com/almartin82) (almartin@gmail.com)

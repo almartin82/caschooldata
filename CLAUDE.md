@@ -26,12 +26,15 @@ Data comes from the California Department of Education:
 - Data files: https://www.cde.ca.gov/ds/
 - Census Day enrollment (first Wednesday in October)
 
-Supported year ranges:
+Supported year ranges (use `get_available_years()` to check):
 - **2024-2025**: Modern Census Day files with full demographic breakdowns
-- **2018-2023**: Historical school-level files with race/ethnicity and gender data
-  - District/county/state aggregates are computed from school data
-  - TK data not available
-  - Charter status not available
+- **2008-2023**: Historical files with race/gender data and entity names
+- **1994-2007**: Historical files with race/gender data (no entity names)
+- **1982-1993**: Historical files with letter-based race codes
+  - For all historical data (1982-2023):
+    - District/county/state aggregates are computed from school data
+    - TK data not available
+    - Charter status not available
 
 ### CDS Code Format
 

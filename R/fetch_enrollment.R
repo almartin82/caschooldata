@@ -72,17 +72,15 @@
 #' }
 fetch_enr <- function(end_year, tidy = TRUE, use_cache = TRUE) {
 
-  # Validate year
-  # Historical enrollment files: 1982-2023 (1981-82 through 2022-23)
-  # Modern Census Day enrollment files: 2024-2025
-  min_year <- 1982
-  max_year <- 2025
+  # Validate year using get_available_years()
+  available_years <- get_available_years()
+  min_year <- min(available_years)
+  max_year <- max(available_years)
 
   if (end_year < min_year || end_year > max_year) {
     stop(paste0(
-      "end_year must be between ", min_year, " and ", max_year, ". ",
-      "Historical data is available from 1982-2023 (school years 1981-82 to 2022-23), ",
-      "Census Day files from 2024-2025."
+      "end_year must be between ", min_year, " and ", max_year, ".\n",
+      "Use get_available_years() to see all available years."
     ))
   }
 

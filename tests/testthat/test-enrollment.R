@@ -76,11 +76,29 @@ test_that("safe_numeric handles suppression markers", {
 
 
 test_that("fetch_enr validates year range", {
-  # Test year too low
-  expect_error(fetch_enr(2020), "end_year must be between")
+  # Test year too low (1981 is before the 1982 minimum)
+  expect_error(fetch_enr(1981), "end_year must be between")
 
-  # Test year too high
+  # Test year too high (2030 is beyond available data)
   expect_error(fetch_enr(2030), "end_year must be between")
+})
+
+
+test_that("get_available_years returns correct range", {
+  years <- get_available_years()
+
+  # Should return an integer vector
+
+  expect_type(years, "integer")
+
+  # Should include the documented range 1982-2025
+  expect_equal(min(years), 1982)
+  expect_equal(max(years), 2025)
+
+  # Should include both historical and modern years
+  expect_true(2020 %in% years)  # Historical year
+  expect_true(2024 %in% years)  # Modern Census Day year
+  expect_true(2025 %in% years)  # Most recent year
 })
 
 
