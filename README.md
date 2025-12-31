@@ -15,161 +15,176 @@ Fetch and analyze California public school enrollment data from the California D
 
 ---
 
-### 1. California lost 400,000+ students since 2020
+### 1. The 40-year arc: rise, peak, and decline
+
+California's K-12 enrollment peaked around 2003-04 at 6.3 million students. Today it's under 5.8 million.
 
 ```r
 library(caschooldata)
 library(dplyr)
 
-enr <- fetch_enr_multi(2018:2025)
+enr <- fetch_enr_multi(c(1985, 1995, 2005, 2015, 2025))
 
 enr %>%
   filter(is_state, grade_level == "TOTAL", reporting_category == "TA") %>%
   select(end_year, n_students)
 ```
 
-![Statewide enrollment trend](man/figures/enrollment-trend.png)
+![40-year enrollment arc](man/figures/enrollment-40yr.png)
 
 ---
 
-### 2. LAUSD lost more students than most states have
+### 2. The demographic crossover
 
-The nation's second-largest school district has been in freefall—dropping enrollment every single year.
+Around 2010, Hispanic students became the majority. Today they're over 55% of enrollment.
 
 ```r
+enr <- fetch_enr_multi(c(1995, 2000, 2005, 2010, 2015, 2020, 2025))
+
 enr %>%
-  filter(is_district, grepl("Los Angeles Unified", district_name),
-         grade_level == "TOTAL", reporting_category == "TA") %>%
-  select(end_year, n_students)
+  filter(is_state, grade_level == "TOTAL", grepl("^RE_", reporting_category)) %>%
+  group_by(end_year, subgroup) %>%
+  summarize(n = sum(n_students)) %>%
+  group_by(end_year) %>%
+  mutate(pct = n / sum(n) * 100)
 ```
 
-![LAUSD enrollment](man/figures/lausd-trend.png)
+![Demographic transformation](man/figures/demographics-30yr.png)
 
 ---
 
-### 3. California's Big 5 districts are all shrinking
+### 3. Kindergarten predicts the future
 
-Los Angeles, San Diego, Long Beach, Fresno, Santa Ana—combined, they've lost over 100,000 students.
+Today's kindergarten enrollment is tomorrow's high school enrollment. The K decline started before COVID.
 
 ```r
+enr <- fetch_enr_multi(c(2005, 2010, 2015, 2020, 2025))
+
 enr %>%
-  filter(is_district, grade_level == "TOTAL", reporting_category == "TA") %>%
-  group_by(district_name) %>%
-  filter(max(n_students, na.rm = TRUE) > 50000) %>%
-  select(end_year, district_name, n_students)
+  filter(is_state, reporting_category == "TA", grade_level %in% c("K", "12")) %>%
+  select(end_year, grade_level, n_students)
 ```
 
-![Top 5 districts](man/figures/top5-districts.png)
+![K vs 12th grade](man/figures/k-vs-12.png)
 
 ---
 
-### 4. Hispanic students are now the majority
+### 4. COVID hit elementary hardest
 
-California's demographic transformation is visible in the numbers—Hispanic students now make up over 55% of enrollment.
-
-```r
-enr %>%
-  filter(is_state, grade_level == "TOTAL", grepl("^RE_", reporting_category),
-         end_year == 2025) %>%
-  mutate(pct = n_students / sum(n_students) * 100) %>%
-  arrange(desc(pct))
-```
-
-![Demographics](man/figures/demographics.png)
-
----
-
-### 5. A tale of two Californias
-
-While most districts shrank, some grew 20%+. The divergence is striking.
+The pandemic's enrollment impact varied dramatically by grade level.
 
 ```r
-enr %>%
-  filter(is_district, grade_level == "TOTAL", reporting_category == "TA",
-         end_year %in% c(2020, 2025)) %>%
-  group_by(district_name) %>%
-  summarize(change = last(n_students) - first(n_students)) %>%
-  arrange(desc(abs(change)))
-```
+enr <- fetch_enr_multi(2019:2025)
 
-![District changes](man/figures/district-changes.png)
-
----
-
-### 6. High school enrollment dropped first
-
-The decline started at the top and is working its way down through the grades.
-
-```r
 enr %>%
   filter(is_state, reporting_category == "TA",
          grade_level %in% c("K", "06", "09")) %>%
   select(end_year, grade_level, n_students)
 ```
 
-![Grade bands](man/figures/grade-bands.png)
+![COVID impact by grade](man/figures/covid-grades.png)
 
 ---
 
-### 7. The Bay Area exodus
+### 5. LA County has more students than most states
 
-San Francisco, Santa Clara, Marin—Bay Area counties saw the steepest percentage drops in the state.
+California's five largest counties alone serve over 3 million students.
+
+```r
+enr <- fetch_enr_multi(2018:2025)
+
+enr %>%
+  filter(is_county, grade_level == "TOTAL", reporting_category == "TA") %>%
+  group_by(county_name) %>%
+  filter(max(n_students) > 200000) %>%
+  select(end_year, county_name, n_students)
+```
+
+![Top counties](man/figures/top-counties.png)
+
+---
+
+### 6. The Bay Area exodus
+
+Bay Area counties are losing students faster than Southern California.
 
 ```r
 enr %>%
   filter(is_county, grade_level == "TOTAL", reporting_category == "TA",
-         end_year %in% c(2020, 2025)) %>%
+         county_name %in% c("San Francisco", "Los Angeles", "Santa Clara")) %>%
   group_by(county_name) %>%
-  summarize(pct_change = (last(n_students) - first(n_students)) / first(n_students) * 100) %>%
-  arrange(pct_change)
+  mutate(index = n_students / first(n_students) * 100)
 ```
 
-![County changes](man/figures/county-changes.png)
+![Bay Area vs SoCal](man/figures/bayarea-socal.png)
 
 ---
 
-### 8. Kindergarten is the canary in the coal mine
+### 7. Gender balance holds steady
 
-Today's kindergarten enrollment predicts tomorrow's total enrollment. The trend isn't encouraging.
-
-```r
-enr %>%
-  filter(is_state, grade_level == "K", reporting_category == "TA") %>%
-  select(end_year, n_students)
-```
-
-![Kindergarten trend](man/figures/kindergarten.png)
-
----
-
-### 9. One thing that hasn't changed: gender ratio
-
-Through all the turbulence, the male/female split has held remarkably steady at ~51/49.
+The ~51/49 male/female split remains consistent across all grade levels.
 
 ```r
-enr %>%
-  filter(is_state, grade_level == "TOTAL",
-         reporting_category %in% c("GN_M", "GN_F")) %>%
-  group_by(end_year) %>%
+enr_2025 <- fetch_enr(2025)
+
+enr_2025 %>%
+  filter(is_state, reporting_category %in% c("GN_M", "GN_F"),
+         grade_level %in% c("K", "06", "12")) %>%
+  group_by(grade_level) %>%
   mutate(pct = n_students / sum(n_students) * 100)
 ```
 
-![Gender ratio](man/figures/gender.png)
+![Gender by grade](man/figures/gender-grades.png)
 
 ---
 
-### 10. One in five students is an English Learner
+### 8. One in five students needs extra support
 
-California's English Learner population is massive—over 1 million students.
+3.5 million low-income students. 1 million+ English Learners. Student groups data available from 2024+.
 
 ```r
-enr %>%
-  filter(is_state, grade_level == "TOTAL", grepl("^SG_", reporting_category),
-         end_year == 2025) %>%
+enr_2025 %>%
+  filter(is_state, grade_level == "TOTAL", grepl("^SG_", reporting_category)) %>%
+  select(subgroup, n_students) %>%
   arrange(desc(n_students))
 ```
 
 ![Student groups](man/figures/student-groups.png)
+
+---
+
+### 9. LAUSD: America's shrinking giant
+
+The nation's second-largest district has lost nearly half its enrollment since its peak.
+
+```r
+enr <- fetch_enr_multi(c(1990, 2000, 2010, 2020, 2025))
+
+enr %>%
+  filter(is_district, grepl("Los Angeles Unified", district_name),
+         grade_level == "TOTAL", reporting_category == "TA") %>%
+  select(end_year, district_name, n_students)
+```
+
+![LAUSD decline](man/figures/lausd-longterm.png)
+
+---
+
+### 10. California's regional diversity
+
+Demographics vary dramatically by region: majority Hispanic in LA and Central Valley, highly diverse in the Bay Area.
+
+```r
+enr_2025 %>%
+  filter(is_county, grade_level == "TOTAL", grepl("^RE_", reporting_category)) %>%
+  filter(county_name %in% c("San Francisco", "Los Angeles", "Fresno", "San Diego")) %>%
+  group_by(county_name, subgroup) %>%
+  summarize(n = sum(n_students)) %>%
+  group_by(county_name) %>%
+  mutate(pct = n / sum(n) * 100)
+```
+
+![Race by region](man/figures/race-by-region.png)
 
 ---
 
@@ -211,18 +226,29 @@ enr_2025 %>%
   summarize(n = sum(n_students))
 ```
 
-## Data coverage
+## Data availability
 
-| Years | Format | Details |
-|-------|--------|---------|
-| 2024-2025 | Modern Census Day | Full demographics, all aggregation levels, TK data |
-| 2008-2023 | Historical | School-level data with names, race/ethnicity, gender |
-| 1994-2007 | Historical | School-level data (no names), race/ethnicity, gender |
-| 1982-1993 | Historical | School-level data with names, legacy race codes |
+| Years | Source | Aggregation Levels | Demographics | Notes |
+|-------|--------|-------------------|--------------|-------|
+| **2024-2025** | Census Day files | State, County, District, School | Race, Gender, Student Groups (EL, FRPM, SWD, etc.) | Full detail, TK included |
+| **2008-2023** | Historical files | School (aggregates computed) | Race, Gender | Entity names included |
+| **1994-2007** | Historical files | School (aggregates computed) | Race, Gender | No entity names (CDS codes only) |
+| **1982-1993** | Historical files | School (aggregates computed) | Race, Gender | Letter-based race codes (mapped) |
+
+### What's available by year range
+
+- **Subgroups**: Race/ethnicity and gender available for all years. Student groups (English Learners, FRPM, Special Ed) only available 2024+.
+- **Grade levels**: K-12 available for all years. Transitional Kindergarten (TK) only available 2024+.
+- **Aggregation**: Modern files (2024+) include pre-computed state/county/district totals. Historical files only have school-level data; this package computes aggregates automatically.
+- **Entity names**: School/district names available 2008+ and 1982-1993. Not available for 1994-2007 (use CDS code lookups).
 
 ## Data source
 
 California Department of Education: [DataQuest](https://dq.cde.ca.gov/dataquest/) | [Data Files](https://www.cde.ca.gov/ds/)
+
+## Author
+
+[Andy Martin](https://github.com/almartin82) (almartin@gmail.com)
 
 ## License
 
