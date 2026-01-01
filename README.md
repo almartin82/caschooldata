@@ -88,13 +88,16 @@ enr %>%
 
 ### 5. LA County has more students than most states
 
-California's five largest counties alone serve over 3 million students.
+California's five largest counties alone serve nearly 3 million students.
 
 ```r
 enr <- fetch_enr_multi(2018:2025)
 
+# Filter for charter_status == "ALL" to avoid double-counting
+# (modern Census Day files have separate rows for charter/non-charter)
 enr %>%
-  filter(is_county, grade_level == "TOTAL", reporting_category == "TA") %>%
+  filter(is_county, grade_level == "TOTAL", reporting_category == "TA",
+         charter_status %in% c("ALL", "All") | is.na(charter_status)) %>%
   group_by(county_name) %>%
   filter(max(n_students) > 200000) %>%
   select(end_year, county_name, n_students)
