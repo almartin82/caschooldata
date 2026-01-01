@@ -14,7 +14,8 @@ knitr::opts_chunk$set(
   warning = FALSE,
   fig.width = 8,
   fig.height = 5,
-  cache = TRUE
+  cache = TRUE,
+  eval = FALSE
 )
 ```
 
