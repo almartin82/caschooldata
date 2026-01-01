@@ -25,6 +25,13 @@ enr_full <- fetch_enr_multi(c(1985, 1990, 1995, 2000, 2005, 2010, 2015, 2020, 20
 # Recent years for detailed analysis
 enr_recent <- fetch_enr_multi(2018:2025)
 
+# Filter to aggregate totals only (modern Census Day files have separate rows for
+# charter_status = ALL/N/Y which would cause double-counting if summed together)
+enr_full <- enr_full %>%
+  filter(charter_status %in% c("ALL", "All") | is.na(charter_status))
+enr_recent <- enr_recent %>%
+  filter(charter_status %in% c("ALL", "All") | is.na(charter_status))
+
 # ------------------------------------------------------------------------------
 # 1. THE 40-YEAR ARC (1985-2025) - Total enrollment
 # ------------------------------------------------------------------------------
