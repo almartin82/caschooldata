@@ -41,7 +41,7 @@ tidy_enr <- function(wide_data) {
 
   if (length(grade_cols) == 0) {
     # No grade columns to pivot - just add grade_level = "TOTAL"
-    result <- wide_data %>%
+    result <- wide_data |>
       dplyr::mutate(
         grade_level = "TOTAL",
         n_students = total_enrollment
@@ -68,8 +68,8 @@ tidy_enr <- function(wide_data) {
   )
 
   # Create total enrollment rows (grade_level = "TOTAL")
-  total_rows <- wide_data %>%
-    dplyr::select(dplyr::all_of(invariants)) %>%
+  total_rows <- wide_data |>
+    dplyr::select(dplyr::all_of(invariants)) |>
     dplyr::mutate(
       grade_level = "TOTAL",
       n_students = total_enrollment
@@ -80,18 +80,18 @@ tidy_enr <- function(wide_data) {
     gl <- grade_level_map[.x]
     if (is.na(gl)) gl <- gsub("^grade_", "", .x)
 
-    wide_data %>%
-      dplyr::select(dplyr::all_of(c(invariants, .x))) %>%
-      dplyr::rename(n_students = dplyr::all_of(.x)) %>%
+    wide_data |>
+      dplyr::select(dplyr::all_of(c(invariants, .x))) |>
+      dplyr::rename(n_students = dplyr::all_of(.x)) |>
       dplyr::mutate(grade_level = gl)
   })
 
   # Combine total and grade-level rows
-  result <- dplyr::bind_rows(total_rows, grade_rows) %>%
+  result <- dplyr::bind_rows(total_rows, grade_rows) |>
     dplyr::filter(!is.na(n_students))
 
   # Map reporting_category to human-readable subgroup names
-  result <- result %>%
+  result <- result |>
     dplyr::mutate(
       subgroup = map_reporting_category(reporting_category)
     )
@@ -105,7 +105,7 @@ tidy_enr <- function(wide_data) {
     "n_students", "total_enrollment"
   )
   col_order <- col_order[col_order %in% names(result)]
-  result <- result %>%
+  result <- result |>
     dplyr::select(dplyr::all_of(col_order), dplyr::everything())
 
   result
@@ -200,7 +200,7 @@ id_enr_aggs <- function(data) {
   # Also can derive from CDS code patterns
 
   if ("agg_level" %in% names(data)) {
-    data <- data %>%
+    data <- data |>
       dplyr::mutate(
         is_state = agg_level == "T",
         is_county = agg_level == "C",
@@ -210,7 +210,7 @@ id_enr_aggs <- function(data) {
       )
   } else if ("cds_code" %in% names(data)) {
     # Derive from CDS code
-    data <- data %>%
+    data <- data |>
       dplyr::mutate(
         is_state = substr(cds_code, 1, 2) == "00" &
                    substr(cds_code, 3, 7) == "00000" &
@@ -249,44 +249,44 @@ enr_grade_aggs <- function(df) {
   group_vars <- group_vars[group_vars %in% names(df)]
 
   # Filter to total subgroup only for aggregation
-  df_totals <- df %>%
+  df_totals <- df |>
     dplyr::filter(reporting_category == "TA" | subgroup == "total")
 
   # K-8 aggregate (includes TK and K)
-  k8_agg <- df_totals %>%
+  k8_agg <- df_totals |>
     dplyr::filter(
       grade_level %in% c("TK", "K", "01", "02", "03", "04", "05", "06", "07", "08")
-    ) %>%
-    dplyr::group_by(dplyr::across(dplyr::all_of(group_vars))) %>%
+    ) |>
+    dplyr::group_by(dplyr::across(dplyr::all_of(group_vars))) |>
     dplyr::summarize(
       n_students = sum(n_students, na.rm = TRUE),
       .groups = "drop"
-    ) %>%
+    ) |>
     dplyr::mutate(grade_level = "K8")
 
   # High school (9-12) aggregate
-  hs_agg <- df_totals %>%
+  hs_agg <- df_totals |>
     dplyr::filter(
       grade_level %in% c("09", "10", "11", "12")
-    ) %>%
-    dplyr::group_by(dplyr::across(dplyr::all_of(group_vars))) %>%
+    ) |>
+    dplyr::group_by(dplyr::across(dplyr::all_of(group_vars))) |>
     dplyr::summarize(
       n_students = sum(n_students, na.rm = TRUE),
       .groups = "drop"
-    ) %>%
+    ) |>
     dplyr::mutate(grade_level = "HS")
 
   # K-12 aggregate (includes TK)
-  k12_agg <- df_totals %>%
+  k12_agg <- df_totals |>
     dplyr::filter(
       grade_level %in% c("TK", "K", "01", "02", "03", "04", "05", "06", "07", "08",
                          "09", "10", "11", "12")
-    ) %>%
-    dplyr::group_by(dplyr::across(dplyr::all_of(group_vars))) %>%
+    ) |>
+    dplyr::group_by(dplyr::across(dplyr::all_of(group_vars))) |>
     dplyr::summarize(
       n_students = sum(n_students, na.rm = TRUE),
       .groups = "drop"
-    ) %>%
+    ) |>
     dplyr::mutate(grade_level = "K12")
 
   dplyr::bind_rows(k8_agg, hs_agg, k12_agg)

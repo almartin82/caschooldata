@@ -5,6 +5,8 @@ template:
 
 home:
   links:
+  - text: "10 Insights from California Enrollment Data"
+    href: articles/district-highlights.html
   - text: CDE DataQuest
     href: https://dq.cde.ca.gov/dataquest/
   - text: CDE Data Files
@@ -33,6 +35,7 @@ reference:
   contents:
   - fetch_enr
   - fetch_enr_multi
+  - get_available_years
 
 - title: Process & Tidy
   desc: Transform data into analysis-ready formats

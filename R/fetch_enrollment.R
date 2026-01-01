@@ -67,7 +67,7 @@
 #'
 #' # Filter to school-level total enrollment
 #' library(dplyr)
-#' schools <- enr_2024 %>%
+#' schools <- enr_2024 |>
 #'   filter(agg_level == "S", reporting_category == "TA", grade_level == "TOTAL")
 #' }
 fetch_enr <- function(end_year, tidy = TRUE, use_cache = TRUE) {
@@ -101,7 +101,7 @@ fetch_enr <- function(end_year, tidy = TRUE, use_cache = TRUE) {
 
   # Optionally tidy (pivot to long format)
   if (tidy) {
-    result <- tidy_enr(processed) %>%
+    result <- tidy_enr(processed) |>
       id_enr_aggs()
   } else {
     result <- processed

@@ -1,49 +1,7 @@
-# Claude Code Instructions for caschooldata
+# Claude Code Instructions
 
-## Commit and PR Guidelines
-
-- Do NOT include "Generated with Claude Code" in commit messages
-- Do NOT include "Co-Authored-By: Claude" in commit messages
-- Do NOT mention Claude or AI assistance in PR descriptions
-- Keep commit messages clean and professional
-
-## Project Context
-
-This is an R package for fetching and processing California school enrollment data from CDE (California Department of Education).
-
-### Key Files
-
-- `R/fetch_enrollment.R` - Main `fetch_enr()` function
-- `R/get_raw_enrollment.R` - Downloads raw data from CDE
-- `R/process_enrollment.R` - Transforms raw data to standard schema
-- `R/tidy_enrollment.R` - Converts to long/tidy format
-- `R/cache.R` - Local caching layer
-
-### Data Sources
-
-Data comes from the California Department of Education:
-- DataQuest: https://dq.cde.ca.gov/dataquest/
-- Data files: https://www.cde.ca.gov/ds/
-- Census Day enrollment (first Wednesday in October)
-
-Supported year ranges (use `get_available_years()` to check):
-- **2024-2025**: Modern Census Day files with full demographic breakdowns
-- **2008-2023**: Historical files with race/gender data and entity names
-- **1994-2007**: Historical files with race/gender data (no entity names)
-- **1982-1993**: Historical files with letter-based race codes
-  - For all historical data (1982-2023):
-    - District/county/state aggregates are computed from school data
-    - TK data not available
-    - Charter status not available
-
-### CDS Code Format
-
-California uses a 14-digit County-District-School (CDS) code:
-- 2 digits: County code (01-58, California's 58 counties)
-- 5 digits: District code
-- 7 digits: School code
-- Example: 01611920130229
-
-### Related Package
-
-This package follows patterns from [ilschooldata](https://github.com/almartin82/ilschooldata).
+## Git Commits and PRs
+- NEVER reference Claude, Claude Code, or AI assistance in commit messages
+- NEVER reference Claude, Claude Code, or AI assistance in PR descriptions
+- NEVER add Co-Authored-By lines mentioning Claude or Anthropic
+- Keep commit messages focused on what changed, not how it was written

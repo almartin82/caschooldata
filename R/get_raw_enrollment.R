@@ -160,7 +160,7 @@ get_raw_enr_historical <- function(end_year) {
     year_label <- paste0(end_year - 1, "-", substr(end_year, 3, 4))
   }
 
-  df <- df %>%
+  df <- df |>
     dplyr::filter(ACADEMIC_YEAR == year_label)
 
   # Add end_year column

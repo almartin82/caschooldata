@@ -266,7 +266,7 @@ process_enr_historical <- function(raw_data, end_year) {
   # Filter to Combined enrollment (C) for years that have ENR_TYPE
   # 2015+ files have ENR_TYPE column; older files don't
   if ("ENR_TYPE" %in% names(raw_data)) {
-    raw_data <- raw_data %>%
+    raw_data <- raw_data |>
       dplyr::filter(ENR_TYPE == "C")
   }
 
@@ -276,16 +276,16 @@ process_enr_historical <- function(raw_data, end_year) {
   # 1994-2007: No name columns at all
   if ("COUNTY" %in% names(raw_data)) {
     # 2008+ format
-    raw_data <- raw_data %>%
+    raw_data <- raw_data |>
       dplyr::rename(county_name = COUNTY, district_name = DISTRICT, school_name = SCHOOL)
   } else if ("DISTRICT_NAME" %in% names(raw_data)) {
     # 1982-1993 format
-    raw_data <- raw_data %>%
-      dplyr::rename(district_name = DISTRICT_NAME, school_name = SCHOOL_NAME) %>%
+    raw_data <- raw_data |>
+      dplyr::rename(district_name = DISTRICT_NAME, school_name = SCHOOL_NAME) |>
       dplyr::mutate(county_name = NA_character_)
   } else {
     # 1994-2007 format - no names
-    raw_data <- raw_data %>%
+    raw_data <- raw_data |>
       dplyr::mutate(
         county_name = NA_character_,
         district_name = NA_character_,
@@ -307,14 +307,14 @@ process_enr_historical <- function(raw_data, end_year) {
 
   # Create school-level data by reporting category
   # First, aggregate by race/ethnicity (creating RE_* categories)
-  school_by_race <- raw_data %>%
+  school_by_race <- raw_data |>
     dplyr::mutate(
       reporting_category = race_map[RACE_ETHNICITY]
-    ) %>%
-    dplyr::filter(!is.na(reporting_category)) %>%
+    ) |>
+    dplyr::filter(!is.na(reporting_category)) |>
     dplyr::group_by(
       CDS_CODE, county_name, district_name, school_name, reporting_category
-    ) %>%
+    ) |>
     dplyr::summarize(
       total_enrollment = sum(ENR_TOTAL, na.rm = TRUE),
       grade_k = sum(GR_KN, na.rm = TRUE),
@@ -334,14 +334,14 @@ process_enr_historical <- function(raw_data, end_year) {
     )
 
   # Create school-level data by gender (creating GN_* categories)
-  school_by_gender <- raw_data %>%
+  school_by_gender <- raw_data |>
     dplyr::mutate(
       reporting_category = gender_map[GENDER]
-    ) %>%
-    dplyr::filter(!is.na(reporting_category)) %>%
+    ) |>
+    dplyr::filter(!is.na(reporting_category)) |>
     dplyr::group_by(
       CDS_CODE, county_name, district_name, school_name, reporting_category
-    ) %>%
+    ) |>
     dplyr::summarize(
       total_enrollment = sum(ENR_TOTAL, na.rm = TRUE),
       grade_k = sum(GR_KN, na.rm = TRUE),
@@ -361,13 +361,13 @@ process_enr_historical <- function(raw_data, end_year) {
     )
 
   # Create school-level totals (TA category)
-  school_totals <- raw_data %>%
+  school_totals <- raw_data |>
     dplyr::mutate(
       reporting_category = "TA"
-    ) %>%
+    ) |>
     dplyr::group_by(
       CDS_CODE, county_name, district_name, school_name, reporting_category
-    ) %>%
+    ) |>
     dplyr::summarize(
       total_enrollment = sum(ENR_TOTAL, na.rm = TRUE),
       grade_k = sum(GR_KN, na.rm = TRUE),
@@ -387,16 +387,16 @@ process_enr_historical <- function(raw_data, end_year) {
     )
 
   # Combine school-level data
-  schools <- dplyr::bind_rows(school_totals, school_by_race, school_by_gender) %>%
+  schools <- dplyr::bind_rows(school_totals, school_by_race, school_by_gender) |>
     dplyr::mutate(agg_level = "S")
 
   # === CREATE DISTRICT AGGREGATES ===
-  districts <- schools %>%
+  districts <- schools |>
     dplyr::mutate(
       county_code = substr(CDS_CODE, 1, 2),
       district_code = substr(CDS_CODE, 3, 7)
-    ) %>%
-    dplyr::group_by(county_code, district_code, county_name, district_name, reporting_category) %>%
+    ) |>
+    dplyr::group_by(county_code, district_code, county_name, district_name, reporting_category) |>
     dplyr::summarize(
       total_enrollment = sum(total_enrollment, na.rm = TRUE),
       grade_k = sum(grade_k, na.rm = TRUE),
@@ -413,20 +413,20 @@ process_enr_historical <- function(raw_data, end_year) {
       grade_11 = sum(grade_11, na.rm = TRUE),
       grade_12 = sum(grade_12, na.rm = TRUE),
       .groups = "drop"
-    ) %>%
+    ) |>
     dplyr::mutate(
       CDS_CODE = paste0(county_code, district_code, "0000000"),
       school_name = NA_character_,
       agg_level = "D"
-    ) %>%
+    ) |>
     dplyr::select(-county_code, -district_code)
 
   # === CREATE COUNTY AGGREGATES ===
-  counties <- schools %>%
+  counties <- schools |>
     dplyr::mutate(
       county_code = substr(CDS_CODE, 1, 2)
-    ) %>%
-    dplyr::group_by(county_code, county_name, reporting_category) %>%
+    ) |>
+    dplyr::group_by(county_code, county_name, reporting_category) |>
     dplyr::summarize(
       total_enrollment = sum(total_enrollment, na.rm = TRUE),
       grade_k = sum(grade_k, na.rm = TRUE),
@@ -443,18 +443,18 @@ process_enr_historical <- function(raw_data, end_year) {
       grade_11 = sum(grade_11, na.rm = TRUE),
       grade_12 = sum(grade_12, na.rm = TRUE),
       .groups = "drop"
-    ) %>%
+    ) |>
     dplyr::mutate(
       CDS_CODE = paste0(county_code, "000000000000"),
       district_name = NA_character_,
       school_name = NA_character_,
       agg_level = "C"
-    ) %>%
+    ) |>
     dplyr::select(-county_code)
 
   # === CREATE STATE AGGREGATE ===
-  state <- schools %>%
-    dplyr::group_by(reporting_category) %>%
+  state <- schools |>
+    dplyr::group_by(reporting_category) |>
     dplyr::summarize(
       total_enrollment = sum(total_enrollment, na.rm = TRUE),
       grade_k = sum(grade_k, na.rm = TRUE),
@@ -471,7 +471,7 @@ process_enr_historical <- function(raw_data, end_year) {
       grade_11 = sum(grade_11, na.rm = TRUE),
       grade_12 = sum(grade_12, na.rm = TRUE),
       .groups = "drop"
-    ) %>%
+    ) |>
     dplyr::mutate(
       CDS_CODE = "00000000000000",
       county_name = NA_character_,
@@ -484,7 +484,7 @@ process_enr_historical <- function(raw_data, end_year) {
   all_data <- dplyr::bind_rows(state, counties, districts, schools)
 
   # Build final result with standard schema
-  result <- all_data %>%
+  result <- all_data |>
     dplyr::mutate(
       end_year = as.integer(end_year),
       academic_year = paste0(end_year - 1, "-", substr(end_year, 3, 4)),
@@ -495,7 +495,7 @@ process_enr_historical <- function(raw_data, end_year) {
       charter_status = "All",  # Not available in historical data
       # Note: Historical data does not have TK
       grade_tk = NA_integer_
-    ) %>%
+    ) |>
     dplyr::select(
       end_year, academic_year, agg_level,
       cds_code, county_code, district_code, school_code,
