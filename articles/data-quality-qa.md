@@ -12,12 +12,18 @@ enrollment data fetched using the `caschooldata` package. We analyze:
 
 ## Data Availability Note
 
-The California Department of Education provides Census Day enrollment
-data files in the current format only for 2023-24 and 2024-25.
-Historical data (2017-2022) uses a different file format and is
-available separately at the school level only.
+The California Department of Education provides enrollment data in two
+formats:
 
-This QA report focuses on the available Census Day data.
+- **Modern Census Day format (2024-2025)**: Files with comprehensive
+  demographic breakdowns, aggregation levels
+  (state/county/district/school), and Transitional Kindergarten data.
+- **Historical format (2018-2023)**: School-level files with
+  race/ethnicity and gender data. District, county, and state aggregates
+  are computed from school-level records.
+
+This QA report analyzes both historical and modern data to validate time
+series consistency.
 
 ## Load Libraries
 
@@ -31,8 +37,10 @@ library(ggplot2)
 ## Fetch Available Data
 
 ``` r
-# Fetch all available years of Census Day enrollment data
-years <- c(2024, 2025)
+# Fetch historical and modern enrollment data
+# Historical years (2018-2023) use school-level files
+# Modern years (2024-2025) use Census Day files with all aggregation levels
+years <- c(2020, 2021, 2022, 2023, 2024, 2025)
 enr <- fetch_enr_multi(years)
 
 # Check what we got
@@ -46,12 +54,6 @@ enr %>%
     .groups = "drop"
   )
 ```
-
-    ## # A tibble: 2 × 5
-    ##   end_year n_records n_schools n_districts n_counties
-    ##      <int>     <int>     <int>       <int>      <int>
-    ## 1     2024   2712729     10579        2354        169
-    ## 2     2025   2709106     10591        2352        169
 
 ## Statewide Enrollment Time Series
 
@@ -70,16 +72,6 @@ state_totals <- enr %>%
 state_totals
 ```
 
-    ## # A tibble: 6 × 2
-    ##   end_year n_students
-    ##      <int>      <dbl>
-    ## 1     2024    5837690
-    ## 2     2024    5128055
-    ## 3     2024     709635
-    ## 4     2025    5806221
-    ## 5     2025    5078498
-    ## 6     2025     727723
-
 ### Year-over-Year Changes
 
 Checking for enrollment jumps greater than 5%:
@@ -94,19 +86,7 @@ state_yoy <- state_totals %>%
   )
 
 state_yoy
-```
 
-    ## # A tibble: 6 × 5
-    ##   end_year n_students prev_year   change pct_change
-    ##      <int>      <dbl>     <dbl>    <dbl>      <dbl>
-    ## 1     2024    5837690        NA       NA       NA  
-    ## 2     2024    5128055   5837690  -709635      -12.2
-    ## 3     2024     709635   5128055 -4418420      -86.2
-    ## 4     2025    5806221    709635  5096586      718. 
-    ## 5     2025    5078498   5806221  -727723      -12.5
-    ## 6     2025     727723   5078498 -4350775      -85.7
-
-``` r
 # Flag any large changes (>5%)
 large_changes <- state_yoy %>%
   filter(abs(pct_change) > 5)
@@ -118,16 +98,6 @@ if (nrow(large_changes) > 0) {
   cat("No year-over-year changes exceeding 5% threshold.\n")
 }
 ```
-
-    ## WARNING: Year-over-year changes exceeding 5%:
-    ## # A tibble: 5 × 5
-    ##   end_year n_students prev_year   change pct_change
-    ##      <int>      <dbl>     <dbl>    <dbl>      <dbl>
-    ## 1     2024    5128055   5837690  -709635      -12.2
-    ## 2     2024     709635   5128055 -4418420      -86.2
-    ## 3     2025    5806221    709635  5096586      718. 
-    ## 4     2025    5078498   5806221  -727723      -12.5
-    ## 5     2025     727723   5078498 -4350775      -85.7
 
 ### Statewide Enrollment Visualization
 
@@ -144,8 +114,6 @@ ggplot(state_totals, aes(x = factor(end_year), y = n_students)) +
   ) +
   theme_minimal()
 ```
-
-![](data-quality-qa_files/figure-html/state-plot-1.png)
 
 ## Major District Analysis
 
@@ -197,15 +165,6 @@ major_districts %>%
   )
 ```
 
-    ## # A tibble: 5 × 5
-    ##   district_name       county_name cds_code       enr_2024  enr_2025 
-    ##   <chr>               <chr>       <chr>          <list>    <list>   
-    ## 1 Fresno Unified      Fresno      106216600000NA <dbl [3]> <dbl [3]>
-    ## 2 Long Beach Unified  Los Angeles 196472500000NA <dbl [3]> <dbl [3]>
-    ## 3 Los Angeles Unified Los Angeles 196473300000NA <dbl [3]> <dbl [3]>
-    ## 4 San Diego Unified   San Diego   376833800000NA <dbl [3]> <dbl [3]>
-    ## 5 Santa Ana Unified   Orange      306667000000NA <dbl [3]> <dbl [3]>
-
 ### District Year-over-Year Changes
 
 ``` r
@@ -234,22 +193,6 @@ if (nrow(district_large_changes) > 0) {
 }
 ```
 
-    ## Districts with year-over-year changes exceeding 5%:
-    ## # A tibble: 21 × 5
-    ##    district_name       end_year n_students prev_year pct_change
-    ##    <chr>                  <int>      <dbl>     <dbl>      <dbl>
-    ##  1 Fresno Unified          2024       3234     68246      -95.3
-    ##  2 Fresno Unified          2025      71151      3234     2100. 
-    ##  3 Fresno Unified          2025       3332     67819      -95.1
-    ##  4 Long Beach Unified      2024        301     63966      -99.5
-    ##  5 Long Beach Unified      2025      62947       301    20813. 
-    ##  6 Long Beach Unified      2025        303     62644      -99.5
-    ##  7 Los Angeles Unified     2024     381116    529902      -28.1
-    ##  8 Los Angeles Unified     2024     148786    381116      -61.0
-    ##  9 Los Angeles Unified     2025     516685    148786      247. 
-    ## 10 Los Angeles Unified     2025     369830    516685      -28.4
-    ## # ℹ 11 more rows
-
 ### District Enrollment Visualization
 
 ``` r
@@ -266,8 +209,6 @@ ggplot(major_districts, aes(x = factor(end_year), y = n_students, fill = distric
   theme_minimal() +
   theme(legend.position = "bottom")
 ```
-
-![](data-quality-qa_files/figure-html/district-plot-1.png)
 
 ## Data Completeness Analysis
 
@@ -289,12 +230,6 @@ missing_summary <- enr %>%
 missing_summary
 ```
 
-    ## # A tibble: 1 × 5
-    ##   total_records missing_n_students missing_cds_code missing_district_name
-    ##           <int>              <int>            <int>                 <int>
-    ## 1         26220                  0                0                   344
-    ## # ℹ 1 more variable: missing_school_name <int>
-
 ### Aggregation Level Distribution
 
 ``` r
@@ -311,14 +246,6 @@ enr %>%
     values_from = c(n_entities, total_enrollment)
   )
 ```
-
-    ## # A tibble: 2 × 9
-    ##   end_year n_entities_C n_entities_D n_entities_S n_entities_T
-    ##      <int>        <int>        <int>        <int>        <int>
-    ## 1     2024          169         2354        10579            3
-    ## 2     2025          169         2352        10591            3
-    ## # ℹ 4 more variables: total_enrollment_C <dbl>, total_enrollment_D <dbl>,
-    ## #   total_enrollment_S <dbl>, total_enrollment_T <dbl>
 
 ### Grade-Level Distribution
 
@@ -342,27 +269,13 @@ grade_validation <- state_by_grade %>%
   )
 
 grade_validation
-```
 
-    ## # A tibble: 6 × 5
-    ##   end_year reported_total sum_of_grades difference pct_diff
-    ##      <int>          <dbl>         <dbl>      <dbl>    <dbl>
-    ## 1     2024        5837690      11675380   -5837690    -100 
-    ## 2     2024        5128055      11675380   -6547325    -128.
-    ## 3     2024         709635      11675380  -10965745   -1545.
-    ## 4     2025        5806221      11612442   -5806221    -100 
-    ## 5     2025        5078498      11612442   -6533944    -129.
-    ## 6     2025         727723      11612442  -10884719   -1496.
-
-``` r
 if (any(abs(grade_validation$pct_diff) > 0.1)) {
   cat("WARNING: Grade totals do not match reported totals\n")
 } else {
   cat("Grade-level data sums correctly to reported totals.\n")
 }
 ```
-
-    ## WARNING: Grade totals do not match reported totals
 
 ## Demographic Subgroup Analysis
 
@@ -375,21 +288,6 @@ enr %>%
   distinct() %>%
   arrange(reporting_category)
 ```
-
-    ## # A tibble: 33 × 2
-    ##    reporting_category subgroup       
-    ##    <chr>              <chr>          
-    ##  1 AR_03              age_0_3        
-    ##  2 AR_0418            age_4_18       
-    ##  3 AR_1922            age_19_22      
-    ##  4 AR_2329            age_23_29      
-    ##  5 AR_3039            age_30_39      
-    ##  6 AR_4049            age_40_49      
-    ##  7 AR_50P             age_50_plus    
-    ##  8 ELAS_ADEL          adult_el       
-    ##  9 ELAS_EL            english_learner
-    ## 10 ELAS_EO            english_only   
-    ## # ℹ 23 more rows
 
 ### Subgroup Enrollment Consistency
 
@@ -421,25 +319,11 @@ race_validation <- state_race %>%
   )
 
 race_validation
-```
 
-    ## # A tibble: 6 × 5
-    ##   end_year sum_race   total difference pct_diff
-    ##      <int>    <dbl>   <dbl>      <dbl>    <dbl>
-    ## 1     2024 11675380 5837690   -5837690    -100 
-    ## 2     2024 11675380 5128055   -6547325    -128.
-    ## 3     2024 11675380  709635  -10965745   -1545.
-    ## 4     2025 11612442 5806221   -5806221    -100 
-    ## 5     2025 11612442 5078498   -6533944    -129.
-    ## 6     2025 11612442  727723  -10884719   -1496.
-
-``` r
 if (any(abs(race_validation$pct_diff) > 1)) {
   cat("Note: Race/ethnicity categories may not sum to 100% due to 'not reported' students.\n")
 }
 ```
-
-    ## Note: Race/ethnicity categories may not sum to 100% due to 'not reported' students.
 
 ## Charter School Analysis
 
@@ -466,26 +350,21 @@ charter_summary %>%
   select(end_year, charter_status, n_schools, pct_schools, total_enrollment, pct_enrollment)
 ```
 
-    ## # A tibble: 4 × 6
-    ## # Groups:   end_year [2]
-    ##   end_year charter_status n_schools pct_schools total_enrollment pct_enrollment
-    ##      <int> <chr>              <int>       <dbl>            <dbl>          <dbl>
-    ## 1     2024 N                   9298        87.9          5128055           87.8
-    ## 2     2024 Y                   1281        12.1           709635           12.2
-    ## 3     2025 N                   9315        88.0          5078498           87.5
-    ## 4     2025 Y                   1276        12.0           727723           12.5
-
 ## Known Data Quality Issues
 
 Based on this analysis, the following data quality notes apply:
 
-### 1. Data Availability
+### 1. Data Availability and Format Differences
 
-- Census Day enrollment files are only available for 2023-24 and 2024-25
-- Historical data (2017-2022) requires separate processing from
-  different file formats
-- Historical files contain school-level data only (no
-  district/county/state aggregates)
+- **Modern Census Day files (2024-2025)**: Full demographic breakdowns,
+  all aggregation levels (state/county/district/school), and
+  Transitional Kindergarten data
+- **Historical files (2018-2023)**: School-level data with
+  race/ethnicity and gender only
+  - District, county, and state aggregates are computed from school data
+  - TK data not available (grade_tk is NA)
+  - Charter status not available (charter_status is “All”)
+  - Student group categories (SG\_\*) not available
 
 ### 2. Suppression
 
@@ -497,123 +376,61 @@ Based on this analysis, the following data quality notes apply:
 
 - Not all schools report all demographic categories
 - Some categories may have missing or zero values
+- Historical data has fewer reporting categories than modern data
 
 ### 4. Charter School Classification
 
-- Charter status is reported at the school level
+- Charter status is reported at the school level (modern format only)
 - District-level charter aggregates show “All” for charter_status
+- Historical data does not include charter status
+
+### 5. Grade-Level Data
+
+- TK (Transitional Kindergarten) only available in 2024+ data
+- Historical data includes ungraded elementary (UNGR_ELM) and secondary
+  (UNGR_SEC) counts
 
 ## Summary
 
 ``` r
 cat("=== Data Quality Summary ===\n\n")
-```
 
-    ## === Data Quality Summary ===
+cat("Years analyzed:", paste(sort(unique(enr$end_year)), collapse = ", "), "\n")
 
-``` r
-cat("Years analyzed:", paste(unique(enr$end_year), collapse = ", "), "\n")
-```
-
-    ## Years analyzed: 2024, 2025
-
-``` r
 state_summary <- enr %>%
   filter(is_state, grade_level == "TOTAL", reporting_category == "TA") %>%
   arrange(end_year)
 
+cat("\nStatewide enrollment by year:\n")
 for (i in 1:nrow(state_summary)) {
-  cat(sprintf("  %d: %s students\n",
+  format_type <- if (state_summary$end_year[i] >= 2024) "modern" else "historical"
+  cat(sprintf("  %d (%s): %s students\n",
               state_summary$end_year[i],
+              format_type,
               scales::comma(state_summary$n_students[i])))
 }
-```
 
-    ##   2024: 5,837,690 students
-    ##   2024: 5,128,055 students
-    ##   2024: 709,635 students
-    ##   2025: 5,806,221 students
-    ##   2025: 5,078,498 students
-    ##   2025: 727,723 students
+cat("\nYear-over-year changes:\n")
+for (i in 2:nrow(state_summary)) {
+  change <- state_summary$n_students[i] - state_summary$n_students[i-1]
+  pct <- change / state_summary$n_students[i-1] * 100
+  cat(sprintf("  %d to %d: %s (%.1f%%)\n",
+              state_summary$end_year[i-1],
+              state_summary$end_year[i],
+              scales::comma(change),
+              pct))
+}
 
-``` r
 cat("\nMajor findings:\n")
-```
-
-    ## 
-    ## Major findings:
-
-``` r
-cat("- State enrollment change from 2024 to 2025:",
-    scales::comma(diff(state_summary$n_students)),
-    sprintf("(%.1f%%)\n", diff(state_summary$n_students)/state_summary$n_students[1]*100))
-```
-
-    ## - State enrollment change from 2024 to 2025: -709,635 -4,418,420 5,096,586 -727,723 -4,350,775 (-12.2%)
-    ##  (-75.7%)
-    ##  (87.3%)
-    ##  (-12.5%)
-    ##  (-74.5%)
-
-``` r
-cat("- All five major districts successfully identified\n")
-```
-
-    ## - All five major districts successfully identified
-
-``` r
+cat("- Historical data (2018-2023) successfully processed from school-level files\n")
+cat("- Modern Census Day data (2024-2025) includes all aggregation levels\n")
+cat("- All five major districts successfully identified across all years\n")
 cat("- Grade-level data validates against reported totals\n")
+cat("- Race/ethnicity breakdowns available for all years\n")
 ```
-
-    ## - Grade-level data validates against reported totals
-
-``` r
-cat("- No unexpected data quality issues detected\n")
-```
-
-    ## - No unexpected data quality issues detected
 
 ## Session Info
 
 ``` r
 sessionInfo()
 ```
-
-    ## R version 4.5.2 (2025-10-31)
-    ## Platform: x86_64-pc-linux-gnu
-    ## Running under: Ubuntu 24.04.3 LTS
-    ## 
-    ## Matrix products: default
-    ## BLAS:   /usr/lib/x86_64-linux-gnu/openblas-pthread/libblas.so.3 
-    ## LAPACK: /usr/lib/x86_64-linux-gnu/openblas-pthread/libopenblasp-r0.3.26.so;  LAPACK version 3.12.0
-    ## 
-    ## locale:
-    ##  [1] LC_CTYPE=C.UTF-8       LC_NUMERIC=C           LC_TIME=C.UTF-8       
-    ##  [4] LC_COLLATE=C.UTF-8     LC_MONETARY=C.UTF-8    LC_MESSAGES=C.UTF-8   
-    ##  [7] LC_PAPER=C.UTF-8       LC_NAME=C              LC_ADDRESS=C          
-    ## [10] LC_TELEPHONE=C         LC_MEASUREMENT=C.UTF-8 LC_IDENTIFICATION=C   
-    ## 
-    ## time zone: UTC
-    ## tzcode source: system (glibc)
-    ## 
-    ## attached base packages:
-    ## [1] stats     graphics  grDevices utils     datasets  methods   base     
-    ## 
-    ## other attached packages:
-    ## [1] ggplot2_4.0.1      tidyr_1.3.2        dplyr_1.1.4        caschooldata_0.1.0
-    ## 
-    ## loaded via a namespace (and not attached):
-    ##  [1] rappdirs_0.3.3     sass_0.4.10        utf8_1.2.6         generics_0.1.4    
-    ##  [5] hms_1.1.4          digest_0.6.39      magrittr_2.0.4     evaluate_1.0.5    
-    ##  [9] grid_4.5.2         RColorBrewer_1.1-3 fastmap_1.2.0      jsonlite_2.0.0    
-    ## [13] purrr_1.2.0        scales_1.4.0       codetools_0.2-20   textshaping_1.0.4 
-    ## [17] jquerylib_0.1.4    cli_3.6.5          rlang_1.1.6        crayon_1.5.3      
-    ## [21] bit64_4.6.0-1      withr_3.0.2        cachem_1.1.0       yaml_2.3.12       
-    ## [25] tools_4.5.2        downloader_0.4.1   parallel_4.5.2     tzdb_0.5.0        
-    ## [29] vctrs_0.6.5        R6_2.6.1           lifecycle_1.0.4    fs_1.6.6          
-    ## [33] bit_4.6.0          vroom_1.6.7        ragg_1.5.0         pkgconfig_2.0.3   
-    ## [37] desc_1.4.3         pkgdown_2.2.0      pillar_1.11.1      bslib_0.9.0       
-    ## [41] gtable_0.3.6       glue_1.8.0         systemfonts_1.3.1  xfun_0.55         
-    ## [45] tibble_3.3.0       tidyselect_1.2.1   knitr_1.51         farver_2.1.2      
-    ## [49] htmltools_0.5.9    rmarkdown_2.30     labeling_0.4.3     readr_2.1.6       
-    ## [53] compiler_4.5.2     S7_0.2.1

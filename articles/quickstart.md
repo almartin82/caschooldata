@@ -7,6 +7,17 @@ California school enrollment data from the California Department of
 Education (CDE). This vignette walks through the main features of the
 package.
 
+**What you’ll find in the data:**
+
+- 8 years of enrollment data (2018-2025)
+- 5.8+ million students across 1,000+ districts
+- Demographic breakdowns by race/ethnicity, gender, and student groups
+- Trends showing 400,000+ student decline since COVID-19
+
+For a deep dive into trends and findings, see the [District Trends &
+Demographics](https://almartin82.github.io/caschooldata/articles/district-highlights.md)
+vignette.
+
 ## Installation
 
 Install from GitHub:
@@ -39,17 +50,22 @@ example, `end_year = 2024` fetches data for the 2023-24 school year.
 
 ### Available Years
 
-Currently, the package supports Census Day enrollment data for:
+The package supports Census Day enrollment data from 2018-2025:
 
-- **2024**: 2023-24 school year
-- **2025**: 2024-25 school year
+- **2024-2025**: Modern Census Day files with full demographic
+  breakdowns
+- **2018-2023**: Historical school-level files with race/ethnicity and
+  gender data
 
 ``` r
 # Fetch the most recent year
 enr_2025 <- fetch_enr(2025)
 
-# Fetch an earlier year
-enr_2024 <- fetch_enr(2024)
+# Fetch historical data
+enr_2020 <- fetch_enr(2020)
+
+# Fetch all years for trend analysis
+enr_all <- fetch_enr_multi(2018:2025)
 ```
 
 ### Wide vs. Tidy Format
@@ -392,12 +408,15 @@ The cache is stored in a user-specific application data directory (via
 
 ## Next Steps
 
-- See the function reference for detailed documentation:
-  [`?fetch_enr`](https://almartin82.github.io/caschooldata/reference/fetch_enr.md),
-  [`?tidy_enr`](https://almartin82.github.io/caschooldata/reference/tidy_enr.md)
+- See the [District Trends & Demographics
+  vignette](https://almartin82.github.io/caschooldata/articles/district-highlights.md)
+  for data-driven findings
 - Explore the [Data Quality QA
   vignette](https://almartin82.github.io/caschooldata/articles/data-quality-qa.md)
   for validation examples
+- Check the function reference for detailed documentation:
+  [`?fetch_enr`](https://almartin82.github.io/caschooldata/reference/fetch_enr.md),
+  [`?tidy_enr`](https://almartin82.github.io/caschooldata/reference/tidy_enr.md)
 - Visit the [package
   website](https://almartin82.github.io/caschooldata/) for more
   resources
