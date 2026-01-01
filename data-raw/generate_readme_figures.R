@@ -168,65 +168,72 @@ p4 <- ggplot(covid_grades, aes(x = end_year, y = change_from_2019, fill = band))
 ggsave(file.path(fig_dir, "covid-grades.png"), p4, width = 8, height = 4.5, dpi = 150, bg = "white")
 
 # ------------------------------------------------------------------------------
-# 5. TOP 5 COUNTIES (8 years, 2018-2025)
+# 5. TOP 5 DISTRICTS (8 years, 2018-2025)
 # ------------------------------------------------------------------------------
-message("Creating top counties chart...")
+message("Creating top districts chart...")
 
-top5_counties <- enr_recent %>%
-  filter(is_county, grade_level == "TOTAL", reporting_category == "TA", end_year == 2025) %>%
+top5_districts <- enr_recent %>%
+  filter(is_district, grade_level == "TOTAL", reporting_category == "TA", end_year == 2025) %>%
   arrange(desc(n_students)) %>%
   head(5) %>%
-  pull(county_name)
+  pull(district_name)
 
-county_trend <- enr_recent %>%
-  filter(is_county, grade_level == "TOTAL", reporting_category == "TA",
-         county_name %in% top5_counties) %>%
-  group_by(end_year, county_name) %>%
-  summarize(n_students = sum(n_students, na.rm = TRUE), .groups = "drop")
+district_trend <- enr_recent %>%
+  filter(is_district, grade_level == "TOTAL", reporting_category == "TA",
+         district_name %in% top5_districts) %>%
+  group_by(end_year, district_name) %>%
+  summarize(n_students = sum(n_students, na.rm = TRUE), .groups = "drop") %>%
+  mutate(district_label = gsub(" Unified$", "", district_name))
 
-p5 <- ggplot(county_trend, aes(x = end_year, y = n_students / 1e6, color = county_name)) +
+p5 <- ggplot(district_trend, aes(x = end_year, y = n_students / 1e3, color = district_label)) +
   geom_line(linewidth = 1.2) +
   geom_point(size = 2) +
   scale_color_brewer(palette = "Set1") +
-  scale_y_continuous(labels = function(x) paste0(x, "M")) +
+  scale_y_continuous(labels = function(x) paste0(x, "K")) +
   labs(
-    title = "California's Largest Counties",
-    subtitle = "LA County alone has more students than most states",
+    title = "California's Largest Districts",
+    subtitle = "LAUSD is the second-largest district in the nation",
     x = NULL, y = NULL, color = NULL
   ) +
   theme_readme() +
   theme(legend.position = "bottom")
 
-ggsave(file.path(fig_dir, "top-counties.png"), p5, width = 8, height = 5, dpi = 150, bg = "white")
+ggsave(file.path(fig_dir, "top-districts.png"), p5, width = 8, height = 5, dpi = 150, bg = "white")
 
 # ------------------------------------------------------------------------------
-# 6. BAY AREA vs SOCAL (8 years)
+# 6. BAY AREA vs SOCAL DISTRICTS (8 years)
 # ------------------------------------------------------------------------------
-message("Creating Bay Area vs SoCal chart...")
+message("Creating Bay Area vs SoCal districts chart...")
 
-regional <- enr_recent %>%
-  filter(is_county, grade_level == "TOTAL", reporting_category == "TA") %>%
+# Major districts in each region
+bay_area_districts <- c("San Francisco Unified", "Oakland Unified", "San Jose Unified",
+                        "Fremont Unified", "Santa Clara Unified")
+socal_districts <- c("Los Angeles Unified", "San Diego Unified", "Long Beach Unified",
+                     "Santa Ana Unified", "Anaheim Union High")
+
+regional_districts <- enr_recent %>%
+  filter(is_district, grade_level == "TOTAL", reporting_category == "TA",
+         district_name %in% c(bay_area_districts, socal_districts)) %>%
   mutate(
     region = case_when(
-      county_name %in% c("San Francisco", "Santa Clara", "Alameda", "San Mateo", "Contra Costa", "Marin") ~ "Bay Area",
-      county_name %in% c("Los Angeles", "Orange", "San Diego") ~ "SoCal Metro",
+      district_name %in% bay_area_districts ~ "Bay Area",
+      district_name %in% socal_districts ~ "SoCal",
       TRUE ~ NA_character_
     )
   ) %>%
-  filter(!is.na(region)) %>%
   group_by(end_year, region) %>%
   summarize(n_students = sum(n_students, na.rm = TRUE), .groups = "drop") %>%
   group_by(region) %>%
   mutate(index = n_students / first(n_students) * 100)
 
-p6 <- ggplot(regional, aes(x = end_year, y = index, color = region)) +
+p6 <- ggplot(regional_districts, aes(x = end_year, y = index, color = region)) +
   geom_hline(yintercept = 100, linetype = "dashed", color = "gray50") +
   geom_line(linewidth = 1.3) +
   geom_point(size = 3) +
-  scale_color_manual(values = c("Bay Area" = "#dc2626", "SoCal Metro" = "#2563eb")) +
+  scale_color_manual(values = c("Bay Area" = "#dc2626", "SoCal" = "#2563eb")) +
   labs(
-    title = "Bay Area Exodus vs SoCal Stability",
-    subtitle = "Indexed to 2018 = 100. Bay Area losing students faster.",
+    title = "Bay Area Districts vs SoCal Districts",
+    subtitle = "Indexed to 2018 = 100. Bay Area urban districts declining faster.",
     x = NULL, y = "Enrollment Index", color = NULL
   ) +
   theme_readme() +
@@ -336,30 +343,27 @@ if (nrow(lausd) > 0) {
 }
 
 # ------------------------------------------------------------------------------
-# 10. RACE BY REGION (latest year)
+# 10. RACE BY DISTRICT (latest year)
 # ------------------------------------------------------------------------------
-message("Creating race by region chart...")
+message("Creating race by district chart...")
 
-race_region <- enr_recent %>%
-  filter(is_county, grade_level == "TOTAL", grepl("^RE_", reporting_category), end_year == 2025,
-         subgroup %in% c("hispanic", "white", "asian", "black")) %>%
-  mutate(
-    region = case_when(
-      county_name %in% c("San Francisco", "Santa Clara", "Alameda", "San Mateo") ~ "Bay Area",
-      county_name == "Los Angeles" ~ "Los Angeles",
-      county_name %in% c("Fresno", "Kern", "Tulare") ~ "Central Valley",
-      county_name == "San Diego" ~ "San Diego",
-      TRUE ~ NA_character_
-    )
-  ) %>%
-  filter(!is.na(region)) %>%
-  group_by(region, subgroup) %>%
+# Representative districts from different regions
+demo_districts <- c("San Francisco Unified", "Los Angeles Unified",
+                    "Fresno Unified", "San Diego Unified")
+
+race_district <- enr_recent %>%
+  filter(is_district, grade_level == "TOTAL", grepl("^RE_", reporting_category), end_year == 2025,
+         subgroup %in% c("hispanic", "white", "asian", "black"),
+         district_name %in% demo_districts) %>%
+  group_by(district_name, subgroup) %>%
   summarize(n_students = sum(n_students, na.rm = TRUE), .groups = "drop") %>%
-  group_by(region) %>%
+  group_by(district_name) %>%
   mutate(pct = n_students / sum(n_students) * 100) %>%
-  ungroup()
+  ungroup() %>%
+  mutate(district_label = gsub(" Unified$", "", district_name),
+         district_label = factor(district_label, levels = c("San Francisco", "San Diego", "Los Angeles", "Fresno")))
 
-p10 <- ggplot(race_region, aes(x = region, y = pct, fill = subgroup)) +
+p10 <- ggplot(race_district, aes(x = district_label, y = pct, fill = subgroup)) +
   geom_col(position = "stack") +
   scale_fill_manual(
     values = c("hispanic" = "#ea580c", "white" = "#3b82f6", "asian" = "#16a34a", "black" = "#7c3aed"),
@@ -367,13 +371,13 @@ p10 <- ggplot(race_region, aes(x = region, y = pct, fill = subgroup)) +
   ) +
   scale_y_continuous(labels = function(x) paste0(x, "%")) +
   labs(
-    title = "California's Regional Diversity",
-    subtitle = "Demographic mix varies dramatically by region",
+    title = "California's District Diversity",
+    subtitle = "Demographics vary dramatically across major districts",
     x = NULL, y = NULL, fill = NULL
   ) +
   theme_readme() +
   theme(legend.position = "bottom")
 
-ggsave(file.path(fig_dir, "race-by-region.png"), p10, width = 8, height = 5, dpi = 150, bg = "white")
+ggsave(file.path(fig_dir, "race-by-district.png"), p10, width = 8, height = 5, dpi = 150, bg = "white")
 
 message("Done! Figures saved to ", fig_dir)

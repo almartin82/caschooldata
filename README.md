@@ -86,9 +86,9 @@ enr %>%
 
 ---
 
-### 5. LA County has more students than most states
+### 5. LAUSD is America's second-largest district
 
-California's five largest counties alone serve nearly 3 million students.
+California has 5 of the nation's 20 largest school districts.
 
 ```r
 enr <- fetch_enr_multi(2018:2025)
@@ -96,26 +96,27 @@ enr <- fetch_enr_multi(2018:2025)
 # Filter for charter_status == "ALL" to avoid double-counting
 # (modern Census Day files have separate rows for charter/non-charter)
 enr %>%
-  filter(is_county, grade_level == "TOTAL", reporting_category == "TA",
+  filter(is_district, grade_level == "TOTAL", reporting_category == "TA",
          charter_status %in% c("ALL", "All") | is.na(charter_status)) %>%
-  group_by(county_name) %>%
-  filter(max(n_students) > 200000) %>%
-  select(end_year, county_name, n_students)
+  group_by(district_name) %>%
+  filter(max(n_students) > 50000) %>%
+  select(end_year, district_name, n_students)
 ```
 
-![Top counties](man/figures/top-counties.png)
+![Top districts](man/figures/top-districts.png)
 
 ---
 
-### 6. The Bay Area exodus
+### 6. Bay Area districts are shrinking fastest
 
-Bay Area counties are losing students faster than Southern California.
+Urban districts in the Bay Area are losing students faster than their SoCal counterparts.
 
 ```r
 enr %>%
-  filter(is_county, grade_level == "TOTAL", reporting_category == "TA",
-         county_name %in% c("San Francisco", "Los Angeles", "Santa Clara")) %>%
-  group_by(county_name) %>%
+  filter(is_district, grade_level == "TOTAL", reporting_category == "TA",
+         district_name %in% c("San Francisco Unified", "Los Angeles Unified",
+                              "Oakland Unified", "San Diego Unified")) %>%
+  group_by(district_name) %>%
   mutate(index = n_students / first(n_students) * 100)
 ```
 
@@ -173,21 +174,22 @@ enr %>%
 
 ---
 
-### 10. California's regional diversity
+### 10. California's district diversity
 
-Demographics vary dramatically by region: majority Hispanic in LA and Central Valley, highly diverse in the Bay Area.
+Demographics vary dramatically across major districts: majority Hispanic in LA and Fresno, highly diverse in SF and San Diego.
 
 ```r
 enr_2025 %>%
-  filter(is_county, grade_level == "TOTAL", grepl("^RE_", reporting_category)) %>%
-  filter(county_name %in% c("San Francisco", "Los Angeles", "Fresno", "San Diego")) %>%
-  group_by(county_name, subgroup) %>%
+  filter(is_district, grade_level == "TOTAL", grepl("^RE_", reporting_category)) %>%
+  filter(district_name %in% c("San Francisco Unified", "Los Angeles Unified",
+                               "Fresno Unified", "San Diego Unified")) %>%
+  group_by(district_name, subgroup) %>%
   summarize(n = sum(n_students)) %>%
-  group_by(county_name) %>%
+  group_by(district_name) %>%
   mutate(pct = n / sum(n) * 100)
 ```
 
-![Race by region](man/figures/race-by-region.png)
+![Race by district](man/figures/race-by-district.png)
 
 ---
 
@@ -222,10 +224,10 @@ enr_2025 %>%
   filter(is_district, subgroup == "total", grade_level == "TOTAL") %>%
   arrange(desc(n_students))
 
-# Demographics by county
+# Demographics by district
 enr_2025 %>%
-  filter(is_county, grade_level == "TOTAL", grepl("^RE_", reporting_category)) %>%
-  group_by(county_name, subgroup) %>%
+  filter(is_district, grade_level == "TOTAL", grepl("^RE_", reporting_category)) %>%
+  group_by(district_name, subgroup) %>%
   summarize(n = sum(n_students))
 ```
 
