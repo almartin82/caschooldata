@@ -74,7 +74,7 @@ enr_fresh <- fetch_enr(2024, use_cache = FALSE)
 
 # Filter to school-level total enrollment
 library(dplyr)
-schools <- enr_2024 \%>\%
+schools <- enr_2024 |>
   filter(agg_level == "S", reporting_category == "TA", grade_level == "TOTAL")
 }
 }
