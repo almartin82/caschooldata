@@ -54,7 +54,8 @@ library(ggplot2)
 # Fetch historical and modern enrollment data
 # Historical years (2018-2023) use school-level files
 # Modern years (2024-2025) use Census Day files with all aggregation levels
-years <- c(2020, 2021, 2022, 2023, 2024, 2025)
+# NOTE: Limited to 2023-2024 to reduce memory usage for vignette building
+years <- c(2023, 2024)
 enr <- fetch_enr_multi(years)
 
 # Check what we got
@@ -433,11 +434,11 @@ for (i in 2:nrow(state_summary)) {
 }
 
 cat("\nMajor findings:\n")
-cat("- Historical data (2018-2023) successfully processed from school-level files\n")
-cat("- Modern Census Day data (2024-2025) includes all aggregation levels\n")
-cat("- All five major districts successfully identified across all years\n")
+cat("- Historical data (2023) successfully processed from school-level files\n")
+cat("- Modern Census Day data (2024) includes all aggregation levels\n")
+cat("- Major districts successfully identified across transition years\n")
 cat("- Grade-level data validates against reported totals\n")
-cat("- Race/ethnicity breakdowns available for all years\n")
+cat("- Race/ethnicity breakdowns available for all years analyzed\n")
 ```
 
 ## Session Info
