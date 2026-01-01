@@ -1,11 +1,10 @@
 Package: caschooldata
-Title: Fetch and Process California School Data
+Title: California School Data
 Version: 0.1.0
 Authors@R:
     person("Andy", "Martin", , "almartin@gmail.com", role = c("aut", "cre"))
-Description: Downloads and processes school data from the California Department
-    of Education (CDE). Provides functions for fetching enrollment data and
-    transforming it into tidy format for analysis.
+Description: A simple, consistent interface for accessing California
+    school data in R.
 License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
