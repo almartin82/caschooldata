@@ -2,12 +2,13 @@
 
 <!-- badges: start -->
 [![R-CMD-check](https://github.com/almartin82/caschooldata/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/almartin82/caschooldata/actions/workflows/R-CMD-check.yaml)
+[![Python Tests](https://github.com/almartin82/caschooldata/actions/workflows/python-test.yaml/badge.svg)](https://github.com/almartin82/caschooldata/actions/workflows/python-test.yaml)
 [![pkgdown](https://github.com/almartin82/caschooldata/actions/workflows/pkgdown.yaml/badge.svg)](https://github.com/almartin82/caschooldata/actions/workflows/pkgdown.yaml)
 <!-- badges: end -->
 
 **[Documentation](https://almartin82.github.io/caschooldata/)** | **[Getting Started](https://almartin82.github.io/caschooldata/articles/quickstart.html)** | **[Full Analysis](https://almartin82.github.io/caschooldata/articles/district-highlights.html)**
 
-Fetch and analyze California public school enrollment data from the California Department of Education.
+Fetch and analyze California school enrollment data from the California Department of Education in R or Python.
 
 ## What can you find with caschooldata?
 
@@ -202,6 +203,8 @@ remotes::install_github("almartin82/caschooldata")
 
 ## Quick start
 
+### R
+
 ```r
 library(caschooldata)
 library(dplyr)
@@ -229,6 +232,36 @@ enr_2025 %>%
   filter(is_district, grade_level == "TOTAL", grepl("^RE_", reporting_category)) %>%
   group_by(district_name, subgroup) %>%
   summarize(n = sum(n_students))
+```
+
+### Python
+
+```python
+import pycaschooldata as ca
+
+# Check available years
+years = ca.get_available_years()
+print(f"Data available from {years['min_year']} to {years['max_year']}")
+
+# Fetch one year
+enr_2025 = ca.fetch_enr(2025)
+
+# Fetch multiple years
+enr_recent = ca.fetch_enr_multi([2023, 2024, 2025])
+
+# State totals
+state_total = enr_2025[
+    (enr_2025['is_state'] == True) &
+    (enr_2025['grade_level'] == 'TOTAL') &
+    (enr_2025['subgroup'] == 'total')
+]
+
+# District breakdown
+district_totals = enr_2025[
+    (enr_2025['is_district'] == True) &
+    (enr_2025['grade_level'] == 'TOTAL') &
+    (enr_2025['subgroup'] == 'total')
+].sort_values('n_students', ascending=False)
 ```
 
 ## Data availability
