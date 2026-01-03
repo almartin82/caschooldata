@@ -13,10 +13,11 @@ Depends:
     R (>= 4.0)
 Imports:
     dplyr,
-    readr,
-    purrr,
     downloader,
-    rappdirs
+    purrr,
+    rappdirs,
+    readr,
+    rlang
 Suggests:
     testthat (>= 3.0.0),
     knitr,
