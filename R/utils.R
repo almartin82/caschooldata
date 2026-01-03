@@ -24,5 +24,5 @@ get_available_years <- function() {
 
   # - Historical files (1982-2023): school-level data with race/gender breakdown
   # - Modern Census Day files (2024+): full demographic breakdowns with aggregation levels
-  1982:2024
+  1982:2025
 }
