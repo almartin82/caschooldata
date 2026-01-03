@@ -18,10 +18,17 @@
 # ==============================================================================
 
 library(testthat)
-library(httr)
+
+# Skip if httr is not available (it's in Suggests)
+skip_if_no_httr <- function() {
+  if (!requireNamespace("httr", quietly = TRUE)) {
+    skip("httr not available")
+  }
+}
 
 # Skip if no network connectivity
 skip_if_offline <- function() {
+  skip_if_no_httr()
   tryCatch({
     response <- httr::HEAD("https://www.google.com", httr::timeout(5))
     if (httr::http_error(response)) {
@@ -95,16 +102,17 @@ test_that("get_raw_enr returns data for valid year", {
 
 test_that("get_available_years returns valid year range", {
   result <- caschooldata::get_available_years()
-  
+
   if (is.list(result)) {
     expect_true("min_year" %in% names(result) || "years" %in% names(result))
     if ("min_year" %in% names(result)) {
-      expect_true(result$min_year >= 1990 & result$min_year <= 2030)
-      expect_true(result$max_year >= 1990 & result$max_year <= 2030)
+      expect_true(result$min_year >= 1980 & result$min_year <= 2030)
+      expect_true(result$max_year >= 1980 & result$max_year <= 2030)
     }
   } else {
     expect_true(is.numeric(result) || is.integer(result))
-    expect_true(all(result >= 1990 & result <= 2030, na.rm = TRUE))
+    # California data goes back to 1982
+    expect_true(all(result >= 1980 & result <= 2030, na.rm = TRUE))
   }
 })
 
