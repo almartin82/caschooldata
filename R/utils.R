@@ -12,7 +12,7 @@ NULL
 #' from the California Department of Education. This includes both modern
 #' Census Day files (2024+) and historical enrollment files (1982-2023).
 #'
-#' @return Integer vector of available end years (1982-2024)
+#' @return Integer vector of available end years (1982-2025)
 #' @export
 #' @examples
 #' get_available_years()
