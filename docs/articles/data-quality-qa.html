@@ -34,6 +34,7 @@
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
 <li><a class="dropdown-item" href="../articles/quickstart.html">Getting Started</a></li>
+    <li><a class="dropdown-item" href="../articles/district-highlights.html">District Trends &amp; Demographics</a></li>
     <li><a class="dropdown-item" href="../articles/data-quality-qa.html">Data Quality QA</a></li>
   </ul>
 </li>
@@ -81,11 +82,20 @@ analyze:</p>
 <div class="section level2">
 <h2 id="data-availability-note">Data Availability Note<a class="anchor" aria-label="anchor" href="#data-availability-note"></a>
 </h2>
-<p>The California Department of Education provides Census Day enrollment
-data files in the current format only for 2023-24 and 2024-25.
-Historical data (2017-2022) uses a different file format and is
-available separately at the school level only.</p>
-<p>This QA report focuses on the available Census Day data.</p>
+<p>The California Department of Education provides enrollment data in
+two formats:</p>
+<ul>
+<li>
+<strong>Modern Census Day format (2024-2025)</strong>: Files with
+comprehensive demographic breakdowns, aggregation levels
+(state/county/district/school), and Transitional Kindergarten data.</li>
+<li>
+<strong>Historical format (2018-2023)</strong>: School-level files
+with race/ethnicity and gender data. District, county, and state
+aggregates are computed from school-level records.</li>
+</ul>
+<p>This QA report analyzes both historical and modern data to validate
+time series consistency.</p>
 </div>
 <div class="section level2">
 <h2 id="load-libraries">Load Libraries<a class="anchor" aria-label="anchor" href="#load-libraries"></a>
@@ -100,15 +110,18 @@ available separately at the school level only.</p>
 <h2 id="fetch-available-data">Fetch Available Data<a class="anchor" aria-label="anchor" href="#fetch-available-data"></a>
 </h2>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Fetch all available years of Census Day enrollment data</span></span>
-<span><span class="va">years</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2024</span>, <span class="fl">2025</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="co"># Fetch historical and modern enrollment data</span></span>
+<span><span class="co"># Historical years (2018-2023) use school-level files</span></span>
+<span><span class="co"># Modern years (2024-2025) use Census Day files with all aggregation levels</span></span>
+<span><span class="co"># NOTE: Limited to 2023-2024 to reduce memory usage for vignette building</span></span>
+<span><span class="va">years</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2023</span>, <span class="fl">2024</span><span class="op">)</span></span>
 <span><span class="va">enr</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fetch_enr_multi.html">fetch_enr_multi</a></span><span class="op">(</span><span class="va">years</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Check what we got</span></span>
-<span><span class="va">enr</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html" class="external-link">group_by</a></span><span class="op">(</span><span class="va">end_year</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/summarise.html" class="external-link">summarize</a></span><span class="op">(</span></span>
-<span>    n_records <span class="op">=</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/context.html" class="external-link">n</a></span><span class="op">(</span><span class="op">)</span>,</span>
+<span><span class="va">enr</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/pkg/dplyr/man/group_by.html" class="external-link">group_by</a></span><span class="op">(</span><span class="va">end_year</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/pkg/dplyr/man/summarise.html" class="external-link">summarize</a></span><span class="op">(</span></span>
+<span>    n_records <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/pkg/dplyr/man/context.html" class="external-link">n</a></span><span class="op">(</span><span class="op">)</span>,</span>
 <span>    n_schools <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="va">is_school</span> <span class="op">&amp;</span> <span class="va">grade_level</span> <span class="op">==</span> <span class="st">"TOTAL"</span> <span class="op">&amp;</span> <span class="va">reporting_category</span> <span class="op">==</span> <span class="st">"TA"</span><span class="op">)</span>,</span>
 <span>    n_districts <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="va">is_district</span> <span class="op">&amp;</span> <span class="va">grade_level</span> <span class="op">==</span> <span class="st">"TOTAL"</span> <span class="op">&amp;</span> <span class="va">reporting_category</span> <span class="op">==</span> <span class="st">"TA"</span><span class="op">)</span>,</span>
 <span>    n_counties <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="va">is_county</span> <span class="op">&amp;</span> <span class="va">grade_level</span> <span class="op">==</span> <span class="st">"TOTAL"</span> <span class="op">&amp;</span> <span class="va">reporting_category</span> <span class="op">==</span> <span class="st">"TA"</span><span class="op">)</span>,</span>
@@ -117,8 +130,8 @@ available separately at the school level only.</p>
 <pre><code><span><span class="co">## <span style="color: #949494;"># A tibble: 2 × 5</span></span></span>
 <span><span class="co">##   end_year n_records n_schools n_districts n_counties</span></span>
 <span><span class="co">##      <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;int&gt;</span></span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">1</span>     <span style="text-decoration: underline;">2</span>024   2<span style="text-decoration: underline;">712</span>729     <span style="text-decoration: underline;">10</span>579        <span style="text-decoration: underline;">2</span>354        169</span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">2</span>     <span style="text-decoration: underline;">2</span>025   2<span style="text-decoration: underline;">709</span>106     <span style="text-decoration: underline;">10</span>591        <span style="text-decoration: underline;">2</span>352        169</span></span></code></pre>
+<span><span class="co">## <span style="color: #BCBCBC;">1</span>     <span style="text-decoration: underline;">2</span>023   1<span style="text-decoration: underline;">559</span>572     <span style="text-decoration: underline;">10</span>581        <span style="text-decoration: underline;">1</span>018         58</span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">2</span>     <span style="text-decoration: underline;">2</span>024   2<span style="text-decoration: underline;">712</span>729     <span style="text-decoration: underline;">10</span>579        <span style="text-decoration: underline;">2</span>354        169</span></span></code></pre>
 </div>
 <div class="section level2">
 <h2 id="statewide-enrollment-time-series">Statewide Enrollment Time Series<a class="anchor" aria-label="anchor" href="#statewide-enrollment-time-series"></a>
@@ -127,53 +140,49 @@ available separately at the school level only.</p>
 <h3 id="total-enrollment-by-year">Total Enrollment by Year<a class="anchor" aria-label="anchor" href="#total-enrollment-by-year"></a>
 </h3>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">state_totals</span> <span class="op">&lt;-</span> <span class="va">enr</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span></span>
+<code class="sourceCode R"><span><span class="va">state_totals</span> <span class="op">&lt;-</span> <span class="va">enr</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/pkg/dplyr/man/filter.html" class="external-link">filter</a></span><span class="op">(</span></span>
 <span>    <span class="va">is_state</span>,</span>
 <span>    <span class="va">grade_level</span> <span class="op">==</span> <span class="st">"TOTAL"</span>,</span>
 <span>    <span class="va">reporting_category</span> <span class="op">==</span> <span class="st">"TA"</span>  <span class="co"># Total All</span></span>
-<span>  <span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">end_year</span>, <span class="va">n_students</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/arrange.html" class="external-link">arrange</a></span><span class="op">(</span><span class="va">end_year</span><span class="op">)</span></span>
+<span>  <span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/pkg/dplyr/man/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">end_year</span>, <span class="va">n_students</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/pkg/dplyr/man/arrange.html" class="external-link">arrange</a></span><span class="op">(</span><span class="va">end_year</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">state_totals</span></span></code></pre></div>
-<pre><code><span><span class="co">## <span style="color: #949494;"># A tibble: 6 × 2</span></span></span>
+<pre><code><span><span class="co">## <span style="color: #949494;"># A tibble: 4 × 2</span></span></span>
 <span><span class="co">##   end_year n_students</span></span>
 <span><span class="co">##      <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">1</span>     <span style="text-decoration: underline;">2</span>024    5<span style="text-decoration: underline;">837</span>690</span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">2</span>     <span style="text-decoration: underline;">2</span>024    5<span style="text-decoration: underline;">128</span>055</span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">3</span>     <span style="text-decoration: underline;">2</span>024     <span style="text-decoration: underline;">709</span>635</span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">4</span>     <span style="text-decoration: underline;">2</span>025    5<span style="text-decoration: underline;">806</span>221</span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">5</span>     <span style="text-decoration: underline;">2</span>025    5<span style="text-decoration: underline;">078</span>498</span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">6</span>     <span style="text-decoration: underline;">2</span>025     <span style="text-decoration: underline;">727</span>723</span></span></code></pre>
+<span><span class="co">## <span style="color: #BCBCBC;">1</span>     <span style="text-decoration: underline;">2</span>023    5<span style="text-decoration: underline;">852</span>544</span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">2</span>     <span style="text-decoration: underline;">2</span>024    5<span style="text-decoration: underline;">837</span>690</span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">3</span>     <span style="text-decoration: underline;">2</span>024    5<span style="text-decoration: underline;">128</span>055</span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">4</span>     <span style="text-decoration: underline;">2</span>024     <span style="text-decoration: underline;">709</span>635</span></span></code></pre>
 </div>
 <div class="section level3">
 <h3 id="year-over-year-changes">Year-over-Year Changes<a class="anchor" aria-label="anchor" href="#year-over-year-changes"></a>
 </h3>
 <p>Checking for enrollment jumps greater than 5%:</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">state_yoy</span> <span class="op">&lt;-</span> <span class="va">state_totals</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/arrange.html" class="external-link">arrange</a></span><span class="op">(</span><span class="va">end_year</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span></span>
-<span>    prev_year <span class="op">=</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/lead-lag.html" class="external-link">lag</a></span><span class="op">(</span><span class="va">n_students</span><span class="op">)</span>,</span>
+<code class="sourceCode R"><span><span class="va">state_yoy</span> <span class="op">&lt;-</span> <span class="va">state_totals</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/pkg/dplyr/man/arrange.html" class="external-link">arrange</a></span><span class="op">(</span><span class="va">end_year</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/pkg/dplyr/man/mutate.html" class="external-link">mutate</a></span><span class="op">(</span></span>
+<span>    prev_year <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/pkg/dplyr/man/lead-lag.html" class="external-link">lag</a></span><span class="op">(</span><span class="va">n_students</span><span class="op">)</span>,</span>
 <span>    change <span class="op">=</span> <span class="va">n_students</span> <span class="op">-</span> <span class="va">prev_year</span>,</span>
 <span>    pct_change <span class="op">=</span> <span class="op">(</span><span class="va">n_students</span> <span class="op">-</span> <span class="va">prev_year</span><span class="op">)</span> <span class="op">/</span> <span class="va">prev_year</span> <span class="op">*</span> <span class="fl">100</span></span>
 <span>  <span class="op">)</span></span>
 <span></span>
 <span><span class="va">state_yoy</span></span></code></pre></div>
-<pre><code><span><span class="co">## <span style="color: #949494;"># A tibble: 6 × 5</span></span></span>
+<pre><code><span><span class="co">## <span style="color: #949494;"># A tibble: 4 × 5</span></span></span>
 <span><span class="co">##   end_year n_students prev_year   change pct_change</span></span>
 <span><span class="co">##      <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">1</span>     <span style="text-decoration: underline;">2</span>024    5<span style="text-decoration: underline;">837</span>690        <span style="color: #BB0000;">NA</span>       <span style="color: #BB0000;">NA</span>       <span style="color: #BB0000;">NA</span>  </span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">2</span>     <span style="text-decoration: underline;">2</span>024    5<span style="text-decoration: underline;">128</span>055   5<span style="text-decoration: underline;">837</span>690  -<span style="color: #BB0000; text-decoration: underline;">709</span><span style="color: #BB0000;">635</span>      -<span style="color: #BB0000;">12.2</span></span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">3</span>     <span style="text-decoration: underline;">2</span>024     <span style="text-decoration: underline;">709</span>635   5<span style="text-decoration: underline;">128</span>055 -<span style="color: #BB0000;">4</span><span style="color: #BB0000; text-decoration: underline;">418</span><span style="color: #BB0000;">420</span>      -<span style="color: #BB0000;">86.2</span></span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">4</span>     <span style="text-decoration: underline;">2</span>025    5<span style="text-decoration: underline;">806</span>221    <span style="text-decoration: underline;">709</span>635  5<span style="text-decoration: underline;">096</span>586      718. </span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">5</span>     <span style="text-decoration: underline;">2</span>025    5<span style="text-decoration: underline;">078</span>498   5<span style="text-decoration: underline;">806</span>221  -<span style="color: #BB0000; text-decoration: underline;">727</span><span style="color: #BB0000;">723</span>      -<span style="color: #BB0000;">12.5</span></span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">6</span>     <span style="text-decoration: underline;">2</span>025     <span style="text-decoration: underline;">727</span>723   5<span style="text-decoration: underline;">078</span>498 -<span style="color: #BB0000;">4</span><span style="color: #BB0000; text-decoration: underline;">350</span><span style="color: #BB0000;">775</span>      -<span style="color: #BB0000;">85.7</span></span></span></code></pre>
+<span><span class="co">## <span style="color: #BCBCBC;">1</span>     <span style="text-decoration: underline;">2</span>023    5<span style="text-decoration: underline;">852</span>544        <span style="color: #BB0000;">NA</span>       <span style="color: #BB0000;">NA</span>     <span style="color: #BB0000;">NA</span>    </span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">2</span>     <span style="text-decoration: underline;">2</span>024    5<span style="text-decoration: underline;">837</span>690   5<span style="text-decoration: underline;">852</span>544   -<span style="color: #BB0000; text-decoration: underline;">14</span><span style="color: #BB0000;">854</span>     -<span style="color: #BB0000;">0.254</span></span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">3</span>     <span style="text-decoration: underline;">2</span>024    5<span style="text-decoration: underline;">128</span>055   5<span style="text-decoration: underline;">837</span>690  -<span style="color: #BB0000; text-decoration: underline;">709</span><span style="color: #BB0000;">635</span>    -<span style="color: #BB0000;">12.2</span>  </span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">4</span>     <span style="text-decoration: underline;">2</span>024     <span style="text-decoration: underline;">709</span>635   5<span style="text-decoration: underline;">128</span>055 -<span style="color: #BB0000;">4</span><span style="color: #BB0000; text-decoration: underline;">418</span><span style="color: #BB0000;">420</span>    -<span style="color: #BB0000;">86.2</span></span></span></code></pre>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Flag any large changes (&gt;5%)</span></span>
-<span><span class="va">large_changes</span> <span class="op">&lt;-</span> <span class="va">state_yoy</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/MathFun.html" class="external-link">abs</a></span><span class="op">(</span><span class="va">pct_change</span><span class="op">)</span> <span class="op">&gt;</span> <span class="fl">5</span><span class="op">)</span></span>
+<span><span class="va">large_changes</span> <span class="op">&lt;-</span> <span class="va">state_yoy</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/pkg/dplyr/man/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/MathFun.html" class="external-link">abs</a></span><span class="op">(</span><span class="va">pct_change</span><span class="op">)</span> <span class="op">&gt;</span> <span class="fl">5</span><span class="op">)</span></span>
 <span></span>
 <span><span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">large_changes</span><span class="op">)</span> <span class="op">&gt;</span> <span class="fl">0</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"WARNING: Year-over-year changes exceeding 5%:\n"</span><span class="op">)</span></span>
@@ -182,14 +191,11 @@ available separately at the school level only.</p>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"No year-over-year changes exceeding 5% threshold.\n"</span><span class="op">)</span></span>
 <span><span class="op">}</span></span></code></pre></div>
 <pre><code><span><span class="co">## WARNING: Year-over-year changes exceeding 5%:</span></span>
-<span><span class="co">## <span style="color: #949494;"># A tibble: 5 × 5</span></span></span>
+<span><span class="co">## <span style="color: #949494;"># A tibble: 2 × 5</span></span></span>
 <span><span class="co">##   end_year n_students prev_year   change pct_change</span></span>
 <span><span class="co">##      <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
 <span><span class="co">## <span style="color: #BCBCBC;">1</span>     <span style="text-decoration: underline;">2</span>024    5<span style="text-decoration: underline;">128</span>055   5<span style="text-decoration: underline;">837</span>690  -<span style="color: #BB0000; text-decoration: underline;">709</span><span style="color: #BB0000;">635</span>      -<span style="color: #BB0000;">12.2</span></span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">2</span>     <span style="text-decoration: underline;">2</span>024     <span style="text-decoration: underline;">709</span>635   5<span style="text-decoration: underline;">128</span>055 -<span style="color: #BB0000;">4</span><span style="color: #BB0000; text-decoration: underline;">418</span><span style="color: #BB0000;">420</span>      -<span style="color: #BB0000;">86.2</span></span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">3</span>     <span style="text-decoration: underline;">2</span>025    5<span style="text-decoration: underline;">806</span>221    <span style="text-decoration: underline;">709</span>635  5<span style="text-decoration: underline;">096</span>586      718. </span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">4</span>     <span style="text-decoration: underline;">2</span>025    5<span style="text-decoration: underline;">078</span>498   5<span style="text-decoration: underline;">806</span>221  -<span style="color: #BB0000; text-decoration: underline;">727</span><span style="color: #BB0000;">723</span>      -<span style="color: #BB0000;">12.5</span></span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">5</span>     <span style="text-decoration: underline;">2</span>025     <span style="text-decoration: underline;">727</span>723   5<span style="text-decoration: underline;">078</span>498 -<span style="color: #BB0000;">4</span><span style="color: #BB0000; text-decoration: underline;">350</span><span style="color: #BB0000;">775</span>      -<span style="color: #BB0000;">85.7</span></span></span></code></pre>
+<span><span class="co">## <span style="color: #BCBCBC;">2</span>     <span style="text-decoration: underline;">2</span>024     <span style="text-decoration: underline;">709</span>635   5<span style="text-decoration: underline;">128</span>055 -<span style="color: #BB0000;">4</span><span style="color: #BB0000; text-decoration: underline;">418</span><span style="color: #BB0000;">420</span>      -<span style="color: #BB0000;">86.2</span></span></span></code></pre>
 </div>
 <div class="section level3">
 <h3 id="statewide-enrollment-visualization">Statewide Enrollment Visualization<a class="anchor" aria-label="anchor" href="#statewide-enrollment-visualization"></a>
@@ -231,83 +237,85 @@ available separately at the school level only.</p>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Find these districts in the data</span></span>
-<span><span class="va">district_totals</span> <span class="op">&lt;-</span> <span class="va">enr</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span></span>
+<span><span class="va">district_totals</span> <span class="op">&lt;-</span> <span class="va">enr</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/pkg/dplyr/man/filter.html" class="external-link">filter</a></span><span class="op">(</span></span>
 <span>    <span class="va">is_district</span>,</span>
 <span>    <span class="va">grade_level</span> <span class="op">==</span> <span class="st">"TOTAL"</span>,</span>
 <span>    <span class="va">reporting_category</span> <span class="op">==</span> <span class="st">"TA"</span></span>
 <span>  <span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Match district names</span></span>
-<span><span class="va">major_districts</span> <span class="op">&lt;-</span> <span class="va">district_totals</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span></span>
+<span><span class="va">major_districts</span> <span class="op">&lt;-</span> <span class="va">district_totals</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/pkg/dplyr/man/filter.html" class="external-link">filter</a></span><span class="op">(</span></span>
 <span>    <span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">grepl</a></span><span class="op">(</span><span class="st">"Los Angeles Unified"</span>, <span class="va">district_name</span>, ignore.case <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span> <span class="op">|</span></span>
 <span>    <span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">grepl</a></span><span class="op">(</span><span class="st">"San Diego Unified"</span>, <span class="va">district_name</span>, ignore.case <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span> <span class="op">|</span></span>
 <span>    <span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">grepl</a></span><span class="op">(</span><span class="st">"Long Beach Unified"</span>, <span class="va">district_name</span>, ignore.case <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span> <span class="op">|</span></span>
 <span>    <span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">grepl</a></span><span class="op">(</span><span class="st">"Fresno Unified"</span>, <span class="va">district_name</span>, ignore.case <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span> <span class="op">|</span></span>
 <span>    <span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">grepl</a></span><span class="op">(</span><span class="st">"Santa Ana Unified"</span>, <span class="va">district_name</span>, ignore.case <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
-<span>  <span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">end_year</span>, <span class="va">district_name</span>, <span class="va">county_name</span>, <span class="va">n_students</span>, <span class="va">cds_code</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/arrange.html" class="external-link">arrange</a></span><span class="op">(</span><span class="va">district_name</span>, <span class="va">end_year</span><span class="op">)</span></span>
+<span>  <span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/pkg/dplyr/man/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">end_year</span>, <span class="va">district_name</span>, <span class="va">county_name</span>, <span class="va">n_students</span>, <span class="va">cds_code</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/pkg/dplyr/man/arrange.html" class="external-link">arrange</a></span><span class="op">(</span><span class="va">district_name</span>, <span class="va">end_year</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Display results</span></span>
-<span><span class="va">major_districts</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span></span>
+<span><span class="va">major_districts</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
 <span>  <span class="fu"><a href="https://tidyr.tidyverse.org/reference/pivot_wider.html" class="external-link">pivot_wider</a></span><span class="op">(</span></span>
 <span>    id_cols <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">district_name</span>, <span class="va">county_name</span>, <span class="va">cds_code</span><span class="op">)</span>,</span>
 <span>    names_from <span class="op">=</span> <span class="va">end_year</span>,</span>
 <span>    values_from <span class="op">=</span> <span class="va">n_students</span>,</span>
 <span>    names_prefix <span class="op">=</span> <span class="st">"enr_"</span></span>
 <span>  <span class="op">)</span></span></code></pre></div>
-<pre><code><span><span class="co">## <span style="color: #949494;"># A tibble: 5 × 5</span></span></span>
-<span><span class="co">##   district_name       county_name cds_code       enr_2024  enr_2025 </span></span>
-<span><span class="co">##   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>               <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>          <span style="color: #949494; font-style: italic;">&lt;list&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;list&gt;</span>   </span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">1</span> Fresno Unified      Fresno      106216600000NA <span style="color: #949494;">&lt;dbl [3]&gt;</span> <span style="color: #949494;">&lt;dbl [3]&gt;</span></span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">2</span> Long Beach Unified  Los Angeles 196472500000NA <span style="color: #949494;">&lt;dbl [3]&gt;</span> <span style="color: #949494;">&lt;dbl [3]&gt;</span></span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">3</span> Los Angeles Unified Los Angeles 196473300000NA <span style="color: #949494;">&lt;dbl [3]&gt;</span> <span style="color: #949494;">&lt;dbl [3]&gt;</span></span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">4</span> San Diego Unified   San Diego   376833800000NA <span style="color: #949494;">&lt;dbl [3]&gt;</span> <span style="color: #949494;">&lt;dbl [3]&gt;</span></span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">5</span> Santa Ana Unified   Orange      306667000000NA <span style="color: #949494;">&lt;dbl [3]&gt;</span> <span style="color: #949494;">&lt;dbl [3]&gt;</span></span></span></code></pre>
+<pre><code><span><span class="co">## <span style="color: #949494;"># A tibble: 10 × 5</span></span></span>
+<span><span class="co">##    district_name       county_name cds_code       enr_2023  enr_2024 </span></span>
+<span><span class="co">##    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>               <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>          <span style="color: #949494; font-style: italic;">&lt;list&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;list&gt;</span>   </span></span>
+<span><span class="co">## <span style="color: #BCBCBC;"> 1</span> Fresno Unified      FRESNO      10621660000000 <span style="color: #949494;">&lt;dbl [1]&gt;</span> <span style="color: #949494;">&lt;NULL&gt;</span>   </span></span>
+<span><span class="co">## <span style="color: #BCBCBC;"> 2</span> Fresno Unified      Fresno      106216600000NA <span style="color: #949494;">&lt;NULL&gt;</span>    <span style="color: #949494;">&lt;dbl [3]&gt;</span></span></span>
+<span><span class="co">## <span style="color: #BCBCBC;"> 3</span> Long Beach Unified  LOS ANGELES 19647250000000 <span style="color: #949494;">&lt;dbl [1]&gt;</span> <span style="color: #949494;">&lt;NULL&gt;</span>   </span></span>
+<span><span class="co">## <span style="color: #BCBCBC;"> 4</span> Long Beach Unified  Los Angeles 196472500000NA <span style="color: #949494;">&lt;NULL&gt;</span>    <span style="color: #949494;">&lt;dbl [3]&gt;</span></span></span>
+<span><span class="co">## <span style="color: #BCBCBC;"> 5</span> Los Angeles Unified LOS ANGELES 19647330000000 <span style="color: #949494;">&lt;dbl [1]&gt;</span> <span style="color: #949494;">&lt;NULL&gt;</span>   </span></span>
+<span><span class="co">## <span style="color: #BCBCBC;"> 6</span> Los Angeles Unified Los Angeles 196473300000NA <span style="color: #949494;">&lt;NULL&gt;</span>    <span style="color: #949494;">&lt;dbl [3]&gt;</span></span></span>
+<span><span class="co">## <span style="color: #BCBCBC;"> 7</span> San Diego Unified   SAN DIEGO   37683380000000 <span style="color: #949494;">&lt;dbl [1]&gt;</span> <span style="color: #949494;">&lt;NULL&gt;</span>   </span></span>
+<span><span class="co">## <span style="color: #BCBCBC;"> 8</span> San Diego Unified   San Diego   376833800000NA <span style="color: #949494;">&lt;NULL&gt;</span>    <span style="color: #949494;">&lt;dbl [3]&gt;</span></span></span>
+<span><span class="co">## <span style="color: #BCBCBC;"> 9</span> Santa Ana Unified   ORANGE      30666700000000 <span style="color: #949494;">&lt;dbl [1]&gt;</span> <span style="color: #949494;">&lt;NULL&gt;</span>   </span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">10</span> Santa Ana Unified   Orange      306667000000NA <span style="color: #949494;">&lt;NULL&gt;</span>    <span style="color: #949494;">&lt;dbl [3]&gt;</span></span></span></code></pre>
 <div class="section level3">
 <h3 id="district-year-over-year-changes">District Year-over-Year Changes<a class="anchor" aria-label="anchor" href="#district-year-over-year-changes"></a>
 </h3>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">district_yoy</span> <span class="op">&lt;-</span> <span class="va">major_districts</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/arrange.html" class="external-link">arrange</a></span><span class="op">(</span><span class="va">district_name</span>, <span class="va">end_year</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html" class="external-link">group_by</a></span><span class="op">(</span><span class="va">district_name</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span></span>
-<span>    prev_year <span class="op">=</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/lead-lag.html" class="external-link">lag</a></span><span class="op">(</span><span class="va">n_students</span><span class="op">)</span>,</span>
+<code class="sourceCode R"><span><span class="va">district_yoy</span> <span class="op">&lt;-</span> <span class="va">major_districts</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/pkg/dplyr/man/arrange.html" class="external-link">arrange</a></span><span class="op">(</span><span class="va">district_name</span>, <span class="va">end_year</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/pkg/dplyr/man/group_by.html" class="external-link">group_by</a></span><span class="op">(</span><span class="va">district_name</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/pkg/dplyr/man/mutate.html" class="external-link">mutate</a></span><span class="op">(</span></span>
+<span>    prev_year <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/pkg/dplyr/man/lead-lag.html" class="external-link">lag</a></span><span class="op">(</span><span class="va">n_students</span><span class="op">)</span>,</span>
 <span>    change <span class="op">=</span> <span class="va">n_students</span> <span class="op">-</span> <span class="va">prev_year</span>,</span>
 <span>    pct_change <span class="op">=</span> <span class="op">(</span><span class="va">n_students</span> <span class="op">-</span> <span class="va">prev_year</span><span class="op">)</span> <span class="op">/</span> <span class="va">prev_year</span> <span class="op">*</span> <span class="fl">100</span></span>
-<span>  <span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html" class="external-link">ungroup</a></span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">pct_change</span><span class="op">)</span><span class="op">)</span></span>
+<span>  <span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/pkg/dplyr/man/group_by.html" class="external-link">ungroup</a></span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/pkg/dplyr/man/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">pct_change</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Check for large changes</span></span>
-<span><span class="va">district_large_changes</span> <span class="op">&lt;-</span> <span class="va">district_yoy</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/MathFun.html" class="external-link">abs</a></span><span class="op">(</span><span class="va">pct_change</span><span class="op">)</span> <span class="op">&gt;</span> <span class="fl">5</span><span class="op">)</span></span>
+<span><span class="va">district_large_changes</span> <span class="op">&lt;-</span> <span class="va">district_yoy</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/pkg/dplyr/man/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/MathFun.html" class="external-link">abs</a></span><span class="op">(</span><span class="va">pct_change</span><span class="op">)</span> <span class="op">&gt;</span> <span class="fl">5</span><span class="op">)</span></span>
 <span></span>
 <span><span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">district_large_changes</span><span class="op">)</span> <span class="op">&gt;</span> <span class="fl">0</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"Districts with year-over-year changes exceeding 5%:\n"</span><span class="op">)</span></span>
-<span>  <span class="va">district_large_changes</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span></span>
-<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">district_name</span>, <span class="va">end_year</span>, <span class="va">n_students</span>, <span class="va">prev_year</span>, <span class="va">pct_change</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span></span>
+<span>  <span class="va">district_large_changes</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>    <span class="fu"><a href="https://rdrr.io/pkg/dplyr/man/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">district_name</span>, <span class="va">end_year</span>, <span class="va">n_students</span>, <span class="va">prev_year</span>, <span class="va">pct_change</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
 <span>    <span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="op">}</span> <span class="kw">else</span> <span class="op">{</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"No major districts have year-over-year changes exceeding 5%.\n"</span><span class="op">)</span></span>
 <span><span class="op">}</span></span></code></pre></div>
 <pre><code><span><span class="co">## Districts with year-over-year changes exceeding 5%:</span></span>
-<span><span class="co">## <span style="color: #949494;"># A tibble: 21 × 5</span></span></span>
-<span><span class="co">##    district_name       end_year n_students prev_year pct_change</span></span>
-<span><span class="co">##    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                  <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">## <span style="color: #BCBCBC;"> 1</span> Fresno Unified          <span style="text-decoration: underline;">2</span>024       <span style="text-decoration: underline;">3</span>234     <span style="text-decoration: underline;">68</span>246      -<span style="color: #BB0000;">95.3</span></span></span>
-<span><span class="co">## <span style="color: #BCBCBC;"> 2</span> Fresno Unified          <span style="text-decoration: underline;">2</span>025      <span style="text-decoration: underline;">71</span>151      <span style="text-decoration: underline;">3</span>234     <span style="text-decoration: underline;">2</span>100. </span></span>
-<span><span class="co">## <span style="color: #BCBCBC;"> 3</span> Fresno Unified          <span style="text-decoration: underline;">2</span>025       <span style="text-decoration: underline;">3</span>332     <span style="text-decoration: underline;">67</span>819      -<span style="color: #BB0000;">95.1</span></span></span>
-<span><span class="co">## <span style="color: #BCBCBC;"> 4</span> Long Beach Unified      <span style="text-decoration: underline;">2</span>024        301     <span style="text-decoration: underline;">63</span>966      -<span style="color: #BB0000;">99.5</span></span></span>
-<span><span class="co">## <span style="color: #BCBCBC;"> 5</span> Long Beach Unified      <span style="text-decoration: underline;">2</span>025      <span style="text-decoration: underline;">62</span>947       301    <span style="text-decoration: underline;">20</span>813. </span></span>
-<span><span class="co">## <span style="color: #BCBCBC;"> 6</span> Long Beach Unified      <span style="text-decoration: underline;">2</span>025        303     <span style="text-decoration: underline;">62</span>644      -<span style="color: #BB0000;">99.5</span></span></span>
-<span><span class="co">## <span style="color: #BCBCBC;"> 7</span> Los Angeles Unified     <span style="text-decoration: underline;">2</span>024     <span style="text-decoration: underline;">381</span>116    <span style="text-decoration: underline;">529</span>902      -<span style="color: #BB0000;">28.1</span></span></span>
-<span><span class="co">## <span style="color: #BCBCBC;"> 8</span> Los Angeles Unified     <span style="text-decoration: underline;">2</span>024     <span style="text-decoration: underline;">148</span>786    <span style="text-decoration: underline;">381</span>116      -<span style="color: #BB0000;">61.0</span></span></span>
-<span><span class="co">## <span style="color: #BCBCBC;"> 9</span> Los Angeles Unified     <span style="text-decoration: underline;">2</span>025     <span style="text-decoration: underline;">516</span>685    <span style="text-decoration: underline;">148</span>786      247. </span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">10</span> Los Angeles Unified     <span style="text-decoration: underline;">2</span>025     <span style="text-decoration: underline;">369</span>830    <span style="text-decoration: underline;">516</span>685      -<span style="color: #BB0000;">28.4</span></span></span>
-<span><span class="co">## <span style="color: #949494;"># ℹ 11 more rows</span></span></span></code></pre>
+<span><span class="co">## <span style="color: #949494;"># A tibble: 8 × 5</span></span></span>
+<span><span class="co">##   district_name       end_year n_students prev_year pct_change</span></span>
+<span><span class="co">##   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                  <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">1</span> Fresno Unified          <span style="text-decoration: underline;">2</span>024       <span style="text-decoration: underline;">3</span>234     <span style="text-decoration: underline;">68</span>246     -<span style="color: #BB0000;">95.3</span> </span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">2</span> Long Beach Unified      <span style="text-decoration: underline;">2</span>024        301     <span style="text-decoration: underline;">63</span>966     -<span style="color: #BB0000;">99.5</span> </span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">3</span> Los Angeles Unified     <span style="text-decoration: underline;">2</span>024     <span style="text-decoration: underline;">381</span>116    <span style="text-decoration: underline;">529</span>902     -<span style="color: #BB0000;">28.1</span> </span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">4</span> Los Angeles Unified     <span style="text-decoration: underline;">2</span>024     <span style="text-decoration: underline;">148</span>786    <span style="text-decoration: underline;">381</span>116     -<span style="color: #BB0000;">61.0</span> </span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">5</span> San Diego Unified       <span style="text-decoration: underline;">2</span>024      <span style="text-decoration: underline;">95</span>492    <span style="text-decoration: underline;">114</span>330     -<span style="color: #BB0000;">16.5</span> </span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">6</span> San Diego Unified       <span style="text-decoration: underline;">2</span>024      <span style="text-decoration: underline;">18</span>838     <span style="text-decoration: underline;">95</span>492     -<span style="color: #BB0000;">80.3</span> </span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">7</span> Santa Ana Unified       <span style="text-decoration: underline;">2</span>024      <span style="text-decoration: underline;">37</span>663     <span style="text-decoration: underline;">40</span>328      -<span style="color: #BB0000;">6.61</span></span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">8</span> Santa Ana Unified       <span style="text-decoration: underline;">2</span>024       <span style="text-decoration: underline;">2</span>665     <span style="text-decoration: underline;">37</span>663     -<span style="color: #BB0000;">92.9</span></span></span></code></pre>
 </div>
 <div class="section level3">
 <h3 id="district-enrollment-visualization">District Enrollment Visualization<a class="anchor" aria-label="anchor" href="#district-enrollment-visualization"></a>
@@ -336,10 +344,10 @@ available separately at the school level only.</p>
 </h3>
 <div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Check for missing values in key columns</span></span>
-<span><span class="va">missing_summary</span> <span class="op">&lt;-</span> <span class="va">enr</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">grade_level</span> <span class="op">==</span> <span class="st">"TOTAL"</span>, <span class="va">reporting_category</span> <span class="op">==</span> <span class="st">"TA"</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/summarise.html" class="external-link">summarize</a></span><span class="op">(</span></span>
-<span>    total_records <span class="op">=</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/context.html" class="external-link">n</a></span><span class="op">(</span><span class="op">)</span>,</span>
+<span><span class="va">missing_summary</span> <span class="op">&lt;-</span> <span class="va">enr</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/pkg/dplyr/man/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">grade_level</span> <span class="op">==</span> <span class="st">"TOTAL"</span>, <span class="va">reporting_category</span> <span class="op">==</span> <span class="st">"TA"</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/pkg/dplyr/man/summarise.html" class="external-link">summarize</a></span><span class="op">(</span></span>
+<span>    total_records <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/pkg/dplyr/man/context.html" class="external-link">n</a></span><span class="op">(</span><span class="op">)</span>,</span>
 <span>    missing_n_students <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">n_students</span><span class="op">)</span><span class="op">)</span>,</span>
 <span>    missing_cds_code <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">cds_code</span><span class="op">)</span><span class="op">)</span>,</span>
 <span>    missing_district_name <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">district_name</span><span class="op">)</span> <span class="op">|</span> <span class="va">district_name</span> <span class="op">==</span> <span class="st">""</span><span class="op">)</span>,</span>
@@ -351,21 +359,21 @@ available separately at the school level only.</p>
 <pre><code><span><span class="co">## <span style="color: #949494;"># A tibble: 1 × 5</span></span></span>
 <span><span class="co">##   total_records missing_n_students missing_cds_code missing_district_name</span></span>
 <span><span class="co">##           <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>              <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>            <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>                 <span style="color: #949494; font-style: italic;">&lt;int&gt;</span></span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">1</span>         <span style="text-decoration: underline;">26</span>220                  0                0                   344</span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">1</span>         <span style="text-decoration: underline;">24</span>763                  0                0                   231</span></span>
 <span><span class="co">## <span style="color: #949494;"># ℹ 1 more variable: missing_school_name &lt;int&gt;</span></span></span></code></pre>
 </div>
 <div class="section level3">
 <h3 id="aggregation-level-distribution">Aggregation Level Distribution<a class="anchor" aria-label="anchor" href="#aggregation-level-distribution"></a>
 </h3>
 <div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">enr</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">grade_level</span> <span class="op">==</span> <span class="st">"TOTAL"</span>, <span class="va">reporting_category</span> <span class="op">==</span> <span class="st">"TA"</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html" class="external-link">group_by</a></span><span class="op">(</span><span class="va">end_year</span>, <span class="va">agg_level</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/summarise.html" class="external-link">summarize</a></span><span class="op">(</span></span>
-<span>    n_entities <span class="op">=</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/context.html" class="external-link">n</a></span><span class="op">(</span><span class="op">)</span>,</span>
+<code class="sourceCode R"><span><span class="va">enr</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/pkg/dplyr/man/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">grade_level</span> <span class="op">==</span> <span class="st">"TOTAL"</span>, <span class="va">reporting_category</span> <span class="op">==</span> <span class="st">"TA"</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/pkg/dplyr/man/group_by.html" class="external-link">group_by</a></span><span class="op">(</span><span class="va">end_year</span>, <span class="va">agg_level</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/pkg/dplyr/man/summarise.html" class="external-link">summarize</a></span><span class="op">(</span></span>
+<span>    n_entities <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/pkg/dplyr/man/context.html" class="external-link">n</a></span><span class="op">(</span><span class="op">)</span>,</span>
 <span>    total_enrollment <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="va">n_students</span>, na.rm <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>,</span>
 <span>    .groups <span class="op">=</span> <span class="st">"drop"</span></span>
-<span>  <span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span></span>
+<span>  <span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
 <span>  <span class="fu"><a href="https://tidyr.tidyverse.org/reference/pivot_wider.html" class="external-link">pivot_wider</a></span><span class="op">(</span></span>
 <span>    names_from <span class="op">=</span> <span class="va">agg_level</span>,</span>
 <span>    values_from <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">n_entities</span>, <span class="va">total_enrollment</span><span class="op">)</span></span>
@@ -373,8 +381,8 @@ available separately at the school level only.</p>
 <pre><code><span><span class="co">## <span style="color: #949494;"># A tibble: 2 × 9</span></span></span>
 <span><span class="co">##   end_year n_entities_C n_entities_D n_entities_S n_entities_T</span></span>
 <span><span class="co">##      <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;int&gt;</span></span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">1</span>     <span style="text-decoration: underline;">2</span>024          169         <span style="text-decoration: underline;">2</span>354        <span style="text-decoration: underline;">10</span>579            3</span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">2</span>     <span style="text-decoration: underline;">2</span>025          169         <span style="text-decoration: underline;">2</span>352        <span style="text-decoration: underline;">10</span>591            3</span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">1</span>     <span style="text-decoration: underline;">2</span>023           58         <span style="text-decoration: underline;">1</span>018        <span style="text-decoration: underline;">10</span>581            1</span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">2</span>     <span style="text-decoration: underline;">2</span>024          169         <span style="text-decoration: underline;">2</span>354        <span style="text-decoration: underline;">10</span>579            3</span></span>
 <span><span class="co">## <span style="color: #949494;"># ℹ 4 more variables: total_enrollment_C &lt;dbl&gt;, total_enrollment_D &lt;dbl&gt;,</span></span></span>
 <span><span class="co">## <span style="color: #949494;">#   total_enrollment_S &lt;dbl&gt;, total_enrollment_T &lt;dbl&gt;</span></span></span></code></pre>
 </div>
@@ -384,14 +392,14 @@ available separately at the school level only.</p>
 <p>Verify that grade-level data sums to reported totals:</p>
 <div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Get state-level data by grade</span></span>
-<span><span class="va">state_by_grade</span> <span class="op">&lt;-</span> <span class="va">enr</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">is_state</span>, <span class="va">reporting_category</span> <span class="op">==</span> <span class="st">"TA"</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">end_year</span>, <span class="va">grade_level</span>, <span class="va">n_students</span><span class="op">)</span></span>
+<span><span class="va">state_by_grade</span> <span class="op">&lt;-</span> <span class="va">enr</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/pkg/dplyr/man/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">is_state</span>, <span class="va">reporting_category</span> <span class="op">==</span> <span class="st">"TA"</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/pkg/dplyr/man/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">end_year</span>, <span class="va">grade_level</span>, <span class="va">n_students</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Compare sum of grades to reported total</span></span>
-<span><span class="va">grade_validation</span> <span class="op">&lt;-</span> <span class="va">state_by_grade</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html" class="external-link">group_by</a></span><span class="op">(</span><span class="va">end_year</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/summarise.html" class="external-link">summarize</a></span><span class="op">(</span></span>
+<span><span class="va">grade_validation</span> <span class="op">&lt;-</span> <span class="va">state_by_grade</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/pkg/dplyr/man/group_by.html" class="external-link">group_by</a></span><span class="op">(</span><span class="va">end_year</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/pkg/dplyr/man/summarise.html" class="external-link">summarize</a></span><span class="op">(</span></span>
 <span>    reported_total <span class="op">=</span> <span class="va">n_students</span><span class="op">[</span><span class="va">grade_level</span> <span class="op">==</span> <span class="st">"TOTAL"</span><span class="op">]</span>,</span>
 <span>    sum_of_grades <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="va">n_students</span><span class="op">[</span><span class="va">grade_level</span> <span class="op">!=</span> <span class="st">"TOTAL"</span><span class="op">]</span><span class="op">)</span>,</span>
 <span>    difference <span class="op">=</span> <span class="va">reported_total</span> <span class="op">-</span> <span class="va">sum_of_grades</span>,</span>
@@ -400,15 +408,13 @@ available separately at the school level only.</p>
 <span>  <span class="op">)</span></span>
 <span></span>
 <span><span class="va">grade_validation</span></span></code></pre></div>
-<pre><code><span><span class="co">## <span style="color: #949494;"># A tibble: 6 × 5</span></span></span>
+<pre><code><span><span class="co">## <span style="color: #949494;"># A tibble: 4 × 5</span></span></span>
 <span><span class="co">##   end_year reported_total sum_of_grades difference pct_diff</span></span>
 <span><span class="co">##      <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>          <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">1</span>     <span style="text-decoration: underline;">2</span>024        5<span style="text-decoration: underline;">837</span>690      11<span style="text-decoration: underline;">675</span>380   -<span style="color: #BB0000;">5</span><span style="color: #BB0000; text-decoration: underline;">837</span><span style="color: #BB0000;">690</span>    -<span style="color: #BB0000;">100</span> </span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">2</span>     <span style="text-decoration: underline;">2</span>024        5<span style="text-decoration: underline;">128</span>055      11<span style="text-decoration: underline;">675</span>380   -<span style="color: #BB0000;">6</span><span style="color: #BB0000; text-decoration: underline;">547</span><span style="color: #BB0000;">325</span>    -<span style="color: #BB0000;">128.</span></span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">3</span>     <span style="text-decoration: underline;">2</span>024         <span style="text-decoration: underline;">709</span>635      11<span style="text-decoration: underline;">675</span>380  -<span style="color: #BB0000;">10</span><span style="color: #BB0000; text-decoration: underline;">965</span><span style="color: #BB0000;">745</span>   -<span style="color: #BB0000; text-decoration: underline;">1</span><span style="color: #BB0000;">545.</span></span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">4</span>     <span style="text-decoration: underline;">2</span>025        5<span style="text-decoration: underline;">806</span>221      11<span style="text-decoration: underline;">612</span>442   -<span style="color: #BB0000;">5</span><span style="color: #BB0000; text-decoration: underline;">806</span><span style="color: #BB0000;">221</span>    -<span style="color: #BB0000;">100</span> </span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">5</span>     <span style="text-decoration: underline;">2</span>025        5<span style="text-decoration: underline;">078</span>498      11<span style="text-decoration: underline;">612</span>442   -<span style="color: #BB0000;">6</span><span style="color: #BB0000; text-decoration: underline;">533</span><span style="color: #BB0000;">944</span>    -<span style="color: #BB0000;">129.</span></span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">6</span>     <span style="text-decoration: underline;">2</span>025         <span style="text-decoration: underline;">727</span>723      11<span style="text-decoration: underline;">612</span>442  -<span style="color: #BB0000;">10</span><span style="color: #BB0000; text-decoration: underline;">884</span><span style="color: #BB0000;">719</span>   -<span style="color: #BB0000; text-decoration: underline;">1</span><span style="color: #BB0000;">496.</span></span></span></code></pre>
+<span><span class="co">## <span style="color: #BCBCBC;">1</span>     <span style="text-decoration: underline;">2</span>023        5<span style="text-decoration: underline;">852</span>544       5<span style="text-decoration: underline;">852</span>544          0       0 </span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">2</span>     <span style="text-decoration: underline;">2</span>024        5<span style="text-decoration: underline;">837</span>690      11<span style="text-decoration: underline;">675</span>380   -<span style="color: #BB0000;">5</span><span style="color: #BB0000; text-decoration: underline;">837</span><span style="color: #BB0000;">690</span>    -<span style="color: #BB0000;">100</span> </span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">3</span>     <span style="text-decoration: underline;">2</span>024        5<span style="text-decoration: underline;">128</span>055      11<span style="text-decoration: underline;">675</span>380   -<span style="color: #BB0000;">6</span><span style="color: #BB0000; text-decoration: underline;">547</span><span style="color: #BB0000;">325</span>    -<span style="color: #BB0000;">128.</span></span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">4</span>     <span style="text-decoration: underline;">2</span>024         <span style="text-decoration: underline;">709</span>635      11<span style="text-decoration: underline;">675</span>380  -<span style="color: #BB0000;">10</span><span style="color: #BB0000; text-decoration: underline;">965</span><span style="color: #BB0000;">745</span>   -<span style="color: #BB0000; text-decoration: underline;">1</span><span style="color: #BB0000;">545.</span></span></span></code></pre>
 <div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/any.html" class="external-link">any</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/MathFun.html" class="external-link">abs</a></span><span class="op">(</span><span class="va">grade_validation</span><span class="op">$</span><span class="va">pct_diff</span><span class="op">)</span> <span class="op">&gt;</span> <span class="fl">0.1</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"WARNING: Grade totals do not match reported totals\n"</span><span class="op">)</span></span>
@@ -425,11 +431,11 @@ available separately at the school level only.</p>
 <h3 id="available-subgroups">Available Subgroups<a class="anchor" aria-label="anchor" href="#available-subgroups"></a>
 </h3>
 <div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">enr</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">is_state</span>, <span class="va">grade_level</span> <span class="op">==</span> <span class="st">"TOTAL"</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">reporting_category</span>, <span class="va">subgroup</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/distinct.html" class="external-link">distinct</a></span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/arrange.html" class="external-link">arrange</a></span><span class="op">(</span><span class="va">reporting_category</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">enr</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/pkg/dplyr/man/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">is_state</span>, <span class="va">grade_level</span> <span class="op">==</span> <span class="st">"TOTAL"</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/pkg/dplyr/man/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">reporting_category</span>, <span class="va">subgroup</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/pkg/dplyr/man/distinct.html" class="external-link">distinct</a></span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/pkg/dplyr/man/arrange.html" class="external-link">arrange</a></span><span class="op">(</span><span class="va">reporting_category</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## <span style="color: #949494;"># A tibble: 33 × 2</span></span></span>
 <span><span class="co">##    reporting_category subgroup       </span></span>
 <span><span class="co">##    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>              <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>          </span></span>
@@ -451,39 +457,37 @@ available separately at the school level only.</p>
 <p>Verify that demographic breakdowns sum correctly:</p>
 <div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Check race/ethnicity breakdown</span></span>
-<span><span class="va">state_race</span> <span class="op">&lt;-</span> <span class="va">enr</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span></span>
+<span><span class="va">state_race</span> <span class="op">&lt;-</span> <span class="va">enr</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/pkg/dplyr/man/filter.html" class="external-link">filter</a></span><span class="op">(</span></span>
 <span>    <span class="va">is_state</span>,</span>
 <span>    <span class="va">grade_level</span> <span class="op">==</span> <span class="st">"TOTAL"</span>,</span>
 <span>    <span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">grepl</a></span><span class="op">(</span><span class="st">"^RE_"</span>, <span class="va">reporting_category</span><span class="op">)</span></span>
-<span>  <span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html" class="external-link">group_by</a></span><span class="op">(</span><span class="va">end_year</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/summarise.html" class="external-link">summarize</a></span><span class="op">(</span></span>
+<span>  <span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/pkg/dplyr/man/group_by.html" class="external-link">group_by</a></span><span class="op">(</span><span class="va">end_year</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/pkg/dplyr/man/summarise.html" class="external-link">summarize</a></span><span class="op">(</span></span>
 <span>    sum_race <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="va">n_students</span>, na.rm <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>,</span>
 <span>    .groups <span class="op">=</span> <span class="st">"drop"</span></span>
 <span>  <span class="op">)</span></span>
 <span></span>
-<span><span class="va">state_total</span> <span class="op">&lt;-</span> <span class="va">enr</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">is_state</span>, <span class="va">grade_level</span> <span class="op">==</span> <span class="st">"TOTAL"</span>, <span class="va">reporting_category</span> <span class="op">==</span> <span class="st">"TA"</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">end_year</span>, total <span class="op">=</span> <span class="va">n_students</span><span class="op">)</span></span>
+<span><span class="va">state_total</span> <span class="op">&lt;-</span> <span class="va">enr</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/pkg/dplyr/man/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">is_state</span>, <span class="va">grade_level</span> <span class="op">==</span> <span class="st">"TOTAL"</span>, <span class="va">reporting_category</span> <span class="op">==</span> <span class="st">"TA"</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/pkg/dplyr/man/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">end_year</span>, total <span class="op">=</span> <span class="va">n_students</span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">race_validation</span> <span class="op">&lt;-</span> <span class="va">state_race</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate-joins.html" class="external-link">left_join</a></span><span class="op">(</span><span class="va">state_total</span>, by <span class="op">=</span> <span class="st">"end_year"</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span></span>
+<span><span class="va">race_validation</span> <span class="op">&lt;-</span> <span class="va">state_race</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/pkg/dplyr/man/mutate-joins.html" class="external-link">left_join</a></span><span class="op">(</span><span class="va">state_total</span>, by <span class="op">=</span> <span class="st">"end_year"</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/pkg/dplyr/man/mutate.html" class="external-link">mutate</a></span><span class="op">(</span></span>
 <span>    difference <span class="op">=</span> <span class="va">total</span> <span class="op">-</span> <span class="va">sum_race</span>,</span>
 <span>    pct_diff <span class="op">=</span> <span class="va">difference</span> <span class="op">/</span> <span class="va">total</span> <span class="op">*</span> <span class="fl">100</span></span>
 <span>  <span class="op">)</span></span>
 <span></span>
 <span><span class="va">race_validation</span></span></code></pre></div>
-<pre><code><span><span class="co">## <span style="color: #949494;"># A tibble: 6 × 5</span></span></span>
+<pre><code><span><span class="co">## <span style="color: #949494;"># A tibble: 4 × 5</span></span></span>
 <span><span class="co">##   end_year sum_race   total difference pct_diff</span></span>
 <span><span class="co">##      <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">1</span>     <span style="text-decoration: underline;">2</span>024 11<span style="text-decoration: underline;">675</span>380 5<span style="text-decoration: underline;">837</span>690   -<span style="color: #BB0000;">5</span><span style="color: #BB0000; text-decoration: underline;">837</span><span style="color: #BB0000;">690</span>    -<span style="color: #BB0000;">100</span> </span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">2</span>     <span style="text-decoration: underline;">2</span>024 11<span style="text-decoration: underline;">675</span>380 5<span style="text-decoration: underline;">128</span>055   -<span style="color: #BB0000;">6</span><span style="color: #BB0000; text-decoration: underline;">547</span><span style="color: #BB0000;">325</span>    -<span style="color: #BB0000;">128.</span></span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">3</span>     <span style="text-decoration: underline;">2</span>024 11<span style="text-decoration: underline;">675</span>380  <span style="text-decoration: underline;">709</span>635  -<span style="color: #BB0000;">10</span><span style="color: #BB0000; text-decoration: underline;">965</span><span style="color: #BB0000;">745</span>   -<span style="color: #BB0000; text-decoration: underline;">1</span><span style="color: #BB0000;">545.</span></span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">4</span>     <span style="text-decoration: underline;">2</span>025 11<span style="text-decoration: underline;">612</span>442 5<span style="text-decoration: underline;">806</span>221   -<span style="color: #BB0000;">5</span><span style="color: #BB0000; text-decoration: underline;">806</span><span style="color: #BB0000;">221</span>    -<span style="color: #BB0000;">100</span> </span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">5</span>     <span style="text-decoration: underline;">2</span>025 11<span style="text-decoration: underline;">612</span>442 5<span style="text-decoration: underline;">078</span>498   -<span style="color: #BB0000;">6</span><span style="color: #BB0000; text-decoration: underline;">533</span><span style="color: #BB0000;">944</span>    -<span style="color: #BB0000;">129.</span></span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">6</span>     <span style="text-decoration: underline;">2</span>025 11<span style="text-decoration: underline;">612</span>442  <span style="text-decoration: underline;">727</span>723  -<span style="color: #BB0000;">10</span><span style="color: #BB0000; text-decoration: underline;">884</span><span style="color: #BB0000;">719</span>   -<span style="color: #BB0000; text-decoration: underline;">1</span><span style="color: #BB0000;">496.</span></span></span></code></pre>
+<span><span class="co">## <span style="color: #BCBCBC;">1</span>     <span style="text-decoration: underline;">2</span>023  5<span style="text-decoration: underline;">852</span>544 5<span style="text-decoration: underline;">852</span>544          0       0 </span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">2</span>     <span style="text-decoration: underline;">2</span>024 11<span style="text-decoration: underline;">675</span>380 5<span style="text-decoration: underline;">837</span>690   -<span style="color: #BB0000;">5</span><span style="color: #BB0000; text-decoration: underline;">837</span><span style="color: #BB0000;">690</span>    -<span style="color: #BB0000;">100</span> </span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">3</span>     <span style="text-decoration: underline;">2</span>024 11<span style="text-decoration: underline;">675</span>380 5<span style="text-decoration: underline;">128</span>055   -<span style="color: #BB0000;">6</span><span style="color: #BB0000; text-decoration: underline;">547</span><span style="color: #BB0000;">325</span>    -<span style="color: #BB0000;">128.</span></span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">4</span>     <span style="text-decoration: underline;">2</span>024 11<span style="text-decoration: underline;">675</span>380  <span style="text-decoration: underline;">709</span>635  -<span style="color: #BB0000;">10</span><span style="color: #BB0000; text-decoration: underline;">965</span><span style="color: #BB0000;">745</span>   -<span style="color: #BB0000; text-decoration: underline;">1</span><span style="color: #BB0000;">545.</span></span></span></code></pre>
 <div class="sourceCode" id="cb28"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/any.html" class="external-link">any</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/MathFun.html" class="external-link">abs</a></span><span class="op">(</span><span class="va">race_validation</span><span class="op">$</span><span class="va">pct_diff</span><span class="op">)</span> <span class="op">&gt;</span> <span class="fl">1</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"Note: Race/ethnicity categories may not sum to 100% due to 'not reported' students.\n"</span><span class="op">)</span></span>
@@ -495,49 +499,57 @@ available separately at the school level only.</p>
 <h2 id="charter-school-analysis">Charter School Analysis<a class="anchor" aria-label="anchor" href="#charter-school-analysis"></a>
 </h2>
 <div class="sourceCode" id="cb30"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">charter_summary</span> <span class="op">&lt;-</span> <span class="va">enr</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span></span>
+<code class="sourceCode R"><span><span class="va">charter_summary</span> <span class="op">&lt;-</span> <span class="va">enr</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/pkg/dplyr/man/filter.html" class="external-link">filter</a></span><span class="op">(</span></span>
 <span>    <span class="va">is_school</span>,</span>
 <span>    <span class="va">grade_level</span> <span class="op">==</span> <span class="st">"TOTAL"</span>,</span>
 <span>    <span class="va">reporting_category</span> <span class="op">==</span> <span class="st">"TA"</span></span>
-<span>  <span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html" class="external-link">group_by</a></span><span class="op">(</span><span class="va">end_year</span>, <span class="va">charter_status</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/summarise.html" class="external-link">summarize</a></span><span class="op">(</span></span>
-<span>    n_schools <span class="op">=</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/context.html" class="external-link">n</a></span><span class="op">(</span><span class="op">)</span>,</span>
+<span>  <span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/pkg/dplyr/man/group_by.html" class="external-link">group_by</a></span><span class="op">(</span><span class="va">end_year</span>, <span class="va">charter_status</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/pkg/dplyr/man/summarise.html" class="external-link">summarize</a></span><span class="op">(</span></span>
+<span>    n_schools <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/pkg/dplyr/man/context.html" class="external-link">n</a></span><span class="op">(</span><span class="op">)</span>,</span>
 <span>    total_enrollment <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="va">n_students</span>, na.rm <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>,</span>
 <span>    .groups <span class="op">=</span> <span class="st">"drop"</span></span>
-<span>  <span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html" class="external-link">group_by</a></span><span class="op">(</span><span class="va">end_year</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span></span>
+<span>  <span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/pkg/dplyr/man/group_by.html" class="external-link">group_by</a></span><span class="op">(</span><span class="va">end_year</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/pkg/dplyr/man/mutate.html" class="external-link">mutate</a></span><span class="op">(</span></span>
 <span>    pct_schools <span class="op">=</span> <span class="va">n_schools</span> <span class="op">/</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="va">n_schools</span><span class="op">)</span> <span class="op">*</span> <span class="fl">100</span>,</span>
 <span>    pct_enrollment <span class="op">=</span> <span class="va">total_enrollment</span> <span class="op">/</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="va">total_enrollment</span><span class="op">)</span> <span class="op">*</span> <span class="fl">100</span></span>
 <span>  <span class="op">)</span></span>
 <span></span>
-<span><span class="va">charter_summary</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">end_year</span>, <span class="va">charter_status</span>, <span class="va">n_schools</span>, <span class="va">pct_schools</span>, <span class="va">total_enrollment</span>, <span class="va">pct_enrollment</span><span class="op">)</span></span></code></pre></div>
-<pre><code><span><span class="co">## <span style="color: #949494;"># A tibble: 4 × 6</span></span></span>
+<span><span class="va">charter_summary</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/pkg/dplyr/man/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">end_year</span>, <span class="va">charter_status</span>, <span class="va">n_schools</span>, <span class="va">pct_schools</span>, <span class="va">total_enrollment</span>, <span class="va">pct_enrollment</span><span class="op">)</span></span></code></pre></div>
+<pre><code><span><span class="co">## <span style="color: #949494;"># A tibble: 3 × 6</span></span></span>
 <span><span class="co">## <span style="color: #949494;"># Groups:   end_year [2]</span></span></span>
 <span><span class="co">##   end_year charter_status n_schools pct_schools total_enrollment pct_enrollment</span></span>
 <span><span class="co">##      <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>              <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>            <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>          <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">1</span>     <span style="text-decoration: underline;">2</span>024 N                   <span style="text-decoration: underline;">9</span>298        87.9          5<span style="text-decoration: underline;">128</span>055           87.8</span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">2</span>     <span style="text-decoration: underline;">2</span>024 Y                   <span style="text-decoration: underline;">1</span>281        12.1           <span style="text-decoration: underline;">709</span>635           12.2</span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">3</span>     <span style="text-decoration: underline;">2</span>025 N                   <span style="text-decoration: underline;">9</span>315        88.0          5<span style="text-decoration: underline;">078</span>498           87.5</span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">4</span>     <span style="text-decoration: underline;">2</span>025 Y                   <span style="text-decoration: underline;">1</span>276        12.0           <span style="text-decoration: underline;">727</span>723           12.5</span></span></code></pre>
+<span><span class="co">## <span style="color: #BCBCBC;">1</span>     <span style="text-decoration: underline;">2</span>023 All                <span style="text-decoration: underline;">10</span>581       100            5<span style="text-decoration: underline;">852</span>544          100  </span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">2</span>     <span style="text-decoration: underline;">2</span>024 N                   <span style="text-decoration: underline;">9</span>298        87.9          5<span style="text-decoration: underline;">128</span>055           87.8</span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">3</span>     <span style="text-decoration: underline;">2</span>024 Y                   <span style="text-decoration: underline;">1</span>281        12.1           <span style="text-decoration: underline;">709</span>635           12.2</span></span></code></pre>
 </div>
 <div class="section level2">
 <h2 id="known-data-quality-issues">Known Data Quality Issues<a class="anchor" aria-label="anchor" href="#known-data-quality-issues"></a>
 </h2>
 <p>Based on this analysis, the following data quality notes apply:</p>
 <div class="section level3">
-<h3 id="data-availability">1. Data Availability<a class="anchor" aria-label="anchor" href="#data-availability"></a>
+<h3 id="data-availability-and-format-differences">1. Data Availability and Format Differences<a class="anchor" aria-label="anchor" href="#data-availability-and-format-differences"></a>
 </h3>
 <ul>
-<li>Census Day enrollment files are only available for 2023-24 and
-2024-25</li>
-<li>Historical data (2017-2022) requires separate processing from
-different file formats</li>
-<li>Historical files contain school-level data only (no
-district/county/state aggregates)</li>
+<li>
+<strong>Modern Census Day files (2024-2025)</strong>: Full
+demographic breakdowns, all aggregation levels
+(state/county/district/school), and Transitional Kindergarten data</li>
+<li>
+<strong>Historical files (2018-2023)</strong>: School-level data
+with race/ethnicity and gender only
+<ul>
+<li>District, county, and state aggregates are computed from school
+data</li>
+<li>TK data not available (grade_tk is NA)</li>
+<li>Charter status not available (charter_status is “All”)</li>
+<li>Student group categories (SG_*) not available</li>
+</ul>
+</li>
 </ul>
 </div>
 <div class="section level3">
@@ -556,14 +568,26 @@ district/county/state aggregates)</li>
 <ul>
 <li>Not all schools report all demographic categories</li>
 <li>Some categories may have missing or zero values</li>
+<li>Historical data has fewer reporting categories than modern data</li>
 </ul>
 </div>
 <div class="section level3">
 <h3 id="charter-school-classification">4. Charter School Classification<a class="anchor" aria-label="anchor" href="#charter-school-classification"></a>
 </h3>
 <ul>
-<li>Charter status is reported at the school level</li>
+<li>Charter status is reported at the school level (modern format
+only)</li>
 <li>District-level charter aggregates show “All” for charter_status</li>
+<li>Historical data does not include charter status</li>
+</ul>
+</div>
+<div class="section level3">
+<h3 id="grade-level-data">5. Grade-Level Data<a class="anchor" aria-label="anchor" href="#grade-level-data"></a>
+</h3>
+<ul>
+<li>TK (Transitional Kindergarten) only available in 2024+ data</li>
+<li>Historical data includes ungraded elementary (UNGR_ELM) and
+secondary (UNGR_SEC) counts</li>
 </ul>
 </div>
 </div>
@@ -574,58 +598,76 @@ district/county/state aggregates)</li>
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"=== Data Quality Summary ===\n\n"</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## === Data Quality Summary ===</span></span></code></pre>
 <div class="sourceCode" id="cb34"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"Years analyzed:"</span>, <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="va">enr</span><span class="op">$</span><span class="va">end_year</span><span class="op">)</span>, collapse <span class="op">=</span> <span class="st">", "</span><span class="op">)</span>, <span class="st">"\n"</span><span class="op">)</span></span></code></pre></div>
-<pre><code><span><span class="co">## Years analyzed: 2024, 2025</span></span></code></pre>
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"Years analyzed:"</span>, <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sort.html" class="external-link">sort</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="va">enr</span><span class="op">$</span><span class="va">end_year</span><span class="op">)</span><span class="op">)</span>, collapse <span class="op">=</span> <span class="st">", "</span><span class="op">)</span>, <span class="st">"\n"</span><span class="op">)</span></span></code></pre></div>
+<pre><code><span><span class="co">## Years analyzed: 2023, 2024</span></span></code></pre>
 <div class="sourceCode" id="cb36"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">state_summary</span> <span class="op">&lt;-</span> <span class="va">enr</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">is_state</span>, <span class="va">grade_level</span> <span class="op">==</span> <span class="st">"TOTAL"</span>, <span class="va">reporting_category</span> <span class="op">==</span> <span class="st">"TA"</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/arrange.html" class="external-link">arrange</a></span><span class="op">(</span><span class="va">end_year</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">state_summary</span> <span class="op">&lt;-</span> <span class="va">enr</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/pkg/dplyr/man/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">is_state</span>, <span class="va">grade_level</span> <span class="op">==</span> <span class="st">"TOTAL"</span>, <span class="va">reporting_category</span> <span class="op">==</span> <span class="st">"TA"</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/pkg/dplyr/man/arrange.html" class="external-link">arrange</a></span><span class="op">(</span><span class="va">end_year</span><span class="op">)</span></span>
 <span></span>
-<span><span class="kw">for</span> <span class="op">(</span><span class="va">i</span> <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">state_summary</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
-<span>  <span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">"  %d: %s students\n"</span>,</span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"\nStatewide enrollment by year:\n"</span><span class="op">)</span></span></code></pre></div>
+<pre><code><span><span class="co">## </span></span>
+<span><span class="co">## Statewide enrollment by year:</span></span></code></pre>
+<div class="sourceCode" id="cb38"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="kw">for</span> <span class="op">(</span><span class="va">i</span> <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">state_summary</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="va">format_type</span> <span class="op">&lt;-</span> <span class="kw">if</span> <span class="op">(</span><span class="va">state_summary</span><span class="op">$</span><span class="va">end_year</span><span class="op">[</span><span class="va">i</span><span class="op">]</span> <span class="op">&gt;=</span> <span class="fl">2024</span><span class="op">)</span> <span class="st">"modern"</span> <span class="kw">else</span> <span class="st">"historical"</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">"  %d (%s): %s students\n"</span>,</span>
 <span>              <span class="va">state_summary</span><span class="op">$</span><span class="va">end_year</span><span class="op">[</span><span class="va">i</span><span class="op">]</span>,</span>
+<span>              <span class="va">format_type</span>,</span>
 <span>              <span class="fu">scales</span><span class="fu">::</span><span class="fu"><a href="https://scales.r-lib.org/reference/comma.html" class="external-link">comma</a></span><span class="op">(</span><span class="va">state_summary</span><span class="op">$</span><span class="va">n_students</span><span class="op">[</span><span class="va">i</span><span class="op">]</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="op">}</span></span></code></pre></div>
-<pre><code><span><span class="co">##   2024: 5,837,690 students</span></span>
-<span><span class="co">##   2024: 5,128,055 students</span></span>
-<span><span class="co">##   2024: 709,635 students</span></span>
-<span><span class="co">##   2025: 5,806,221 students</span></span>
-<span><span class="co">##   2025: 5,078,498 students</span></span>
-<span><span class="co">##   2025: 727,723 students</span></span></code></pre>
-<div class="sourceCode" id="cb38"><pre class="downlit sourceCode r">
+<pre><code><span><span class="co">##   2023 (historical): 5,852,544 students</span></span>
+<span><span class="co">##   2024 (modern): 5,837,690 students</span></span>
+<span><span class="co">##   2024 (modern): 5,128,055 students</span></span>
+<span><span class="co">##   2024 (modern): 709,635 students</span></span></code></pre>
+<div class="sourceCode" id="cb40"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"\nYear-over-year changes:\n"</span><span class="op">)</span></span></code></pre></div>
+<pre><code><span><span class="co">## </span></span>
+<span><span class="co">## Year-over-year changes:</span></span></code></pre>
+<div class="sourceCode" id="cb42"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="kw">for</span> <span class="op">(</span><span class="va">i</span> <span class="kw">in</span> <span class="fl">2</span><span class="op">:</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">state_summary</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="va">change</span> <span class="op">&lt;-</span> <span class="va">state_summary</span><span class="op">$</span><span class="va">n_students</span><span class="op">[</span><span class="va">i</span><span class="op">]</span> <span class="op">-</span> <span class="va">state_summary</span><span class="op">$</span><span class="va">n_students</span><span class="op">[</span><span class="va">i</span><span class="op">-</span><span class="fl">1</span><span class="op">]</span></span>
+<span>  <span class="va">pct</span> <span class="op">&lt;-</span> <span class="va">change</span> <span class="op">/</span> <span class="va">state_summary</span><span class="op">$</span><span class="va">n_students</span><span class="op">[</span><span class="va">i</span><span class="op">-</span><span class="fl">1</span><span class="op">]</span> <span class="op">*</span> <span class="fl">100</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">"  %d to %d: %s (%.1f%%)\n"</span>,</span>
+<span>              <span class="va">state_summary</span><span class="op">$</span><span class="va">end_year</span><span class="op">[</span><span class="va">i</span><span class="op">-</span><span class="fl">1</span><span class="op">]</span>,</span>
+<span>              <span class="va">state_summary</span><span class="op">$</span><span class="va">end_year</span><span class="op">[</span><span class="va">i</span><span class="op">]</span>,</span>
+<span>              <span class="fu">scales</span><span class="fu">::</span><span class="fu"><a href="https://scales.r-lib.org/reference/comma.html" class="external-link">comma</a></span><span class="op">(</span><span class="va">change</span><span class="op">)</span>,</span>
+<span>              <span class="va">pct</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="op">}</span></span></code></pre></div>
+<pre><code><span><span class="co">##   2023 to 2024: -14,854 (-0.3%)</span></span>
+<span><span class="co">##   2024 to 2024: -709,635 (-12.2%)</span></span>
+<span><span class="co">##   2024 to 2024: -4,418,420 (-86.2%)</span></span></code></pre>
+<div class="sourceCode" id="cb44"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"\nMajor findings:\n"</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## </span></span>
 <span><span class="co">## Major findings:</span></span></code></pre>
-<div class="sourceCode" id="cb40"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"- State enrollment change from 2024 to 2025:"</span>,</span>
-<span>    <span class="fu">scales</span><span class="fu">::</span><span class="fu"><a href="https://scales.r-lib.org/reference/comma.html" class="external-link">comma</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/diff.html" class="external-link">diff</a></span><span class="op">(</span><span class="va">state_summary</span><span class="op">$</span><span class="va">n_students</span><span class="op">)</span><span class="op">)</span>,</span>
-<span>    <span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">"(%.1f%%)\n"</span>, <span class="fu"><a href="https://rdrr.io/r/base/diff.html" class="external-link">diff</a></span><span class="op">(</span><span class="va">state_summary</span><span class="op">$</span><span class="va">n_students</span><span class="op">)</span><span class="op">/</span><span class="va">state_summary</span><span class="op">$</span><span class="va">n_students</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span><span class="op">*</span><span class="fl">100</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<pre><code><span><span class="co">## - State enrollment change from 2024 to 2025: -709,635 -4,418,420 5,096,586 -727,723 -4,350,775 (-12.2%)</span></span>
-<span><span class="co">##  (-75.7%)</span></span>
-<span><span class="co">##  (87.3%)</span></span>
-<span><span class="co">##  (-12.5%)</span></span>
-<span><span class="co">##  (-74.5%)</span></span></code></pre>
-<div class="sourceCode" id="cb42"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"- All five major districts successfully identified\n"</span><span class="op">)</span></span></code></pre></div>
-<pre><code><span><span class="co">## - All five major districts successfully identified</span></span></code></pre>
-<div class="sourceCode" id="cb44"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb46"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"- Historical data (2023) successfully processed from school-level files\n"</span><span class="op">)</span></span></code></pre></div>
+<pre><code><span><span class="co">## - Historical data (2023) successfully processed from school-level files</span></span></code></pre>
+<div class="sourceCode" id="cb48"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"- Modern Census Day data (2024) includes all aggregation levels\n"</span><span class="op">)</span></span></code></pre></div>
+<pre><code><span><span class="co">## - Modern Census Day data (2024) includes all aggregation levels</span></span></code></pre>
+<div class="sourceCode" id="cb50"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"- Major districts successfully identified across transition years\n"</span><span class="op">)</span></span></code></pre></div>
+<pre><code><span><span class="co">## - Major districts successfully identified across transition years</span></span></code></pre>
+<div class="sourceCode" id="cb52"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"- Grade-level data validates against reported totals\n"</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## - Grade-level data validates against reported totals</span></span></code></pre>
-<div class="sourceCode" id="cb46"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"- No unexpected data quality issues detected\n"</span><span class="op">)</span></span></code></pre></div>
-<pre><code><span><span class="co">## - No unexpected data quality issues detected</span></span></code></pre>
+<div class="sourceCode" id="cb54"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"- Race/ethnicity breakdowns available for all years analyzed\n"</span><span class="op">)</span></span></code></pre></div>
+<pre><code><span><span class="co">## - Race/ethnicity breakdowns available for all years analyzed</span></span></code></pre>
 </div>
 <div class="section level2">
 <h2 id="session-info">Session Info<a class="anchor" aria-label="anchor" href="#session-info"></a>
 </h2>
-<div class="sourceCode" id="cb48"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb56"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/sessionInfo.html" class="external-link">sessionInfo</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## R version 4.5.0 (2025-04-11)</span></span>
 <span><span class="co">## Platform: aarch64-apple-darwin22.6.0</span></span>
 <span><span class="co">## Running under: macOS 26.1</span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## Matrix products: default</span></span>
-<span><span class="co">## BLAS:   /opt/homebrew/Cellar/openblas/0.3.29/lib/libopenblasp-r0.3.29.dylib </span></span>
+<span><span class="co">## BLAS:   /opt/homebrew/Cellar/openblas/0.3.30/lib/libopenblasp-r0.3.30.dylib </span></span>
 <span><span class="co">## LAPACK: /opt/homebrew/Cellar/r/4.5.0/lib/R/lib/libRlapack.dylib;  LAPACK version 3.12.1</span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## locale:</span></span>
@@ -661,7 +703,7 @@ district/county/state aggregates)</li>
 
 
     <footer><div class="pkgdown-footer-left">
-  <p>Developed by Al Martin.</p>
+  <p>Developed by <a href="https://github.com/almartin82" class="external-link">Andy Martin</a>.</p>
 </div>
 
 <div class="pkgdown-footer-right">

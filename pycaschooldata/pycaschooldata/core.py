@@ -124,28 +124,52 @@ def get_available_years() -> dict:
     pkg = _get_pkg()
     with localconverter(robjects.default_converter + pandas2ri.converter):
         r_result = pkg.get_available_years()
-        # Handle various rpy2 return types (dict, NamedList, ListVector)
+        # Handle various rpy2 return types (dict, NamedList, ListVector, vector)
         if isinstance(r_result, dict):
             return {
                 "min_year": int(r_result["min_year"]),
                 "max_year": int(r_result["max_year"]),
             }
+        # Check if it's a simple numeric vector (no names or NULL names)
+        # CA returns a vector of years like c(1982, 1983, ..., 2025)
+        names_attr = getattr(r_result, "names", None)
+        if names_attr is None or (hasattr(names_attr, "__len__") and len(names_attr) == 0):
+            # Simple vector - get min and max
+            import numpy as np
+            years = np.array(r_result)
+            return {
+                "min_year": int(years.min()),
+                "max_year": int(years.max()),
+            }
         # Try rx2 method (works for ListVector and similar)
         if hasattr(r_result, "rx2"):
-            return {
-                "min_year": int(r_result.rx2("min_year")[0]),
-                "max_year": int(r_result.rx2("max_year")[0]),
-            }
+            try:
+                return {
+                    "min_year": int(r_result.rx2("min_year")[0]),
+                    "max_year": int(r_result.rx2("max_year")[0]),
+                }
+            except Exception:
+                pass
         # Fallback: use names attribute if available
-        names_attr = getattr(r_result, "names", None)
         if names_attr is not None:
-            names = list(names_attr) if callable(getattr(names_attr, "__iter__", None)) else names_attr
-            result = {}
-            for i, name in enumerate(names):
-                if name in ("min_year", "max_year"):
-                    val = r_result[i]
-                    if hasattr(val, "__getitem__"):
-                        val = val[0]
-                    result[name] = int(val)
-            return result
+            names = list(names_attr) if hasattr(names_attr, "__iter__") else []
+            if "min_year" in names and "max_year" in names:
+                result = {}
+                for i, name in enumerate(names):
+                    if name in ("min_year", "max_year"):
+                        val = r_result[i]
+                        if hasattr(val, "__getitem__"):
+                            val = val[0]
+                        result[name] = int(val)
+                return result
+        # Last resort: try to treat as iterable and get min/max
+        try:
+            import numpy as np
+            years = np.array(list(r_result))
+            return {
+                "min_year": int(years.min()),
+                "max_year": int(years.max()),
+            }
+        except Exception:
+            pass
         raise TypeError(f"Unexpected return type from get_available_years: {type(r_result)}")

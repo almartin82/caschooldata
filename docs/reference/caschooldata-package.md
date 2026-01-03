@@ -13,6 +13,9 @@ California public school enrollment data.
 - [`fetch_enr_multi`](https://almartin82.github.io/caschooldata/reference/fetch_enr_multi.md):
   Download enrollment for multiple years
 
+- [`get_available_years`](https://almartin82.github.io/caschooldata/reference/get_available_years.md):
+  Get available data years (1982-2025)
+
 - [`tidy_enr`](https://almartin82.github.io/caschooldata/reference/tidy_enr.md):
   Convert wide enrollment to tidy format
 
@@ -61,4 +64,4 @@ Useful links:
 
 ## Author
 
-**Maintainer**: Al Martin <almartin@example.com>
+**Maintainer**: Andy Martin <almartin@gmail.com>

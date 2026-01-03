@@ -23,6 +23,7 @@ Education DataQuest data files. Data is based on Census Day enrollment
 <li class="nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/quickstart.html">Getting Started</a></li>
+    <li><a class="dropdown-item" href="../articles/district-highlights.html">District Trends &amp; Demographics</a></li>
     <li><a class="dropdown-item" href="../articles/data-quality-qa.html">Data Quality QA</a></li>
   </ul></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
@@ -58,7 +59,11 @@ Education DataQuest data files. Data is based on Census Day enrollment
 
 <dl><dt id="arg-end-year">end_year<a class="anchor" aria-label="anchor" href="#arg-end-year"></a></dt>
 <dd><p>A school year. Year is the end of the academic year - e.g., 2024
-for the 2023-24 school year. Currently supports 2024-2025 (Census Day files).</p></dd>
+for the 2023-24 school year. Supports 1982-2025:</p><ul><li><p>2024-2025: Modern Census Day files with full demographic breakdowns</p></li>
+<li><p>2008-2023: Historical files with race/gender data and entity names</p></li>
+<li><p>1994-2007: Historical files with race/gender data (no entity names)</p></li>
+<li><p>1982-1993: Historical files with letter-based race codes</p></li>
+</ul></dd>
 
 
 <dt id="arg-tidy">tidy<a class="anchor" aria-label="anchor" href="#arg-tidy"></a></dt>
@@ -81,10 +86,19 @@ Set to FALSE to force re-download from CDE.</p></dd>
 <li><p><code>agg_level</code>: Aggregation level (T=State, C=County, D=District, S=School)</p></li>
 <li><p><code>county_name</code>, <code>district_name</code>, <code>school_name</code>: Entity names</p></li>
 <li><p><code>charter_status</code>: Charter indicator (Y/N/All)</p></li>
-<li><p><code>grade_level</code>: Grade (TK, K, 01-12, or TOTAL)</p></li>
+<li><p><code>grade_level</code>: Grade (TK, K, 01-12, or TOTAL). Note: TK is NA for 1982-2023.</p></li>
 <li><p><code>reporting_category</code>: CDE demographic category code</p></li>
 <li><p><code>subgroup</code>: Human-readable subgroup name</p></li>
 <li><p><code>n_students</code>: Enrollment count</p></li>
+</ul></div>
+    <div class="section level2">
+    <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
+    <p>Historical data differs from modern (2024+) data in several ways:</p><ul><li><p>Transitional Kindergarten (TK) data is not available (grade_tk is NA)</p></li>
+<li><p>Charter status is not available (charter_status is "All")</p></li>
+<li><p>District and county aggregates are computed from school-level data</p></li>
+<li><p>Student group categories (SG_*) are not available</p></li>
+<li><p>For 1994-2007: Entity names are not available (use CDS code to look up)</p></li>
+<li><p>For 1982-1993: Race categories use different coding (mapped to modern codes)</p></li>
 </ul></div>
 
     <div class="section level2">
@@ -92,6 +106,12 @@ Set to FALSE to force re-download from CDE.</p></dd>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span> <span class="co"># \dontrun{</span></span></span>
 <span class="r-in"><span><span class="co"># Get 2024 enrollment data (2023-24 school year)</span></span></span>
 <span class="r-in"><span><span class="va">enr_2024</span> <span class="op">&lt;-</span> <span class="fu">fetch_enr</span><span class="op">(</span><span class="fl">2024</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Get historical data (2019-20 school year)</span></span></span>
+<span class="r-in"><span><span class="va">enr_2020</span> <span class="op">&lt;-</span> <span class="fu">fetch_enr</span><span class="op">(</span><span class="fl">2020</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Get data from the 1990s</span></span></span>
+<span class="r-in"><span><span class="va">enr_1995</span> <span class="op">&lt;-</span> <span class="fu">fetch_enr</span><span class="op">(</span><span class="fl">1995</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Get wide format (one column per grade)</span></span></span>
 <span class="r-in"><span><span class="va">enr_wide</span> <span class="op">&lt;-</span> <span class="fu">fetch_enr</span><span class="op">(</span><span class="fl">2024</span>, tidy <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></span>
@@ -101,8 +121,8 @@ Set to FALSE to force re-download from CDE.</p></dd>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Filter to school-level total enrollment</span></span></span>
 <span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org" class="external-link">dplyr</a></span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="va">schools</span> <span class="op">&lt;-</span> <span class="va">enr_2024</span> <span class="op"><a href="pipe.html">%&gt;%</a></span></span></span>
-<span class="r-in"><span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">agg_level</span> <span class="op">==</span> <span class="st">"S"</span>, <span class="va">reporting_category</span> <span class="op">==</span> <span class="st">"TA"</span>, <span class="va">grade_level</span> <span class="op">==</span> <span class="st">"TOTAL"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">schools</span> <span class="op">&lt;-</span> <span class="va">enr_2024</span> <span class="op">|&gt;</span></span></span>
+<span class="r-in"><span>  <span class="fu"><a href="https://rdrr.io/pkg/dplyr/man/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">agg_level</span> <span class="op">==</span> <span class="st">"S"</span>, <span class="va">reporting_category</span> <span class="op">==</span> <span class="st">"TA"</span>, <span class="va">grade_level</span> <span class="op">==</span> <span class="st">"TOTAL"</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">}</span> <span class="co"># }</span></span></span>
 </code></pre></div>
     </div>
@@ -111,7 +131,7 @@ Set to FALSE to force re-download from CDE.</p></dd>
 
 
     <footer><div class="pkgdown-footer-left">
-  <p>Developed by Al Martin.</p>
+  <p>Developed by <a href="https://github.com/almartin82" class="external-link">Andy Martin</a>.</p>
 </div>
 
 <div class="pkgdown-footer-right">

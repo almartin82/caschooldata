@@ -1,7 +1,8 @@
 # Get raw enrollment data from CDE
 
 Downloads the raw enrollment data file for a given year from the
-California Department of Education website.
+California Department of Education website. Uses modern Census Day files
+for 2024+ and historical school-level files for 1982-2023.
 
 ## Usage
 

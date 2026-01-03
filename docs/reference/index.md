@@ -8,6 +8,8 @@ Download enrollment data from CDE
   : Fetch California enrollment data
 - [`fetch_enr_multi()`](https://almartin82.github.io/caschooldata/reference/fetch_enr_multi.md)
   : Fetch enrollment for multiple years
+- [`get_available_years()`](https://almartin82.github.io/caschooldata/reference/get_available_years.md)
+  : Get available years for California enrollment data
 
 ## Process & Tidy
 
