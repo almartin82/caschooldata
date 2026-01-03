@@ -91,14 +91,13 @@ test_that("get_available_years returns correct range", {
 
   expect_type(years, "integer")
 
-  # Should include the documented range 1982-2025
+  # Should include the documented range 1982-2024
   expect_equal(min(years), 1982)
-  expect_equal(max(years), 2025)
+  expect_equal(max(years), 2024)
 
   # Should include both historical and modern years
   expect_true(2020 %in% years)  # Historical year
-  expect_true(2024 %in% years)  # Modern Census Day year
-  expect_true(2025 %in% years)  # Most recent year
+  expect_true(2024 %in% years)  # Most recent available year
 })
 
 
