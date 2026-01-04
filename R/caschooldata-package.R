@@ -2,7 +2,18 @@
 utils::globalVariables(c(
   ".", "agg_level", "cds_code", "charter_status", "grade_level",
   "is_county", "is_district", "is_state", "n_students",
-  "reporting_category", "subgroup", "total_enrollment"
+  "reporting_category", "subgroup", "total_enrollment",
+  # Column names from raw data (uppercase)
+  "ACADEMIC_YEAR", "ENR_TYPE", "COUNTY", "DISTRICT", "SCHOOL",
+  "DISTRICT_NAME", "SCHOOL_NAME", "RACE_ETHNICITY", "CDS_CODE",
+  "ENR_TOTAL", "GR_KN", "GR_1", "GR_2", "GR_3", "GR_4", "GR_5",
+  "GR_6", "GR_7", "GR_8", "GR_9", "GR_10", "GR_11", "GR_12", "GENDER",
+  # Column names after processing (lowercase)
+  "county_name", "district_name", "school_name",
+  "county_code", "district_code", "school_code",
+  "grade_k", "grade_01", "grade_02", "grade_03", "grade_04",
+  "grade_05", "grade_06", "grade_07", "grade_08", "grade_09",
+  "grade_10", "grade_11", "grade_12", "grade_tk", "academic_year"
 ))
 
 #' caschooldata: Fetch and Process California School Data
