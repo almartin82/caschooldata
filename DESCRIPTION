@@ -23,6 +23,7 @@ Suggests:
     knitr,
     rmarkdown,
     ggplot2,
+    httr,
     scales,
     tidyr
 VignetteBuilder: knitr
