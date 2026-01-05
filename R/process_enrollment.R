@@ -93,7 +93,10 @@ process_enr_modern <- function(raw_data, end_year) {
   county_code_col <- find_col(c("^County.?Code$", "^COUNTY_CODE$"))
   if (!is.null(county_code_col)) {
     # Ensure 2-digit format with leading zeros
-    result$county_code <- sprintf("%02s", raw_data[[county_code_col]])
+    # Handle NA values by setting them to "00" (state-level placeholder)
+    county_codes <- raw_data[[county_code_col]]
+    county_codes[is.na(county_codes)] <- "00"
+    result$county_code <- sprintf("%02s", county_codes)
     result$county_code <- gsub(" ", "0", result$county_code)
   }
 
@@ -101,7 +104,10 @@ process_enr_modern <- function(raw_data, end_year) {
   district_code_col <- find_col(c("^District.?Code$", "^DISTRICT_CODE$"))
   if (!is.null(district_code_col)) {
     # Ensure 5-digit format with leading zeros
-    result$district_code <- sprintf("%05s", raw_data[[district_code_col]])
+    # Handle NA values by setting them to "00000" (state/county-level placeholder)
+    district_codes <- raw_data[[district_code_col]]
+    district_codes[is.na(district_codes)] <- "00000"
+    result$district_code <- sprintf("%05s", district_codes)
     result$district_code <- gsub(" ", "0", result$district_code)
   }
 
@@ -109,7 +115,10 @@ process_enr_modern <- function(raw_data, end_year) {
   school_code_col <- find_col(c("^School.?Code$", "^SCHOOL_CODE$"))
   if (!is.null(school_code_col)) {
     # Ensure 7-digit format with leading zeros
-    result$school_code <- sprintf("%07s", raw_data[[school_code_col]])
+    # Handle NA values by setting them to "0000000" (state/county/district-level placeholder)
+    school_codes <- raw_data[[school_code_col]]
+    school_codes[is.na(school_codes)] <- "0000000"
+    result$school_code <- sprintf("%07s", school_codes)
     result$school_code <- gsub(" ", "0", result$school_code)
   }
 

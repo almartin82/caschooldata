@@ -26,17 +26,21 @@
 #' @return A tibble with enrollment data. In tidy format, includes columns:
 #'   \itemize{
 #'     \item \code{end_year}: School year end (integer)
+#'     \item \code{district_id}: 5-digit district identifier (formerly district_code)
+#'     \item \code{campus_id}: 7-digit campus identifier (formerly school_code, NA for district rows)
+#'     \item \code{district_name}: District name
+#'     \item \code{campus_name}: Campus name (formerly school_name, NA for district rows)
+#'     \item \code{type}: Aggregation level ("State", "County", "District", or "Campus")
+#'     \item \code{grade_level}: Grade (TK, K, 01-12, TOTAL, K8, HS, or K12). Note: TK is NA for 1982-2023.
+#'     \item \code{subgroup}: Demographic subgroup (total, hispanic, white, asian, black, etc.)
+#'     \item \code{n_students}: Enrollment count
+#'     \item \code{pct}: Percentage of total enrollment (0-1 scale)
+#'     \item \code{academic_year}: Academic year label (e.g., "2023-24")
 #'     \item \code{cds_code}: 14-digit CDS identifier
 #'     \item \code{county_code}: 2-digit county code
-#'     \item \code{district_code}: 5-digit district code
-#'     \item \code{school_code}: 7-digit school code
-#'     \item \code{agg_level}: Aggregation level (T=State, C=County, D=District, S=School)
-#'     \item \code{county_name}, \code{district_name}, \code{school_name}: Entity names
-#'     \item \code{charter_status}: Charter indicator (Y/N/All)
-#'     \item \code{grade_level}: Grade (TK, K, 01-12, or TOTAL). Note: TK is NA for 1982-2023.
-#'     \item \code{reporting_category}: CDE demographic category code
-#'     \item \code{subgroup}: Human-readable subgroup name
-#'     \item \code{n_students}: Enrollment count
+#'     \item \code{county_name}: County name
+#'     \item \code{charter_status}: Charter indicator (All/Y/N)
+#'     \item \code{is_state}, \code{is_county}, \code{is_district}, \code{is_school}: Boolean flags
 #'   }
 #' @details
 #' Historical data differs from modern (2024+) data in several ways:
@@ -68,7 +72,7 @@
 #' # Filter to school-level total enrollment
 #' library(dplyr)
 #' schools <- enr_2024 |>
-#'   filter(agg_level == "S", reporting_category == "TA", grade_level == "TOTAL")
+#'   filter(type == "Campus", subgroup == "total", grade_level == "TOTAL")
 #' }
 fetch_enr <- function(end_year, tidy = TRUE, use_cache = TRUE) {
 
@@ -103,6 +107,28 @@ fetch_enr <- function(end_year, tidy = TRUE, use_cache = TRUE) {
   if (tidy) {
     result <- tidy_enr(processed) |>
       id_enr_aggs()
+
+    # Reorder columns: PRD columns first, then CA-specific, then helpers
+    prd_cols <- c(
+      "end_year", "district_id", "campus_id", "district_name", "campus_name",
+      "type", "grade_level", "subgroup", "n_students", "pct"
+    )
+    ca_cols <- c(
+      "academic_year", "cds_code", "county_code", "county_name",
+      "charter_status", "agg_level", "reporting_category", "total_enrollment"
+    )
+    helper_cols <- c(
+      "is_state", "is_county", "is_district", "is_school", "is_charter"
+    )
+
+    # Build column order
+    all_possible <- c(prd_cols, ca_cols, helper_cols)
+    col_order <- all_possible[all_possible %in% names(result)]
+    remaining <- setdiff(names(result), col_order)
+    col_order <- c(col_order, remaining)
+
+    result <- result |>
+      dplyr::select(dplyr::all_of(col_order))
   } else {
     result <- processed
   }
