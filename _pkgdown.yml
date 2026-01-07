@@ -9,7 +9,7 @@ template:
 
 home:
   links:
-  - text: "10 Insights from California Enrollment Data"
+  - text: "15 Insights from California Enrollment Data"
     href: articles/district-highlights.html
   - text: CDE DataQuest
     href: https://dq.cde.ca.gov/dataquest/
@@ -54,3 +54,9 @@ reference:
   contents:
   - cache_status
   - clear_enr_cache
+  - clear_directory_cache
+
+- title: School Directory
+  desc: Download school directory data
+  contents:
+  - fetch_directory

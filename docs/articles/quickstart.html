@@ -75,11 +75,11 @@ Department of Education (CDE). This vignette walks through the main
 features of the package.</p>
 <p><strong>What you’ll find in the data:</strong></p>
 <ul>
-<li>8 years of enrollment data (2018-2025)</li>
+<li>44 years of enrollment data (1982-2025)</li>
 <li>5.8+ million students across 1,000+ districts</li>
 <li>Demographic breakdowns by race/ethnicity, gender, and student
 groups</li>
-<li>Trends showing 400,000+ student decline since COVID-19</li>
+<li>Trends showing enrollment decline since 2003 peak</li>
 </ul>
 <p>For a deep dive into trends and findings, see the <a href="district-highlights.html">District Trends &amp; Demographics</a>
 vignette.</p>
@@ -115,14 +115,21 @@ year. For example, <code>end_year = 2024</code> fetches data for the
 <div class="section level3">
 <h3 id="available-years">Available Years<a class="anchor" aria-label="anchor" href="#available-years"></a>
 </h3>
-<p>The package supports Census Day enrollment data from 2018-2025:</p>
+<p>The package supports 44 years of Census Day enrollment data from
+1982-2025:</p>
 <ul>
 <li>
 <strong>2024-2025</strong>: Modern Census Day files with full
 demographic breakdowns</li>
 <li>
-<strong>2018-2023</strong>: Historical school-level files with
-race/ethnicity and gender data</li>
+<strong>2008-2023</strong>: Historical files with entity names,
+race/ethnicity, and gender data</li>
+<li>
+<strong>1994-2007</strong>: Historical files with CDS codes only (no
+entity names)</li>
+<li>
+<strong>1982-1993</strong>: Historical files with letter-based race
+codes (mapped to modern names)</li>
 </ul>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Fetch the most recent year</span></span>
@@ -131,8 +138,11 @@ race/ethnicity and gender data</li>
 <span><span class="co"># Fetch historical data</span></span>
 <span><span class="va">enr_2020</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fetch_enr.html">fetch_enr</a></span><span class="op">(</span><span class="fl">2020</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># Fetch all years for trend analysis</span></span>
-<span><span class="va">enr_all</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fetch_enr_multi.html">fetch_enr_multi</a></span><span class="op">(</span><span class="fl">2018</span><span class="op">:</span><span class="fl">2025</span><span class="op">)</span></span></code></pre></div>
+<span><span class="co"># Fetch all 44 years for trend analysis</span></span>
+<span><span class="va">enr_all</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fetch_enr_multi.html">fetch_enr_multi</a></span><span class="op">(</span><span class="fl">1982</span><span class="op">:</span><span class="fl">2025</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Fetch a subset of years</span></span>
+<span><span class="va">enr_recent</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fetch_enr_multi.html">fetch_enr_multi</a></span><span class="op">(</span><span class="fl">2018</span><span class="op">:</span><span class="fl">2025</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="wide-vs--tidy-format">Wide vs. Tidy Format<a class="anchor" aria-label="anchor" href="#wide-vs--tidy-format"></a>

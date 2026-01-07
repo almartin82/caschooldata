@@ -9,10 +9,10 @@ package.
 
 **What you’ll find in the data:**
 
-- 8 years of enrollment data (2018-2025)
+- 44 years of enrollment data (1982-2025)
 - 5.8+ million students across 1,000+ districts
 - Demographic breakdowns by race/ethnicity, gender, and student groups
-- Trends showing 400,000+ student decline since COVID-19
+- Trends showing enrollment decline since 2003 peak
 
 For a deep dive into trends and findings, see the [District Trends &
 Demographics](https://almartin82.github.io/caschooldata/articles/district-highlights.md)
@@ -50,12 +50,16 @@ example, `end_year = 2024` fetches data for the 2023-24 school year.
 
 ### Available Years
 
-The package supports Census Day enrollment data from 2018-2025:
+The package supports 44 years of Census Day enrollment data from
+1982-2025:
 
 - **2024-2025**: Modern Census Day files with full demographic
   breakdowns
-- **2018-2023**: Historical school-level files with race/ethnicity and
+- **2008-2023**: Historical files with entity names, race/ethnicity, and
   gender data
+- **1994-2007**: Historical files with CDS codes only (no entity names)
+- **1982-1993**: Historical files with letter-based race codes (mapped
+  to modern names)
 
 ``` r
 # Fetch the most recent year
@@ -64,8 +68,11 @@ enr_2025 <- fetch_enr(2025)
 # Fetch historical data
 enr_2020 <- fetch_enr(2020)
 
-# Fetch all years for trend analysis
-enr_all <- fetch_enr_multi(2018:2025)
+# Fetch all 44 years for trend analysis
+enr_all <- fetch_enr_multi(1982:2025)
+
+# Fetch a subset of years
+enr_recent <- fetch_enr_multi(2018:2025)
 ```
 
 ### Wide vs. Tidy Format

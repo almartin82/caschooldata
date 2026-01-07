@@ -13,7 +13,7 @@ Fetch and analyze California school enrollment data from the California Departme
 
 ## What can you find with caschooldata?
 
-**44 years of enrollment data (1982-2025).** 5.8 million students today. Over 1,000 districts. Here are ten stories hiding in the numbers:
+**44 years of enrollment data (1982-2025).** 5.8 million students today. Over 1,000 districts. Here are fifteen stories hiding in the numbers:
 
 ---
 
@@ -32,7 +32,7 @@ enr %>%
   select(end_year, n_students)
 ```
 
-![40-year enrollment arc](man/figures/enrollment-40yr.png)
+![40-year enrollment arc](https://almartin82.github.io/caschooldata/articles/district-highlights_files/figure-html/finding-1-1.png)
 
 ---
 
@@ -51,7 +51,7 @@ enr %>%
   mutate(pct = n / sum(n) * 100)
 ```
 
-![Demographic transformation](man/figures/demographics-30yr.png)
+![Demographic transformation](https://almartin82.github.io/caschooldata/articles/district-highlights_files/figure-html/finding-4-1.png)
 
 ---
 
@@ -67,7 +67,7 @@ enr %>%
   select(end_year, grade_level, n_students)
 ```
 
-![K vs 12th grade](man/figures/k-vs-12.png)
+![K vs 12th grade](https://almartin82.github.io/caschooldata/articles/district-highlights_files/figure-html/finding-8-1.png)
 
 ---
 
@@ -84,7 +84,7 @@ enr %>%
   select(end_year, grade_level, n_students)
 ```
 
-![COVID impact by grade](man/figures/covid-grades.png)
+![COVID impact by grade](https://almartin82.github.io/caschooldata/articles/district-highlights_files/figure-html/finding-6-1.png)
 
 ---
 
@@ -105,7 +105,7 @@ enr %>%
   select(end_year, district_name, n_students)
 ```
 
-![Top districts](man/figures/top-districts.png)
+![Top districts](https://almartin82.github.io/caschooldata/articles/district-highlights_files/figure-html/finding-3-1.png)
 
 ---
 
@@ -122,7 +122,7 @@ enr %>%
   mutate(index = n_students / first(n_students) * 100)
 ```
 
-![Bay Area vs SoCal](man/figures/bayarea-socal.png)
+![Bay Area vs SoCal](https://almartin82.github.io/caschooldata/articles/district-highlights_files/figure-html/finding-7-1.png)
 
 ---
 
@@ -140,7 +140,7 @@ enr_2025 %>%
   mutate(pct = n_students / sum(n_students) * 100)
 ```
 
-![Gender by grade](man/figures/gender-grades.png)
+![Gender by grade](https://almartin82.github.io/caschooldata/articles/district-highlights_files/figure-html/finding-9-1.png)
 
 ---
 
@@ -155,7 +155,7 @@ enr_2025 %>%
   arrange(desc(n_students))
 ```
 
-![Student groups](man/figures/student-groups.png)
+![Student groups](https://almartin82.github.io/caschooldata/articles/district-highlights_files/figure-html/finding-10-1.png)
 
 ---
 
@@ -172,7 +172,7 @@ enr %>%
   select(end_year, district_name, n_students)
 ```
 
-![LAUSD decline](man/figures/lausd-longterm.png)
+![LAUSD decline](https://almartin82.github.io/caschooldata/articles/district-highlights_files/figure-html/finding-2-1.png)
 
 ---
 
@@ -191,7 +191,94 @@ enr_2025 %>%
   mutate(pct = n / sum(n) * 100)
 ```
 
-![Race by district](man/figures/race-by-district.png)
+![Race by district](https://almartin82.github.io/caschooldata/articles/district-highlights_files/figure-html/finding-4-1.png)
+
+---
+
+### 11. The Central Valley bucks statewide decline
+
+While coastal California loses students, Central Valley agricultural counties like Kern, Fresno, and Tulare have held relatively steady.
+
+```r
+central_valley <- c("Kern", "Fresno", "Tulare", "Kings", "Madera", "Merced", "Stanislaus")
+
+enr %>%
+  filter(is_county, grade_level == "TOTAL", reporting_category == "TA",
+         county_name %in% central_valley) %>%
+  group_by(end_year) %>%
+  summarize(n_students = sum(n_students)) %>%
+  mutate(index = n_students / first(n_students) * 100)
+```
+
+![Central Valley vs Bay Area](https://almartin82.github.io/caschooldata/articles/district-highlights_files/figure-html/finding-11-1.png)
+
+---
+
+### 12. San Francisco lost more than 1 in 4 students
+
+San Francisco Unified has experienced the most dramatic enrollment collapse of any major California district, losing over 25% of its students since 2018.
+
+```r
+enr %>%
+  filter(is_district, grade_level == "TOTAL", reporting_category == "TA",
+         grepl("San Francisco Unified", district_name)) %>%
+  arrange(end_year) %>%
+  mutate(pct_change = (n_students - first(n_students)) / first(n_students) * 100)
+```
+
+![San Francisco enrollment collapse](https://almartin82.github.io/caschooldata/articles/district-highlights_files/figure-html/finding-12-1.png)
+
+---
+
+### 13. Charter schools serve 12% of California students
+
+Charter schools now educate approximately 700,000 students statewide. The modern Census Day data (2024+) allows detailed charter vs traditional comparisons.
+
+```r
+enr %>%
+  filter(is_state, end_year >= 2024, grade_level == "TOTAL",
+         reporting_category == "TA", charter_status %in% c("Y", "N")) %>%
+  mutate(type = ifelse(charter_status == "Y", "Charter", "Traditional")) %>%
+  group_by(end_year, type) %>%
+  summarize(n = sum(n_students))
+```
+
+![Charter vs Traditional](https://almartin82.github.io/caschooldata/articles/district-highlights_files/figure-html/finding-13-1.png)
+
+---
+
+### 14. The shrinking class pipeline
+
+Comparing enrollment across grades reveals how smaller kindergarten cohorts work their way through the system. The grade 12 bulge from larger past cohorts will soon graduate.
+
+```r
+enr %>%
+  filter(is_state, reporting_category == "TA", end_year == max(end_year),
+         grade_level %in% c("K", "01", "02", "03", "04", "05",
+                            "06", "07", "08", "09", "10", "11", "12")) %>%
+  select(grade_level, n_students)
+```
+
+![Grade level pipeline](https://almartin82.github.io/caschooldata/articles/district-highlights_files/figure-html/finding-14-1.png)
+
+---
+
+### 15. Fresno Unified: The Central Valley's anchor
+
+Fresno Unified, California's third-largest district, has remained remarkably stable compared to its coastal counterparts.
+
+```r
+compare_districts <- c("Fresno Unified", "San Diego Unified",
+                       "Oakland Unified", "Long Beach Unified")
+
+enr %>%
+  filter(is_district, grade_level == "TOTAL", reporting_category == "TA",
+         district_name %in% compare_districts) %>%
+  group_by(district_name) %>%
+  mutate(index = n_students / first(n_students) * 100)
+```
+
+![Fresno vs coastal districts](https://almartin82.github.io/caschooldata/articles/district-highlights_files/figure-html/finding-15-1.png)
 
 ---
 

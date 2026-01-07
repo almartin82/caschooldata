@@ -5,6 +5,9 @@
 #' @importFrom rlang .data
 NULL
 
+globalVariables(c("type", "district_id", "campus_id", "end_year",
+                  "total_for_group"))
+
 
 #' Get available years for California enrollment data
 #'

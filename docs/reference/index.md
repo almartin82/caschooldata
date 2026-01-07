@@ -32,3 +32,12 @@ Manage locally cached data
   : Get cache status
 - [`clear_enr_cache()`](https://almartin82.github.io/caschooldata/reference/clear_enr_cache.md)
   : Clear enrollment cache
+- [`clear_directory_cache()`](https://almartin82.github.io/caschooldata/reference/clear_directory_cache.md)
+  : Clear school directory cache
+
+## School Directory
+
+Download school directory data
+
+- [`fetch_directory()`](https://almartin82.github.io/caschooldata/reference/fetch_directory.md)
+  : Fetch California school directory data

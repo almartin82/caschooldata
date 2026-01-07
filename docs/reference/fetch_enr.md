@@ -41,29 +41,39 @@ A tibble with enrollment data. In tidy format, includes columns:
 
 - `end_year`: School year end (integer)
 
+- `district_id`: 5-digit district identifier (formerly district_code)
+
+- `campus_id`: 7-digit campus identifier (formerly school_code, NA for
+  district rows)
+
+- `district_name`: District name
+
+- `campus_name`: Campus name (formerly school_name, NA for district
+  rows)
+
+- `type`: Aggregation level ("State", "County", "District", or "Campus")
+
+- `grade_level`: Grade (TK, K, 01-12, TOTAL, K8, HS, or K12). Note: TK
+  is NA for 1982-2023.
+
+- `subgroup`: Demographic subgroup (total, hispanic, white, asian,
+  black, etc.)
+
+- `n_students`: Enrollment count
+
+- `pct`: Percentage of total enrollment (0-1 scale)
+
+- `academic_year`: Academic year label (e.g., "2023-24")
+
 - `cds_code`: 14-digit CDS identifier
 
 - `county_code`: 2-digit county code
 
-- `district_code`: 5-digit district code
+- `county_name`: County name
 
-- `school_code`: 7-digit school code
+- `charter_status`: Charter indicator (All/Y/N)
 
-- `agg_level`: Aggregation level (T=State, C=County, D=District,
-  S=School)
-
-- `county_name`, `district_name`, `school_name`: Entity names
-
-- `charter_status`: Charter indicator (Y/N/All)
-
-- `grade_level`: Grade (TK, K, 01-12, or TOTAL). Note: TK is NA for
-  1982-2023.
-
-- `reporting_category`: CDE demographic category code
-
-- `subgroup`: Human-readable subgroup name
-
-- `n_students`: Enrollment count
+- `is_state`, `is_county`, `is_district`, `is_school`: Boolean flags
 
 ## Details
 
@@ -105,6 +115,6 @@ enr_fresh <- fetch_enr(2024, use_cache = FALSE)
 # Filter to school-level total enrollment
 library(dplyr)
 schools <- enr_2024 |>
-  filter(agg_level == "S", reporting_category == "TA", grade_level == "TOTAL")
+  filter(type == "Campus", subgroup == "total", grade_level == "TOTAL")
 } # }
 ```
