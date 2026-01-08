@@ -2,7 +2,7 @@
 
 ## Authors
 
-- **[Andy Martin](https://github.com/almartin82)**. Author, maintainer.
+- **[Andy Martin](https://github.com/almartin82)**. Maintainer.
 
 ## Citation
 
