@@ -1,8 +1,8 @@
 Package: caschooldata
 Title: California School Data
 Version: 0.1.0
-Authors@R:
-    person("Andy", "Martin", , "almartin@gmail.com", role = c("aut", "cre"))
+Author: Andy Martin [aut, cre]
+Maintainer: Andy Martin <almartin@gmail.com>
 Description: A simple, consistent interface for accessing California
     school data in Python and R.
 License: MIT + file LICENSE
