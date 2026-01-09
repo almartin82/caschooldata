@@ -2,9 +2,13 @@
 
 export(cache_status)
 export(clear_enr_cache)
+export(clear_grad_cache)
 export(enr_grade_aggs)
 export(fetch_enr)
 export(fetch_enr_multi)
+export(fetch_graduation)
+export(fetch_graduation_multi)
+export(get_available_grad_years)
 export(get_available_years)
 export(id_enr_aggs)
 export(parse_cds_code)
