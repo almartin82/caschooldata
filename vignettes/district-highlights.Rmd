@@ -40,7 +40,7 @@ library(ggplot2)
 ```{r fetch-data}
 # Fetch all available years
 years <- 2018:2025
-enr <- fetch_enr_multi(years)
+enr <- fetch_enr_multi(years, use_cache = TRUE)
 
 # Quick overview
 enr %>%
