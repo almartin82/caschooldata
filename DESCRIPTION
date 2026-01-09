@@ -14,9 +14,11 @@ Depends:
 Imports:
     dplyr,
     downloader,
+    httr,
     purrr,
     rappdirs,
     readr,
+    readxl,
     rlang
 Suggests:
     testthat (>= 3.0.0),

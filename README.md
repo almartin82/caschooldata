@@ -32,7 +32,7 @@ enr %>%
   select(end_year, n_students)
 ```
 
-![40-year enrollment arc](man/figures/enrollment-40yr.png)
+![40-year enrollment arc](https://almartin82.github.io/caschooldata/articles/district-highlights_files/figure-html/finding-1-1.png)
 
 ---
 
@@ -51,7 +51,7 @@ enr %>%
   mutate(pct = n / sum(n) * 100)
 ```
 
-![Demographic transformation](man/figures/demographics-30yr.png)
+![Demographic transformation](https://almartin82.github.io/caschooldata/articles/district-highlights_files/figure-html/finding-4-1.png)
 
 ---
 
@@ -67,7 +67,7 @@ enr %>%
   select(end_year, grade_level, n_students)
 ```
 
-![K vs 12th grade](man/figures/k-vs-12.png)
+![K vs 12th grade](https://almartin82.github.io/caschooldata/articles/district-highlights_files/figure-html/finding-8-1.png)
 
 ---
 
@@ -84,7 +84,7 @@ enr %>%
   select(end_year, grade_level, n_students)
 ```
 
-![COVID impact by grade](man/figures/covid-grades.png)
+![COVID impact by grade](https://almartin82.github.io/caschooldata/articles/district-highlights_files/figure-html/finding-6-1.png)
 
 ---
 
@@ -105,7 +105,7 @@ enr %>%
   select(end_year, district_name, n_students)
 ```
 
-![Top districts](man/figures/top-districts.png)
+![Top districts](https://almartin82.github.io/caschooldata/articles/district-highlights_files/figure-html/finding-3-1.png)
 
 ---
 
@@ -122,7 +122,7 @@ enr %>%
   mutate(index = n_students / first(n_students) * 100)
 ```
 
-![Bay Area vs SoCal](man/figures/bayarea-socal.png)
+![Bay Area vs SoCal](https://almartin82.github.io/caschooldata/articles/district-highlights_files/figure-html/finding-7-1.png)
 
 ---
 
@@ -140,7 +140,7 @@ enr_2025 %>%
   mutate(pct = n_students / sum(n_students) * 100)
 ```
 
-![Gender by grade](man/figures/gender-grades.png)
+![Gender by grade](https://almartin82.github.io/caschooldata/articles/district-highlights_files/figure-html/finding-9-1.png)
 
 ---
 
@@ -155,7 +155,7 @@ enr_2025 %>%
   arrange(desc(n_students))
 ```
 
-![Student groups](man/figures/student-groups.png)
+![Student groups](https://almartin82.github.io/caschooldata/articles/district-highlights_files/figure-html/finding-10-1.png)
 
 ---
 
@@ -172,7 +172,7 @@ enr %>%
   select(end_year, district_name, n_students)
 ```
 
-![LAUSD decline](man/figures/lausd-longterm.png)
+![LAUSD decline](https://almartin82.github.io/caschooldata/articles/district-highlights_files/figure-html/finding-2-1.png)
 
 ---
 
@@ -191,7 +191,7 @@ enr_2025 %>%
   mutate(pct = n / sum(n) * 100)
 ```
 
-![Race by district](man/figures/race-by-district.png)
+![Race by district](https://almartin82.github.io/caschooldata/articles/district-highlights_files/figure-html/finding-5-1.png)
 
 ---
 
