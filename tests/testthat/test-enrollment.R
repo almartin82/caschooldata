@@ -104,6 +104,6 @@ test_that("get_available_years returns correct range", {
 test_that("cache functions work correctly", {
   # Test cache path construction
   path <- build_cache_path(2024, "tidy")
-  expect_true(grepl("enr_2024_tidy.rds", path))
+  expect_true(grepl("enr_tidy_2024.rds", path))
   expect_true(grepl("caschooldata", path))
 })

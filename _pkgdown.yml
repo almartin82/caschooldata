@@ -39,7 +39,10 @@ reference:
   contents:
   - fetch_enr
   - fetch_enr_multi
+  - fetch_graduation
+  - fetch_graduation_multi
   - get_available_years
+  - get_available_grad_years
 
 - title: Process & Tidy
   desc: Transform data into analysis-ready formats
@@ -54,3 +57,4 @@ reference:
   contents:
   - cache_status
   - clear_enr_cache
+  - clear_grad_cache

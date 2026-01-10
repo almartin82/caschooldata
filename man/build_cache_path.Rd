@@ -9,7 +9,7 @@ build_cache_path(end_year, cache_type)
 \arguments{
 \item{end_year}{School year end}
 
-\item{cache_type}{Type of cache ("tidy" or "wide")}
+\item{cache_type}{Type of cache ("tidy", "wide", "grad_tidy", "grad_wide")}
 }
 \value{
 File path string

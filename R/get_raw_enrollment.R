@@ -62,7 +62,12 @@ get_raw_enr_modern <- function(end_year) {
   options(timeout = 300)  # 5 minutes
 
   tryCatch({
-    downloader::download(url, dest = tname, mode = "wb", quiet = TRUE)
+    # Use httr for better redirect handling
+    response <- httr::GET(url, httr::write_disk(tname, overwrite = TRUE),
+                          httr::timeout(300))
+    if (httr::http_error(response)) {
+      stop(paste("HTTP error:", httr::status_code(response)))
+    }
   }, error = function(e) {
     options(timeout = old_timeout)
     stop(paste("Failed to download enrollment data from CDE:", e$message))
@@ -123,7 +128,12 @@ get_raw_enr_historical <- function(end_year) {
   options(timeout = 600)  # 10 minutes
 
   tryCatch({
-    downloader::download(url, dest = tname, mode = "wb", quiet = TRUE)
+    # Use httr for better redirect handling
+    response <- httr::GET(url, httr::write_disk(tname, overwrite = TRUE),
+                          httr::timeout(600))
+    if (httr::http_error(response)) {
+      stop(paste("HTTP error:", httr::status_code(response)))
+    }
   }, error = function(e) {
     options(timeout = old_timeout)
     stop(paste("Failed to download historical enrollment data from CDE:", e$message))

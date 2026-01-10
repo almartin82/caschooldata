@@ -2,19 +2,22 @@
 % Please edit documentation in R/cache.R
 \name{clear_enr_cache}
 \alias{clear_enr_cache}
-\title{Clear enrollment cache}
+\title{Clear the caschooldata cache}
 \usage{
-clear_enr_cache(end_year = NULL)
+clear_enr_cache(end_year = NULL, data_type = NULL)
 }
 \arguments{
 \item{end_year}{Optional. If provided, only clear cache for this year.
-If NULL (default), clears all cached enrollment data.}
+If NULL (default), clears all cached data.}
+
+\item{data_type}{Type of cache to clear: "enr" (enrollment), "grad" (graduation),
+or NULL (both).}
 }
 \value{
 Invisibly returns the number of files removed
 }
 \description{
-Removes cached enrollment data files.
+Removes all cached data files.
 }
 \examples{
 \dontrun{
@@ -23,5 +26,8 @@ clear_enr_cache()
 
 # Clear only 2024 data
 clear_enr_cache(2024)
+
+# Clear only graduation cache
+clear_enr_cache(data_type = "grad")
 }
 }

@@ -1,0 +1,311 @@
+* using log directory ‘/Users/almartin/Documents/state-schooldata/caschooldata/..Rcheck’
+* using R version 4.5.0 (2025-04-11)
+* using platform: aarch64-apple-darwin22.6.0
+* R was compiled by
+    Apple clang version 15.0.0 (clang-1500.1.0.2.5)
+    GNU Fortran (Homebrew GCC 14.2.0_1) 14.2.0
+* running under: macOS 26.1
+* using session charset: UTF-8
+* checking for file ‘./DESCRIPTION’ ... OK
+* this is package ‘caschooldata’ version ‘0.1.0’
+* package encoding: UTF-8
+* checking package namespace information ... OK
+* checking package dependencies ... OK
+* checking if this is a source package ... OK
+* checking if there is a namespace ... OK
+* checking for executable files ... OK
+* checking for hidden files and directories ... NOTE
+Found the following hidden files and directories:
+  .gitignore
+  ..Rcheck
+  .git
+  .github
+These were most likely included in error. See section ‘Package
+structure’ in the ‘Writing R Extensions’ manual.
+* checking for portable file names ... NOTE
+Found the following non-portable file paths:
+  caschooldata/vignettes/data-quality-qa_cache/html/demographic-check_339b17842566ba1c70f2b6c10aa0f8d7.RData
+  caschooldata/vignettes/data-quality-qa_cache/html/demographic-check_339b17842566ba1c70f2b6c10aa0f8d7.rdb
+  caschooldata/vignettes/data-quality-qa_cache/html/demographic-check_339b17842566ba1c70f2b6c10aa0f8d7.rdx
+  caschooldata/vignettes/data-quality-qa_cache/html/district-plot_bf9c227ecd7aa188ade41b07fff8ea5a.RData
+  caschooldata/vignettes/data-quality-qa_cache/html/district-yoy_a3999f97848efcc7ab15cac1ec8e1324.RData
+  caschooldata/vignettes/data-quality-qa_cache/html/major-districts_102821916810445c1360968db59e161f.RData
+  caschooldata/vignettes/data-quality-qa_cache/html/major-districts_102821916810445c1360968db59e161f.rdb
+  caschooldata/vignettes/data-quality-qa_cache/html/major-districts_102821916810445c1360968db59e161f.rdx
+  caschooldata/vignettes/data-quality-qa_cache/html/missing-data_b0ae596f9cb6da90950971e2936a8cc0.RData
+  caschooldata/vignettes/data-quality-qa_cache/html/session-info_b30b89a8f73bd396bc1ab4845d0c61cd.RData
+  caschooldata/vignettes/data-quality-qa_cache/html/state-totals_041423ace23130f53b084bd8ac8bbf60.RData
+  caschooldata/vignettes/district-highlights_cache/html/fetch-data_2c693d5d076b2f3b449deaa1fcee0033.RData
+  caschooldata/vignettes/district-highlights_cache/html/fetch-data_2c693d5d076b2f3b449deaa1fcee0033.rdb
+  caschooldata/vignettes/district-highlights_cache/html/fetch-data_2c693d5d076b2f3b449deaa1fcee0033.rdx
+  caschooldata/vignettes/district-highlights_cache/html/finding-1_e68eed3dca25c71a3b05dd288ab2b08b.RData
+  caschooldata/vignettes/district-highlights_cache/html/finding-2_81d2041f99078a0c1954adbe162a6296.RData
+  caschooldata/vignettes/district-highlights_cache/html/finding-3_357b58bc55d0c6e2953a97fd96d2470c.RData
+  caschooldata/vignettes/district-highlights_cache/html/finding-4_79b62c4cbb6171e02a73fe9aa0510568.RData
+  caschooldata/vignettes/district-highlights_cache/html/load-libraries_e78afd5f1e4537d2ebd094531b531add.RData
+  caschooldata/vignettes/district-highlights_cache/html/load-libraries_e78afd5f1e4537d2ebd094531b531add.rdb
+  caschooldata/vignettes/district-highlights_cache/html/load-libraries_e78afd5f1e4537d2ebd094531b531add.rdx
+
+Tarballs are only required to store paths of up to 100 bytes and cannot
+store those of more than 256 bytes, with restrictions including to 100
+bytes for the final component.
+See section ‘Package structure’ in the ‘Writing R Extensions’ manual.
+* checking for sufficient/correct file permissions ... OK
+* checking whether package ‘caschooldata’ can be installed ... OK
+* checking installed package size ... OK
+* checking package directory ... OK
+* checking DESCRIPTION meta-information ... NOTE
+Checking should be performed on sources prepared by ‘R CMD build’.
+* checking top-level files ... OK
+* checking for left-over files ... OK
+* checking index information ... OK
+* checking package subdirectories ... WARNING
+Found the following directory with the name of a check directory:
+  ./..Rcheck
+Most likely, these were included erroneously.
+* checking code files for non-ASCII characters ... OK
+* checking R files for syntax errors ... OK
+* checking whether the package can be loaded ... OK
+* checking whether the package can be loaded with stated dependencies ... OK
+* checking whether the package can be unloaded cleanly ... OK
+* checking whether the namespace can be loaded with stated dependencies ... OK
+* checking whether the namespace can be unloaded cleanly ... OK
+* checking loading without being on the library search path ... OK
+* checking dependencies in R code ... OK
+* checking S3 generic/method consistency ... OK
+* checking replacement functions ... OK
+* checking foreign function calls ... OK
+* checking R code for possible problems ... NOTE
+id_enr_aggs: no visible binding for global variable ‘type’
+id_enr_aggs: no visible binding for global variable ‘district_id’
+id_enr_aggs: no visible binding for global variable ‘campus_id’
+tidy_enr: no visible binding for global variable ‘end_year’
+tidy_enr: no visible binding for global variable ‘district_id’
+tidy_enr: no visible binding for global variable ‘campus_id’
+tidy_enr: no visible binding for global variable ‘type’
+tidy_enr: no visible binding for global variable ‘total_for_group’
+Undefined global functions or variables:
+  campus_id district_id end_year total_for_group type
+* checking Rd files ... OK
+* checking Rd metadata ... OK
+* checking Rd cross-references ... OK
+* checking for missing documentation entries ... OK
+* checking for code/documentation mismatches ... OK
+* checking Rd \usage sections ... OK
+* checking Rd contents ... OK
+* checking for unstated dependencies in examples ... OK
+* checking files in ‘vignettes’ ... WARNING
+Files in the 'vignettes' directory but no files in 'inst/doc':
+  ‘data-quality-qa.Rmd’ ‘data-quality-qa_cache/html/__packages’
+  ‘data-quality-qa_cache/html/agg-levels_0eafb5560175cec309ab2aec86bf745a.RData’
+  ‘data-quality-qa_cache/html/agg-levels_0eafb5560175cec309ab2aec86bf745a.rdb’
+  ‘data-quality-qa_cache/html/agg-levels_0eafb5560175cec309ab2aec86bf745a.rdx’
+  ‘data-quality-qa_cache/html/charter_d49ef25a514b0d018e46620fd5943a72.RData’
+  ‘data-quality-qa_cache/html/charter_d49ef25a514b0d018e46620fd5943a72.rdb’
+  ‘data-quality-qa_cache/html/charter_d49ef25a514b0d018e46620fd5943a72.rdx’
+  ‘data-quality-qa_cache/html/demographic-check_339b17842566ba1c70f2b6c10aa0f8d7.RData’
+  ‘data-quality-qa_cache/html/demographic-check_339b17842566ba1c70f2b6c10aa0f8d7.rdb’
+  ‘data-quality-qa_cache/html/demographic-check_339b17842566ba1c70f2b6c10aa0f8d7.rdx’
+  ‘data-quality-qa_cache/html/district-plot_bf9c227ecd7aa188ade41b07fff8ea5a.RData’
+  ‘data-quality-qa_cache/html/district-plot_bf9c227ecd7aa188ade41b07fff8ea5a.rdb’
+  ‘data-quality-qa_cache/html/district-plot_bf9c227ecd7aa188ade41b07fff8ea5a.rdx’
+  ‘data-quality-qa_cache/html/district-yoy_a3999f97848efcc7ab15cac1ec8e1324.RData’
+  ‘data-quality-qa_cache/html/district-yoy_a3999f97848efcc7ab15cac1ec8e1324.rdb’
+  ‘data-quality-qa_cache/html/district-yoy_a3999f97848efcc7ab15cac1ec8e1324.rdx’
+  ‘data-quality-qa_cache/html/fetch-data_be8de65782e68921cdcfeda7abc26eee.RData’
+  ‘data-quality-qa_cache/html/fetch-data_be8de65782e68921cdcfeda7abc26eee.rdb’
+  ‘data-quality-qa_cache/html/fetch-data_be8de65782e68921cdcfeda7abc26eee.rdx’
+  ‘data-quality-qa_cache/html/grade-check_e2c5f5c4edc33d380e90d046d844f103.RData’
+  ‘data-quality-qa_cache/html/grade-check_e2c5f5c4edc33d380e90d046d844f103.rdb’
+  ‘data-quality-qa_cache/html/grade-check_e2c5f5c4edc33d380e90d046d844f103.rdx’
+  ‘data-quality-qa_cache/html/libraries_7d19a575766af829d1d8fd6da0932409.RData’
+  ‘data-quality-qa_cache/html/libraries_7d19a575766af829d1d8fd6da0932409.rdb’
+  ‘data-quality-qa_cache/html/libraries_7d19a575766af829d1d8fd6da0932409.rdx’
+  ‘data-quality-qa_cache/html/major-districts_102821916810445c1360968db59e161f.RData’
+  ‘data-quality-qa_cache/html/major-districts_102821916810445c1360968db59e161f.rdb’
+  ‘data-quality-qa_cache/html/major-districts_102821916810445c1360968db59e161f.rdx’
+  ‘data-quality-qa_cache/html/missing-data_b0ae596f9cb6da90950971e2936a8cc0.RData’
+  ‘data-quality-qa_cache/html/missing-data_b0ae596f9cb6da90950971e2936a8cc0.rdb’
+  ‘data-quality-qa_cache/html/missing-data_b0ae596f9cb6da90950971e2936a8cc0.rdx’
+  ‘data-quality-qa_cache/html/session-info_b30b89a8f73bd396bc1ab4845d0c61cd.RData’
+  ‘data-quality-qa_cache/html/session-info_b30b89a8f73bd396bc1ab4845d0c61cd.rdb’
+  ‘data-quality-qa_cache/html/session-info_b30b89a8f73bd396bc1ab4845d0c61cd.rdx’
+  ‘data-quality-qa_cache/html/state-plot_2b1b50fd7cb97ca8986bcd12a2d96dbb.RData’
+  ‘data-quality-qa_cache/html/state-plot_2b1b50fd7cb97ca8986bcd12a2d96dbb.rdb’
+  ‘data-quality-qa_cache/html/state-plot_2b1b50fd7cb97ca8986bcd12a2d96dbb.rdx’
+  ‘data-quality-qa_cache/html/state-totals_041423ace23130f53b084bd8ac8bbf60.RData’
+  ‘data-quality-qa_cache/html/state-totals_041423ace23130f53b084bd8ac8bbf60.rdb’
+  ‘data-quality-qa_cache/html/state-totals_041423ace23130f53b084bd8ac8bbf60.rdx’
+  ‘data-quality-qa_cache/html/subgroups_2f22b901643c61456b2008c3630e2c9f.RData’
+  ‘data-quality-qa_cache/html/subgroups_2f22b901643c61456b2008c3630e2c9f.rdb’
+  ‘data-quality-qa_cache/html/subgroups_2f22b901643c61456b2008c3630e2c9f.rdx’
+  ‘data-quality-qa_cache/html/summary_e3b5cca8d20204100f9e7e6523ea29c1.RData’
+  ‘data-quality-qa_cache/html/summary_e3b5cca8d20204100f9e7e6523ea29c1.rdb’
+  ‘data-quality-qa_cache/html/summary_e3b5cca8d20204100f9e7e6523ea29c1.rdx’
+  ‘data-quality-qa_cache/html/yoy-changes_2390277994005c52d2c7fcb56a410cdf.RData’
+  ‘data-quality-qa_cache/html/yoy-changes_2390277994005c52d2c7fcb56a410cdf.rdb’
+  ‘data-quality-qa_cache/html/yoy-changes_2390277994005c52d2c7fcb56a410cdf.rdx’
+  ‘district-highlights.Rmd’ ‘district-highlights_cache/html/__packages’
+  ‘district-highlights_cache/html/fetch-data_2c693d5d076b2f3b449deaa1fcee0033.RData’
+  ‘district-highlights_cache/html/fetch-data_2c693d5d076b2f3b449deaa1fcee0033.rdb’
+  ‘district-highlights_cache/html/fetch-data_2c693d5d076b2f3b449deaa1fcee0033.rdx’
+  ‘district-highlights_cache/html/finding-1_e68eed3dca25c71a3b05dd288ab2b08b.RData’
+  ‘district-highlights_cache/html/finding-1_e68eed3dca25c71a3b05dd288ab2b08b.rdb’
+  ‘district-highlights_cache/html/finding-1_e68eed3dca25c71a3b05dd288ab2b08b.rdx’
+  ‘district-highlights_cache/html/finding-2_81d2041f99078a0c1954adbe162a6296.RData’
+  ‘district-highlights_cache/html/finding-2_81d2041f99078a0c1954adbe162a6296.rdb’
+  ‘district-highlights_cache/html/finding-2_81d2041f99078a0c1954adbe162a6296.rdx’
+  ‘district-highlights_cache/html/finding-3_357b58bc55d0c6e2953a97fd96d2470c.RData’
+  ‘district-highlights_cache/html/finding-3_357b58bc55d0c6e2953a97fd96d2470c.rdb’
+  ‘district-highlights_cache/html/finding-3_357b58bc55d0c6e2953a97fd96d2470c.rdx’
+  ‘district-highlights_cache/html/finding-4_79b62c4cbb6171e02a73fe9aa0510568.RData’
+  ‘district-highlights_cache/html/finding-4_79b62c4cbb6171e02a73fe9aa0510568.rdb’
+  ‘district-highlights_cache/html/finding-4_79b62c4cbb6171e02a73fe9aa0510568.rdx’
+  ‘district-highlights_cache/html/load-libraries_e78afd5f1e4537d2ebd094531b531add.RData’
+  ‘district-highlights_cache/html/load-libraries_e78afd5f1e4537d2ebd094531b531add.rdb’
+  ‘district-highlights_cache/html/load-libraries_e78afd5f1e4537d2ebd094531b531add.rdx’
+  ‘district-highlights_files/figure-html/finding-1-1.png’
+  ‘district-highlights_files/figure-html/finding-2-1.png’
+  ‘district-highlights_files/figure-html/finding-3-1.png’
+  ‘district-highlights_files/figure-html/finding-4-1.png’
+  ‘quickstart.Rmd’
+* checking examples ... OK
+* checking for unstated dependencies in ‘tests’ ... OK
+* checking tests ...
+  Running ‘testthat.R’
+ OK
+* checking for unstated dependencies in vignettes ... OK
+* checking package vignettes ... WARNING
+Directory 'inst/doc' does not exist.
+Package vignettes without corresponding single PDF/HTML:
+  ‘data-quality-qa.Rmd’
+  ‘district-highlights.Rmd’
+  ‘quickstart.Rmd’
+* checking re-building of vignette outputs ...Warning in file.copy(pkgdir, vd2, recursive = TRUE) : over-long path
+Warning in file.copy(pkgdir, vd2, recursive = TRUE) : over-long path
+Warning in file.copy(pkgdir, vd2, recursive = TRUE) : over-long path
+Warning in file.copy(pkgdir, vd2, recursive = TRUE) : over-long path
+Warning in file.copy(pkgdir, vd2, recursive = TRUE) : over-long path
+Warning in file.copy(pkgdir, vd2, recursive = TRUE) : over-long path
+Warning in file.copy(pkgdir, vd2, recursive = TRUE) : over-long path
+Warning in file.copy(pkgdir, vd2, recursive = TRUE) : over-long path
+Warning in file.copy(pkgdir, vd2, recursive = TRUE) : over-long path
+Warning in file.copy(pkgdir, vd2, recursive = TRUE) : over-long path
+Warning in file.copy(pkgdir, vd2, recursive = TRUE) : over-long path
+Warning in file.copy(pkgdir, vd2, recursive = TRUE) : over-long path
+Warning in file.copy(pkgdir, vd2, recursive = TRUE) : over-long path
+Warning in file.copy(pkgdir, vd2, recursive = TRUE) : over-long path
+Warning in file.copy(pkgdir, vd2, recursive = TRUE) : over-long path
+Warning in file.copy(pkgdir, vd2, recursive = TRUE) : over-long path
+Warning in file.copy(pkgdir, vd2, recursive = TRUE) : over-long path
+Warning in file.copy(pkgdir, vd2, recursive = TRUE) : over-long path
+Warning in file.copy(pkgdir, vd2, recursive = TRUE) : over-long path
+Warning in file.copy(pkgdir, vd2, recursive = TRUE) : over-long path
+Warning in file.copy(pkgdir, vd2, recursive = TRUE) : over-long path
+Warning in file.copy(pkgdir, vd2, recursive = TRUE) : over-long path
+Warning in file.copy(pkgdir, vd2, recursive = TRUE) : over-long path
+Warning in file.copy(pkgdir, vd2, recursive = TRUE) : over-long path
+Warning in file.copy(pkgdir, vd2, recursive = TRUE) : over-long path
+Warning in file.copy(pkgdir, vd2, recursive = TRUE) : over-long path
+Warning in file.copy(pkgdir, vd2, recursive = TRUE) : over-long path
+Warning in file.copy(pkgdir, vd2, recursive = TRUE) : over-long path
+Warning in file.copy(pkgdir, vd2, recursive = TRUE) : over-long path
+Warning in file.copy(pkgdir, vd2, recursive = TRUE) : over-long path
+Warning in file.copy(pkgdir, vd2, recursive = TRUE) : over-long path
+Warning in file.copy(pkgdir, vd2, recursive = TRUE) : over-long path
+Warning in file.copy(pkgdir, vd2, recursive = TRUE) : over-long path
+Warning in file.copy(pkgdir, vd2, recursive = TRUE) : over-long path
+Warning in file.copy(pkgdir, vd2, recursive = TRUE) : over-long path
+Warning in file.copy(pkgdir, vd2, recursive = TRUE) : over-long path
+Warning in file.copy(pkgdir, vd2, recursive = TRUE) : over-long path
+Warning in file.copy(pkgdir, vd2, recursive = TRUE) : over-long path
+Warning in file.copy(pkgdir, vd2, recursive = TRUE) : over-long path
+Warning in file.copy(pkgdir, vd2, recursive = TRUE) : over-long path
+Warning in file.copy(pkgdir, vd2, recursive = TRUE) : over-long path
+Warning in file.copy(pkgdir, vd2, recursive = TRUE) : over-long path
+Warning in file.copy(pkgdir, vd2, recursive = TRUE) : over-long path
+Warning in file.copy(pkgdir, vd2, recursive = TRUE) : over-long path
+Warning in file.copy(pkgdir, vd2, recursive = TRUE) : over-long path
+Warning in file.copy(pkgdir, vd2, recursive = TRUE) : over-long path
+Warning in file.copy(pkgdir, vd2, recursive = TRUE) : over-long path
+Warning in file.copy(pkgdir, vd2, recursive = TRUE) : over-long path
+Warning in file.copy(pkgdir, vd2, recursive = TRUE) : over-long path
+Warning in file.copy(pkgdir, vd2, recursive = TRUE) : over-long path
+Warning in file.copy(pkgdir, vd2, recursive = TRUE) : over-long path
+Warning in file.copy(pkgdir, vd2, recursive = TRUE) : over-long path
+Warning in file.copy(pkgdir, vd2, recursive = TRUE) : over-long path
+Warning in file.copy(pkgdir, vd2, recursive = TRUE) : over-long path
+Warning in file.copy(pkgdir, vd2, recursive = TRUE) : over-long path
+Warning in file.copy(pkgdir, vd2, recursive = TRUE) : over-long path
+Warning in file.copy(pkgdir, vd2, recursive = TRUE) : over-long path
+Warning in file.copy(pkgdir, vd2, recursive = TRUE) : over-long path
+Warning in file.copy(pkgdir, vd2, recursive = TRUE) : over-long path
+Warning in file.copy(pkgdir, vd2, recursive = TRUE) : over-long path
+Warning in file.copy(pkgdir, vd2, recursive = TRUE) : over-long path
+Warning in file.copy(pkgdir, vd2, recursive = TRUE) : over-long path
+Warning in file.copy(pkgdir, vd2, recursive = TRUE) : over-long path
+Warning in file.copy(pkgdir, vd2, recursive = TRUE) : over-long path
+Warning in file.copy(pkgdir, vd2, recursive = TRUE) : over-long path
+Warning in file.copy(pkgdir, vd2, recursive = TRUE) : over-long path
+Warning in file.copy(pkgdir, vd2, recursive = TRUE) : over-long path
+Warning in file.copy(pkgdir, vd2, recursive = TRUE) : over-long path
+Warning in file.copy(pkgdir, vd2, recursive = TRUE) : over-long path
+Warning in file.copy(pkgdir, vd2, recursive = TRUE) : over-long path
+Warning in file.copy(pkgdir, vd2, recursive = TRUE) : over-long path
+Warning in file.copy(pkgdir, vd2, recursive = TRUE) : over-long path
+Warning in file.copy(pkgdir, vd2, recursive = TRUE) : over-long path
+Warning in file.copy(pkgdir, vd2, recursive = TRUE) : over-long path
+Warning in file.copy(pkgdir, vd2, recursive = TRUE) : over-long path
+Warning in file.copy(pkgdir, vd2, recursive = TRUE) : over-long path
+Warning in file.copy(pkgdir, vd2, recursive = TRUE) : over-long path
+Warning in file.copy(pkgdir, vd2, recursive = TRUE) : over-long path
+Warning in file.copy(pkgdir, vd2, recursive = TRUE) : over-long path
+Warning in file.copy(pkgdir, vd2, recursive = TRUE) : over-long path
+Warning in file.copy(pkgdir, vd2, recursive = TRUE) : over-long path
+Warning in file.copy(pkgdir, vd2, recursive = TRUE) : over-long path
+Warning in file.copy(pkgdir, vd2, recursive = TRUE) : over-long path
+Warning in file.copy(pkgdir, vd2, recursive = TRUE) : over-long path
+Warning in file.copy(pkgdir, vd2, recursive = TRUE) : over-long path
+Warning in file.copy(pkgdir, vd2, recursive = TRUE) : over-long path
+Warning in file.copy(pkgdir, vd2, recursive = TRUE) : over-long path
+Warning in file.copy(pkgdir, vd2, recursive = TRUE) : over-long path
+Warning in file.copy(pkgdir, vd2, recursive = TRUE) : over-long path
+Warning in file.copy(pkgdir, vd2, recursive = TRUE) : over-long path
+Warning in file.copy(pkgdir, vd2, recursive = TRUE) : over-long path
+Warning in file.copy(pkgdir, vd2, recursive = TRUE) : over-long path
+Warning in file.copy(pkgdir, vd2, recursive = TRUE) : over-long path
+Warning in file.copy(pkgdir, vd2, recursive = TRUE) : over-long path
+Warning in file.copy(pkgdir, vd2, recursive = TRUE) : over-long path
+Warning in file.copy(pkgdir, vd2, recursive = TRUE) : over-long path
+Warning in file.copy(pkgdir, vd2, recursive = TRUE) : over-long path
+Warning in file.copy(pkgdir, vd2, recursive = TRUE) : over-long path
+Warning in file.copy(pkgdir, vd2, recursive = TRUE) : over-long path
+Warning in file.copy(pkgdir, vd2, recursive = TRUE) : over-long path
+Warning in file.copy(pkgdir, vd2, recursive = TRUE) : over-long path
+Warning in file.copy(pkgdir, vd2, recursive = TRUE) : over-long path
+Warning in file.copy(pkgdir, vd2, recursive = TRUE) : over-long path
+Warning in file.copy(pkgdir, vd2, recursive = TRUE) : over-long path
+Warning in file.copy(pkgdir, vd2, recursive = TRUE) : over-long path
+Warning in file.copy(pkgdir, vd2, recursive = TRUE) : over-long path
+Warning in file.copy(pkgdir, vd2, recursive = TRUE) : over-long path
+Warning in file.copy(pkgdir, vd2, recursive = TRUE) : over-long path
+Warning in file.copy(pkgdir, vd2, recursive = TRUE) : over-long path
+Warning in file.copy(pkgdir, vd2, recursive = TRUE) : over-long path
+Warning in file.copy(pkgdir, vd2, recursive = TRUE) : over-long path
+Warning in file.copy(pkgdir, vd2, recursive = TRUE) : over-long path
+Warning in file.copy(pkgdir, vd2, recursive = TRUE) : over-long path
+Warning in file.copy(pkgdir, vd2, recursive = TRUE) : over-long path
+Warning in file.copy(pkgdir, vd2, recursive = TRUE) : over-long path
+Warning in file.copy(pkgdir, vd2, recursive = TRUE) : over-long path
+Warning in file.copy(pkgdir, vd2, recursive = TRUE) : over-long path
+Warning in file.copy(pkgdir, vd2, recursive = TRUE) : over-long path
+Warning in file.copy(pkgdir, vd2, recursive = TRUE) : over-long path
+ OK
+* checking PDF version of manual ... OK
+* DONE
+
+Status: 3 WARNINGs, 4 NOTEs
+See
+  ‘/Users/almartin/Documents/state-schooldata/caschooldata/..Rcheck/00check.log’
+for details.
+

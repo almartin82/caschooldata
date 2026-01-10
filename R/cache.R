@@ -27,15 +27,33 @@ get_cache_dir <- function() {
 }
 
 
+#' Get cached file path for a given year
+#'
+#' @param end_year School year end
+#' @param type File type ("tidy", "wide", "grad_tidy", "grad_wide")
+#' @return Path to cached file
+#' @keywords internal
+get_cache_path <- function(end_year, type = "tidy") {
+  cache_dir <- get_cache_dir()
+
+  # Determine prefix based on type
+  if (grepl("^grad_", type)) {
+    prefix <- "grad_"
+  } else {
+    prefix <- "enr_"
+  }
+
+  file.path(cache_dir, paste0(prefix, type, "_", end_year, ".rds"))
+}
+
 #' Build cache file path
 #'
 #' @param end_year School year end
-#' @param cache_type Type of cache ("tidy" or "wide")
+#' @param cache_type Type of cache ("tidy", "wide", "grad_tidy", "grad_wide")
 #' @return File path string
 #' @keywords internal
 build_cache_path <- function(end_year, cache_type) {
-  cache_dir <- get_cache_dir()
-  file.path(cache_dir, paste0("enr_", end_year, "_", cache_type, ".rds"))
+  get_cache_path(end_year, cache_type)
 }
 
 
@@ -93,12 +111,14 @@ write_cache <- function(data, end_year, cache_type) {
 }
 
 
-#' Clear enrollment cache
+#' Clear the caschooldata cache
 #'
-#' Removes cached enrollment data files.
+#' Removes all cached data files.
 #'
 #' @param end_year Optional. If provided, only clear cache for this year.
-#'   If NULL (default), clears all cached enrollment data.
+#'   If NULL (default), clears all cached data.
+#' @param data_type Type of cache to clear: "enr" (enrollment), "grad" (graduation),
+#'   or NULL (both).
 #' @return Invisibly returns the number of files removed
 #' @export
 #' @examples
@@ -108,8 +128,11 @@ write_cache <- function(data, end_year, cache_type) {
 #'
 #' # Clear only 2024 data
 #' clear_enr_cache(2024)
+#'
+#' # Clear only graduation cache
+#' clear_enr_cache(data_type = "grad")
 #' }
-clear_enr_cache <- function(end_year = NULL) {
+clear_enr_cache <- function(end_year = NULL, data_type = NULL) {
   cache_dir <- get_cache_dir()
 
   if (!dir.exists(cache_dir)) {
@@ -117,10 +140,21 @@ clear_enr_cache <- function(end_year = NULL) {
     return(invisible(0))
   }
 
-  if (!is.null(end_year)) {
-    files <- list.files(cache_dir, pattern = paste0("enr_", end_year), full.names = TRUE)
+  if (is.null(end_year)) {
+    if (is.null(data_type)) {
+      files <- list.files(cache_dir, pattern = "\\.rds$", full.names = TRUE)
+    } else {
+      files <- list.files(cache_dir, pattern = paste0("^", data_type, "_"), full.names = TRUE)
+    }
   } else {
-    files <- list.files(cache_dir, pattern = "^enr_", full.names = TRUE)
+    if (is.null(data_type)) {
+      patterns <- paste0(c("enr", "grad"), "_", end_year)
+      files <- unlist(lapply(patterns, function(p) {
+        list.files(cache_dir, pattern = p, full.names = TRUE)
+      }))
+    } else {
+      files <- list.files(cache_dir, pattern = paste0(data_type, "_", end_year), full.names = TRUE)
+    }
   }
 
   if (length(files) > 0) {
@@ -157,6 +191,7 @@ cache_status <- function() {
     message("Cache is empty")
     return(invisible(data.frame(
       end_year = integer(),
+      data_type = character(),
       cache_type = character(),
       size_mb = numeric(),
       age_days = numeric(),
@@ -164,12 +199,13 @@ cache_status <- function() {
     )))
   }
 
-  files <- list.files(cache_dir, pattern = "^enr_.*\\.rds$", full.names = TRUE)
+  files <- list.files(cache_dir, pattern = "\\.rds$", full.names = TRUE)
 
   if (length(files) == 0) {
     message("Cache is empty")
     return(invisible(data.frame(
       end_year = integer(),
+      data_type = character(),
       cache_type = character(),
       size_mb = numeric(),
       age_days = numeric(),
@@ -181,18 +217,19 @@ cache_status <- function() {
   info <- file.info(files)
   info$file <- basename(files)
 
-  # Parse file names: enr_YYYY_type.rds
-  parsed <- regmatches(info$file, regexec("enr_(\\d{4})_(\\w+)\\.rds", info$file))
+  # Parse file names: enr_YYYY_type.rds OR grad_YYYY_type.rds
+  parsed <- regmatches(info$file, regexec("^(enr|grad)_(\\d{4})_(\\w+)\\.rds$", info$file))
 
   result <- data.frame(
-    end_year = as.integer(sapply(parsed, function(x) if (length(x) >= 2) x[2] else NA)),
-    cache_type = sapply(parsed, function(x) if (length(x) >= 3) x[3] else NA),
+    end_year = as.integer(sapply(parsed, function(x) if (length(x) >= 3) x[3] else NA)),
+    data_type = sapply(parsed, function(x) if (length(x) >= 2) x[2] else NA),
+    cache_type = sapply(parsed, function(x) if (length(x) >= 4) x[4] else NA),
     size_mb = round(info$size / 1024 / 1024, 2),
     age_days = round(as.numeric(difftime(Sys.time(), info$mtime, units = "days")), 1),
     stringsAsFactors = FALSE
   )
 
-  result <- result[order(result$end_year, result$cache_type), ]
+  result <- result[order(result$data_type, result$end_year, result$cache_type), ]
   rownames(result) <- NULL
 
   print(result)
