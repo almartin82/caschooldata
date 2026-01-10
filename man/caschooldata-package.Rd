@@ -59,8 +59,4 @@ Useful links:
 }
 
 }
-\author{
-\strong{Maintainer}: Andy Martin \email{almartin@gmail.com}
-
-}
 \keyword{internal}
