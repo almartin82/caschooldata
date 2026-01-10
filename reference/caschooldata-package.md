@@ -61,7 +61,3 @@ Useful links:
 - <https://github.com/almartin82/caschooldata>
 
 - Report bugs at <https://github.com/almartin82/caschooldata/issues>
-
-## Author
-
-**Maintainer**: Andy Martin <almartin@gmail.com>

@@ -247,7 +247,9 @@ rate - State Total 2023-24: 506,803 cohort, 86.4% rate
     - Parallel to existing fetch_enr() API
     - Support fetching multiple years
 5.  **Update utils.R**
-    - Add `get_available_grad_years()` function
+    - Add
+      [`get_available_grad_years()`](https://almartin82.github.io/caschooldata/reference/get_available_grad_years.md)
+      function
     - Add graduation-specific helper functions
 6.  **Create tests/testthat/test-graduation.R**
     - URL availability tests

@@ -12,7 +12,7 @@ get_available_years()
 
 ## Value
 
-Integer vector of available end years (1982-2024)
+Integer vector of available end years (1982-2025)
 
 ## Examples
 
