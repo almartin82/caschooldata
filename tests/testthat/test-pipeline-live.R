@@ -181,8 +181,8 @@ test_that("State total is reasonable (not zero)", {
     }
     
     data <- caschooldata::fetch_enr(test_year, tidy = FALSE)
-    
-    state_rows <- data[data$type == "State", ]
+
+    state_rows <- data[data$agg_level == "T", ]  # T = State aggregate level
     if (nrow(state_rows) > 0 && "row_total" %in% names(state_rows)) {
       state_total <- sum(state_rows$row_total, na.rm = TRUE)
       # State total should be > 0 (unless data source is broken)
