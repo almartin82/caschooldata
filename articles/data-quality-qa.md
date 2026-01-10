@@ -647,11 +647,11 @@ sessionInfo()
     ##  [1] rappdirs_0.3.3     sass_0.4.10        utf8_1.2.6         generics_0.1.4    
     ##  [5] hms_1.1.4          digest_0.6.39      magrittr_2.0.4     evaluate_1.0.5    
     ##  [9] grid_4.5.2         RColorBrewer_1.1-3 fastmap_1.2.0      jsonlite_2.0.0    
-    ## [13] purrr_1.2.0        scales_1.4.0       codetools_0.2-20   textshaping_1.0.4 
-    ## [17] jquerylib_0.1.4    cli_3.6.5          rlang_1.1.6        crayon_1.5.3      
+    ## [13] purrr_1.2.1        scales_1.4.0       codetools_0.2-20   textshaping_1.0.4 
+    ## [17] jquerylib_0.1.4    cli_3.6.5          rlang_1.1.7        crayon_1.5.3      
     ## [21] bit64_4.6.0-1      withr_3.0.2        cachem_1.1.0       yaml_2.3.12       
     ## [25] tools_4.5.2        downloader_0.4.1   parallel_4.5.2     tzdb_0.5.0        
-    ## [29] vctrs_0.6.5        R6_2.6.1           lifecycle_1.0.4    fs_1.6.6          
+    ## [29] vctrs_0.6.5        R6_2.6.1           lifecycle_1.0.5    fs_1.6.6          
     ## [33] bit_4.6.0          vroom_1.6.7        ragg_1.5.0         pkgconfig_2.0.3   
     ## [37] desc_1.4.3         pkgdown_2.2.0      pillar_1.11.1      bslib_0.9.0       
     ## [41] gtable_0.3.6       glue_1.8.0         systemfonts_1.3.1  xfun_0.55         
