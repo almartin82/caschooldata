@@ -54,8 +54,9 @@ grad_2024 %>%
 Fetch multiple years for trend analysis:
 
 ```{r fetch-multi}
-# Get 5 years of graduation data
-grad_multi <- fetch_graduation_multi(2019:2023)
+# Get multiple years of graduation data
+# Note: Available years are 2017-2019, 2022, 2024-2025
+grad_multi <- fetch_graduation_multi(c(2017, 2018, 2019, 2022, 2024))
 
 # Check available years
 grad_multi %>%
@@ -67,15 +68,15 @@ grad_multi %>%
 
 ### Overall Graduation Rate Trend
 
-```{r state-trend, fig.cap="California statewide graduation rate (2019-2023)"}
+```{r state-trend, fig.cap="California statewide graduation rate trend"}
 grad_multi %>%
   filter(is_state, subgroup == "all") %>%
   ggplot(aes(x = end_year, y = grad_rate)) +
   geom_line(size = 1, color = "#0078D4") +
   geom_point(size = 3, color = "#0078D4") +
   labs(
-    title = "California Statewide Graduation Rate",
-    subtitle = "4-year cohort, all students",
+    title = "California Statewide Graduation Rate Trend",
+    subtitle = "4-year cohort, all students (2017-2024)",
     x = "School Year End",
     y = "Graduation Rate (%)",
     caption = "Source: California Department of Education"
@@ -84,13 +85,13 @@ grad_multi %>%
   theme_minimal()
 ```
 
-**Key Finding:** Statewide graduation rates have remained stable around 87-88%, showing resilience despite pandemic disruptions.
+**Key Finding:** Statewide graduation rates have remained stable around 87-88%, with data gaps in 2020-2021 and 2023 due to reporting changes during the pandemic.
 
 ## County Comparisons
 
 ### Top and Bottom Performing Counties
 
-```{r county-ranks, fig.cap="Graduation rates by county (2023)"}
+```{r county-ranks, fig.cap="Graduation rates by county (2024)"}
 grad_2024 %>%
   filter(
     !is_state,
@@ -104,7 +105,7 @@ grad_2024 %>%
   geom_col(fill = "#107C41") +
   coord_flip() +
   labs(
-    title = "Top 10 California Counties by Graduation Rate (2023)",
+    title = "Top 10 California Counties by Graduation Rate (2024)",
     subtitle = "4-year cohort, all students",
     x = "",
     y = "Graduation Rate (%)",
@@ -133,7 +134,7 @@ county_grad %>%
   geom_point(alpha = 0.7) +
   scale_color_viridis_c(option = "plasma", labels = scales::percent_format(scale = 1)) +
   labs(
-    title = "California Graduation Rates by County (2023)",
+    title = "California Graduation Rates by County 2024",
     subtitle = "Point size represents cohort size (log scale)",
     x = "",
     y = "",
@@ -153,7 +154,7 @@ county_grad %>%
 
 ### Graduation Rates by Student Group
 
-```{r demographic-chart, fig.cap="Graduation rates by demographic group (2023)"}
+```{r demographic-chart, fig.cap="Graduation rates by demographic group 2024"}
 grad_2024 %>%
   filter(
     is_state,
@@ -165,7 +166,7 @@ grad_2024 %>%
   geom_col() +
   coord_flip() +
   labs(
-    title = "California Graduation Rates by Demographic Group (2023)",
+    title = "California Graduation Rates by Demographic Group 2024",
     subtitle = "Significant disparities exist across student groups",
     x = "",
     y = "Graduation Rate (%)",
@@ -184,11 +185,11 @@ grad_2024 %>%
 
 California tracks multiple cohort types:
 
-```{r cohort-types, fig.cap="Graduation rates by cohort type (2023)"}
+```{r cohort-types, fig.cap="Graduation rates by cohort type 2024"}
 # Fetch with different cohort types
-grad_4yr <- fetch_graduation(2023, membership_code = 9)  # 4-year June (default)
-grad_5yr <- fetch_graduation(2023, membership_code = 8)  # 5-year June
-grad_6yr <- fetch_graduation(2023, membership_code = 6)  # 6-year June
+grad_4yr <- fetch_graduation(2024, membership_code = 9)  # 4-year June (default)
+grad_5yr <- fetch_graduation(2024, membership_code = 8)  # 5-year June
+grad_6yr <- fetch_graduation(2024, membership_code = 6)  # 6-year June
 
 bind_rows(
   grad_4yr %>% mutate(cohort = "4-Year"),
