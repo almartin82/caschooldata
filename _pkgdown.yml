@@ -30,6 +30,8 @@ navbar:
         href: articles/quickstart.html
       - text: "District Trends & Demographics"
         href: articles/district-highlights.html
+      - text: "Graduation Rate Analysis"
+        href: articles/graduation-rates.html
       - text: Data Quality QA
         href: articles/data-quality-qa.html
 
