@@ -46,12 +46,12 @@ remotes::install_github("almartin82/caschooldata")
 
 The main function is `fetch_enr()`, which downloads and processes enrollment data for a given school year:
 
-```{r fetch-data, eval=FALSE}
+```{r fetch-data}
 library(caschooldata)
 library(dplyr)
 
 # Fetch 2024 enrollment data (2023-24 school year)
-enr <- fetch_enr(2024)
+enr <- fetch_enr(2024, use_cache = TRUE)
 
 head(enr)
 ```
@@ -307,12 +307,11 @@ lausd <- enr %>%
 
 ### Bar Chart: Top Counties
 
-```{r viz-counties, eval=FALSE}
+```{r visualization}
 library(ggplot2)
+library(scales)
 
-enr <- fetch_enr(2024)
-
-# Top 10 counties by enrollment
+# Top 10 counties by enrollment (uses cached enr from earlier)
 top_counties <- enr %>%
   filter(is_county, subgroup == "total", grade_level == "TOTAL") %>%
   arrange(desc(n_students)) %>%
@@ -321,7 +320,7 @@ top_counties <- enr %>%
 ggplot(top_counties, aes(x = reorder(county_name, n_students), y = n_students)) +
   geom_col(fill = "steelblue") +
   coord_flip() +
-  scale_y_continuous(labels = scales::comma) +
+  scale_y_continuous(labels = comma) +
   labs(
     title = "Top 10 California Counties by Enrollment",
     subtitle = "2023-24 School Year",
@@ -408,3 +407,9 @@ The cache is stored in a user-specific application data directory (via `rappdirs
 - Explore the [Data Quality QA vignette](data-quality-qa.html) for validation examples
 - Check the function reference for detailed documentation: `?fetch_enr`, `?tidy_enr`
 - Visit the [package website](https://almartin82.github.io/caschooldata/) for more resources
+
+## Session Info
+
+```{r session-info}
+sessionInfo()
+```
