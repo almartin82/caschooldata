@@ -13,12 +13,12 @@ Depends:
     R (>= 4.1.0)
 Imports:
     dplyr,
-    downloader,
     purrr,
     rappdirs,
     readr,
     readxl,
-    rlang
+    rlang,
+    stringr
 Suggests:
     testthat (>= 3.0.0),
     knitr,
@@ -26,6 +26,7 @@ Suggests:
     ggplot2,
     httr,
     scales,
+    tibble,
     tidyr
 VignetteBuilder: knitr
 Config/testthat/edition: 3
