@@ -30,6 +30,8 @@ navbar:
         href: articles/quickstart.html
       - text: "District Trends & Demographics"
         href: articles/district-highlights.html
+      - text: "Graduation Rate Analysis"
+        href: articles/graduation-rates.html
       - text: Data Quality QA
         href: articles/data-quality-qa.html
 
@@ -41,16 +43,32 @@ reference:
   - fetch_enr_multi
   - fetch_graduation
   - fetch_graduation_multi
+  - fetch_assess
+  - fetch_assess_multi
   - get_available_years
   - get_available_grad_years
+  - get_available_assess_years
+  - get_raw_assess
+  - import_local_assess
 
 - title: Process & Tidy
   desc: Transform data into analysis-ready formats
   contents:
   - tidy_enr
+  - tidy_assess
+  - process_assess
   - id_enr_aggs
+  - id_assess_aggs
   - enr_grade_aggs
   - parse_cds_code
+  - calc_assess_trend
+  - summarize_proficiency
+
+- title: Print Methods
+  desc: Print methods for data objects
+  contents:
+  - print.ca_assess_data
+  - print.ca_assess_tidy
 
 - title: Cache Management
   desc: Manage locally cached data
