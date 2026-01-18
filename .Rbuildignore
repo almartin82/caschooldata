@@ -16,3 +16,6 @@
 ^data-raw$
 ^\.Rcheck$
 ^.*\.Rcheck$
+^ASSESSMENT-EXPANSION.*\.md$
+^EXPANSION\.md$
+^check-output.*\.log$
