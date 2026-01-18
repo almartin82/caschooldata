@@ -20,6 +20,7 @@
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/quickstart.html">Getting Started</a></li>
     <li><a class="dropdown-item" href="../articles/district-highlights.html">District Trends &amp; Demographics</a></li>
+    <li><a class="dropdown-item" href="../articles/graduation-rates.html">Graduation Rate Analysis</a></li>
     <li><a class="dropdown-item" href="../articles/data-quality-qa.html">Data Quality QA</a></li>
   </ul></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
@@ -76,6 +77,20 @@
 
         <dt>
 
+          <code><a href="fetch_assess.html">fetch_assess()</a></code>
+
+        </dt>
+        <dd>Fetch California CAASPP assessment data</dd>
+
+        <dt>
+
+          <code><a href="fetch_assess_multi.html">fetch_assess_multi()</a></code>
+
+        </dt>
+        <dd>Fetch CAASPP assessment data for multiple years</dd>
+
+        <dt>
+
           <code><a href="get_available_years.html">get_available_years()</a></code>
 
         </dt>
@@ -87,6 +102,27 @@
 
         </dt>
         <dd>Get available graduation years</dd>
+
+        <dt>
+
+          <code><a href="get_available_assess_years.html">get_available_assess_years()</a></code>
+
+        </dt>
+        <dd>Get available CAASPP assessment years</dd>
+
+        <dt>
+
+          <code><a href="get_raw_assess.html">get_raw_assess()</a></code>
+
+        </dt>
+        <dd>Get raw CAASPP assessment data</dd>
+
+        <dt>
+
+          <code><a href="import_local_assess.html">import_local_assess()</a></code>
+
+        </dt>
+        <dd>Import locally downloaded CAASPP assessment files</dd>
       </dl></div><div class="section level2">
       <h2 id="process-tidy">Process &amp; Tidy<a class="anchor" aria-label="anchor" href="#process-tidy"></a></h2>
 
@@ -106,10 +142,31 @@
 
         <dt>
 
+          <code><a href="tidy_assess.html">tidy_assess()</a></code>
+
+        </dt>
+        <dd>Tidy CAASPP assessment data</dd>
+
+        <dt>
+
+          <code><a href="process_assess.html">process_assess()</a></code>
+
+        </dt>
+        <dd>Process raw CAASPP assessment data</dd>
+
+        <dt>
+
           <code><a href="id_enr_aggs.html">id_enr_aggs()</a></code>
 
         </dt>
         <dd>Identify aggregation rows in enrollment data</dd>
+
+        <dt>
+
+          <code><a href="id_assess_aggs.html">id_assess_aggs()</a></code>
+
+        </dt>
+        <dd>Identify assessment aggregations</dd>
 
         <dt>
 
@@ -124,6 +181,43 @@
 
         </dt>
         <dd>Parse CDS code into components</dd>
+
+        <dt>
+
+          <code><a href="calc_assess_trend.html">calc_assess_trend()</a></code>
+
+        </dt>
+        <dd>Calculate assessment trends over time</dd>
+
+        <dt>
+
+          <code><a href="summarize_proficiency.html">summarize_proficiency()</a></code>
+
+        </dt>
+        <dd>Calculate assessment proficiency summary</dd>
+      </dl></div><div class="section level2">
+      <h2 id="print-methods">Print Methods<a class="anchor" aria-label="anchor" href="#print-methods"></a></h2>
+
+      <div class="section-desc"><p>Print methods for data objects</p></div>
+
+      <dl></dl></div><div class="section level2">
+
+
+
+
+      <dl><dt>
+
+          <code><a href="print.ca_assess_data.html">print(<i>&lt;ca_assess_data&gt;</i>)</a></code>
+
+        </dt>
+        <dd>Print CAASPP assessment data</dd>
+
+        <dt>
+
+          <code><a href="print.ca_assess_tidy.html">print(<i>&lt;ca_assess_tidy&gt;</i>)</a></code>
+
+        </dt>
+        <dd>Print tidy CAASPP assessment data</dd>
       </dl></div><div class="section level2">
       <h2 id="cache-management">Cache Management<a class="anchor" aria-label="anchor" href="#cache-management"></a></h2>
 
