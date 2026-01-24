@@ -1,0 +1,877 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+
+
+<title>Getting Started with caschooldata</title>
+
+<script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
+// be compatible with the behavior of Pandoc < 2.8).
+document.addEventListener('DOMContentLoaded', function(e) {
+  var hs = document.querySelectorAll("div.section[class*='level'] > :first-child");
+  var i, h, a;
+  for (i = 0; i < hs.length; i++) {
+    h = hs[i];
+    if (!/^h[1-6]$/i.test(h.tagName)) continue;  // it should be a header h1-h6
+    a = h.attributes;
+    while (a.length > 0) h.removeAttribute(a[0].name);
+  }
+});
+</script>
+
+<style type="text/css">
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+span.underline{text-decoration: underline;}
+div.column{display: inline-block; vertical-align: top; width: 50%;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+</style>
+
+
+
+<style type="text/css">
+code {
+white-space: pre;
+}
+.sourceCode {
+overflow: visible;
+}
+</style>
+<style type="text/css" data-origin="pandoc">
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+{ counter-reset: source-line 0; }
+pre.numberSource code > span
+{ position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+{ content: counter(source-line);
+position: relative; left: -1em; text-align: right; vertical-align: baseline;
+border: none; display: inline-block;
+-webkit-touch-callout: none; -webkit-user-select: none;
+-khtml-user-select: none; -moz-user-select: none;
+-ms-user-select: none; user-select: none;
+padding: 0 4px; width: 4em;
+color: #aaaaaa;
+}
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa; padding-left: 4px; }
+div.sourceCode
+{ }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } 
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.at { color: #7d9029; } 
+code span.bn { color: #40a070; } 
+code span.bu { color: #008000; } 
+code span.cf { color: #007020; font-weight: bold; } 
+code span.ch { color: #4070a0; } 
+code span.cn { color: #880000; } 
+code span.co { color: #60a0b0; font-style: italic; } 
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.do { color: #ba2121; font-style: italic; } 
+code span.dt { color: #902000; } 
+code span.dv { color: #40a070; } 
+code span.er { color: #ff0000; font-weight: bold; } 
+code span.ex { } 
+code span.fl { color: #40a070; } 
+code span.fu { color: #06287e; } 
+code span.im { color: #008000; font-weight: bold; } 
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.kw { color: #007020; font-weight: bold; } 
+code span.op { color: #666666; } 
+code span.ot { color: #007020; } 
+code span.pp { color: #bc7a00; } 
+code span.sc { color: #4070a0; } 
+code span.ss { color: #bb6688; } 
+code span.st { color: #4070a0; } 
+code span.va { color: #19177c; } 
+code span.vs { color: #4070a0; } 
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } 
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    var j = 0;
+    while (j < rules.length) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") {
+        j++;
+        continue;
+      }
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' && rule.style.backgroundColor === '') {
+        j++;
+        continue;
+      }
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
+
+
+
+
+<style type="text/css">body {
+background-color: #fff;
+margin: 1em auto;
+max-width: 700px;
+overflow: visible;
+padding-left: 2em;
+padding-right: 2em;
+font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+font-size: 14px;
+line-height: 1.35;
+}
+#TOC {
+clear: both;
+margin: 0 0 10px 10px;
+padding: 4px;
+width: 400px;
+border: 1px solid #CCCCCC;
+border-radius: 5px;
+background-color: #f6f6f6;
+font-size: 13px;
+line-height: 1.3;
+}
+#TOC .toctitle {
+font-weight: bold;
+font-size: 15px;
+margin-left: 5px;
+}
+#TOC ul {
+padding-left: 40px;
+margin-left: -1.5em;
+margin-top: 5px;
+margin-bottom: 5px;
+}
+#TOC ul ul {
+margin-left: -2em;
+}
+#TOC li {
+line-height: 16px;
+}
+table {
+margin: 1em auto;
+border-width: 1px;
+border-color: #DDDDDD;
+border-style: outset;
+border-collapse: collapse;
+}
+table th {
+border-width: 2px;
+padding: 5px;
+border-style: inset;
+}
+table td {
+border-width: 1px;
+border-style: inset;
+line-height: 18px;
+padding: 5px 5px;
+}
+table, table th, table td {
+border-left-style: none;
+border-right-style: none;
+}
+table thead, table tr.even {
+background-color: #f7f7f7;
+}
+p {
+margin: 0.5em 0;
+}
+blockquote {
+background-color: #f6f6f6;
+padding: 0.25em 0.75em;
+}
+hr {
+border-style: solid;
+border: none;
+border-top: 1px solid #777;
+margin: 28px 0;
+}
+dl {
+margin-left: 0;
+}
+dl dd {
+margin-bottom: 13px;
+margin-left: 13px;
+}
+dl dt {
+font-weight: bold;
+}
+ul {
+margin-top: 0;
+}
+ul li {
+list-style: circle outside;
+}
+ul ul {
+margin-bottom: 0;
+}
+pre, code {
+background-color: #f7f7f7;
+border-radius: 3px;
+color: #333;
+white-space: pre-wrap; 
+}
+pre {
+border-radius: 3px;
+margin: 5px 0px 10px 0px;
+padding: 10px;
+}
+pre:not([class]) {
+background-color: #f7f7f7;
+}
+code {
+font-family: Consolas, Monaco, 'Courier New', monospace;
+font-size: 85%;
+}
+p > code, li > code {
+padding: 2px 0px;
+}
+div.figure {
+text-align: center;
+}
+img {
+background-color: #FFFFFF;
+padding: 2px;
+border: 1px solid #DDDDDD;
+border-radius: 3px;
+border: 1px solid #CCCCCC;
+margin: 0 5px;
+}
+h1 {
+margin-top: 0;
+font-size: 35px;
+line-height: 40px;
+}
+h2 {
+border-bottom: 4px solid #f7f7f7;
+padding-top: 10px;
+padding-bottom: 2px;
+font-size: 145%;
+}
+h3 {
+border-bottom: 2px solid #f7f7f7;
+padding-top: 10px;
+font-size: 120%;
+}
+h4 {
+border-bottom: 1px solid #f7f7f7;
+margin-left: 8px;
+font-size: 105%;
+}
+h5, h6 {
+border-bottom: 1px solid #ccc;
+font-size: 105%;
+}
+a {
+color: #0033dd;
+text-decoration: none;
+}
+a:hover {
+color: #6666ff; }
+a:visited {
+color: #800080; }
+a:visited:hover {
+color: #BB00BB; }
+a[href^="http:"] {
+text-decoration: underline; }
+a[href^="https:"] {
+text-decoration: underline; }
+
+code > span.kw { color: #555; font-weight: bold; } 
+code > span.dt { color: #902000; } 
+code > span.dv { color: #40a070; } 
+code > span.bn { color: #d14; } 
+code > span.fl { color: #d14; } 
+code > span.ch { color: #d14; } 
+code > span.st { color: #d14; } 
+code > span.co { color: #888888; font-style: italic; } 
+code > span.ot { color: #007020; } 
+code > span.al { color: #ff0000; font-weight: bold; } 
+code > span.fu { color: #900; font-weight: bold; } 
+code > span.er { color: #a61717; background-color: #e3d2d2; } 
+</style>
+
+
+
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">Getting Started with caschooldata</h1>
+
+
+
+<div id="overview" class="section level2">
+<h2>Overview</h2>
+<p>The <code>caschooldata</code> package provides tools for fetching and
+analyzing California school enrollment data from the California
+Department of Education (CDE). This vignette walks through the main
+features of the package.</p>
+<p><strong>What you’ll find in the data:</strong></p>
+<ul>
+<li>8 years of enrollment data (2018-2025)</li>
+<li>5.8+ million students across 1,000+ districts</li>
+<li>Demographic breakdowns by race/ethnicity, gender, and student
+groups</li>
+<li>Trends showing 400,000+ student decline since COVID-19</li>
+</ul>
+<p>For a deep dive into trends and findings, see the <a href="district-highlights.html">District Trends &amp; Demographics</a>
+vignette.</p>
+</div>
+<div id="installation" class="section level2">
+<h2>Installation</h2>
+<p>Install from GitHub:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="co"># install.packages(&quot;remotes&quot;)</span></span>
+<span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a>remotes<span class="sc">::</span><span class="fu">install_github</span>(<span class="st">&quot;almartin82/caschooldata&quot;</span>)</span></code></pre></div>
+</div>
+<div id="fetching-enrollment-data" class="section level2">
+<h2>Fetching Enrollment Data</h2>
+<div id="basic-usage" class="section level3">
+<h3>Basic Usage</h3>
+<p>The main function is <code>fetch_enr()</code>, which downloads and
+processes enrollment data for a given school year:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a><span class="fu">library</span>(caschooldata)</span>
+<span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span>
+<span id="cb2-3"><a href="#cb2-3" tabindex="-1"></a></span>
+<span id="cb2-4"><a href="#cb2-4" tabindex="-1"></a><span class="co"># Fetch 2024 enrollment data (2023-24 school year)</span></span>
+<span id="cb2-5"><a href="#cb2-5" tabindex="-1"></a>enr <span class="ot">&lt;-</span> <span class="fu">fetch_enr</span>(<span class="dv">2024</span>)</span>
+<span id="cb2-6"><a href="#cb2-6" tabindex="-1"></a></span>
+<span id="cb2-7"><a href="#cb2-7" tabindex="-1"></a><span class="fu">head</span>(enr)</span></code></pre></div>
+<p>The <code>end_year</code> parameter refers to the spring semester
+year. For example, <code>end_year = 2024</code> fetches data for the
+2023-24 school year.</p>
+</div>
+<div id="available-years" class="section level3">
+<h3>Available Years</h3>
+<p>The package supports Census Day enrollment data from 2018-2025:</p>
+<ul>
+<li><strong>2024-2025</strong>: Modern Census Day files with full
+demographic breakdowns</li>
+<li><strong>2018-2023</strong>: Historical school-level files with
+race/ethnicity and gender data</li>
+</ul>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a><span class="co"># Fetch the most recent year</span></span>
+<span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a>enr_2025 <span class="ot">&lt;-</span> <span class="fu">fetch_enr</span>(<span class="dv">2025</span>)</span>
+<span id="cb3-3"><a href="#cb3-3" tabindex="-1"></a></span>
+<span id="cb3-4"><a href="#cb3-4" tabindex="-1"></a><span class="co"># Fetch historical data</span></span>
+<span id="cb3-5"><a href="#cb3-5" tabindex="-1"></a>enr_2020 <span class="ot">&lt;-</span> <span class="fu">fetch_enr</span>(<span class="dv">2020</span>)</span>
+<span id="cb3-6"><a href="#cb3-6" tabindex="-1"></a></span>
+<span id="cb3-7"><a href="#cb3-7" tabindex="-1"></a><span class="co"># Fetch all years for trend analysis</span></span>
+<span id="cb3-8"><a href="#cb3-8" tabindex="-1"></a>enr_all <span class="ot">&lt;-</span> <span class="fu">fetch_enr_multi</span>(<span class="dv">2018</span><span class="sc">:</span><span class="dv">2025</span>)</span></code></pre></div>
+</div>
+<div id="wide-vs.-tidy-format" class="section level3">
+<h3>Wide vs. Tidy Format</h3>
+<p>By default, <code>fetch_enr()</code> returns data in <strong>tidy
+(long) format</strong>, which is ideal for analysis with dplyr and
+ggplot2:</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a><span class="co"># Default: tidy format</span></span>
+<span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a>enr_tidy <span class="ot">&lt;-</span> <span class="fu">fetch_enr</span>(<span class="dv">2024</span>)</span>
+<span id="cb4-3"><a href="#cb4-3" tabindex="-1"></a><span class="fu">names</span>(enr_tidy)</span>
+<span id="cb4-4"><a href="#cb4-4" tabindex="-1"></a><span class="co"># Includes: grade_level, reporting_category, subgroup, n_students</span></span></code></pre></div>
+<p>For wide format (one column per grade), set
+<code>tidy = FALSE</code>:</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a><span class="co"># Wide format: one column per grade</span></span>
+<span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a>enr_wide <span class="ot">&lt;-</span> <span class="fu">fetch_enr</span>(<span class="dv">2024</span>, <span class="at">tidy =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb5-3"><a href="#cb5-3" tabindex="-1"></a><span class="fu">names</span>(enr_wide)</span>
+<span id="cb5-4"><a href="#cb5-4" tabindex="-1"></a><span class="co"># Includes: grade_tk, grade_k, grade_01, ..., grade_12, total_enrollment</span></span></code></pre></div>
+</div>
+<div id="fetching-multiple-years" class="section level3">
+<h3>Fetching Multiple Years</h3>
+<p>Use <code>fetch_enr_multi()</code> to download data for multiple
+years at once:</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a><span class="co"># Fetch 2024 and 2025 data</span></span>
+<span id="cb6-2"><a href="#cb6-2" tabindex="-1"></a>all_years <span class="ot">&lt;-</span> <span class="fu">fetch_enr_multi</span>(<span class="fu">c</span>(<span class="dv">2024</span>, <span class="dv">2025</span>))</span>
+<span id="cb6-3"><a href="#cb6-3" tabindex="-1"></a></span>
+<span id="cb6-4"><a href="#cb6-4" tabindex="-1"></a><span class="co"># Analyze enrollment trends</span></span>
+<span id="cb6-5"><a href="#cb6-5" tabindex="-1"></a>all_years <span class="sc">%&gt;%</span></span>
+<span id="cb6-6"><a href="#cb6-6" tabindex="-1"></a>  <span class="fu">filter</span>(is_state, subgroup <span class="sc">==</span> <span class="st">&quot;total&quot;</span>, grade_level <span class="sc">==</span> <span class="st">&quot;TOTAL&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb6-7"><a href="#cb6-7" tabindex="-1"></a>  <span class="fu">select</span>(end_year, n_students)</span></code></pre></div>
+</div>
+</div>
+<div id="understanding-the-data-schema" class="section level2">
+<h2>Understanding the Data Schema</h2>
+<div id="column-descriptions" class="section level3">
+<h3>Column Descriptions</h3>
+<p>The tidy enrollment data includes the following columns:</p>
+<table>
+<colgroup>
+<col width="38%" />
+<col width="61%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Column</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>end_year</code></td>
+<td>School year end (e.g., 2024 for 2023-24)</td>
+</tr>
+<tr class="even">
+<td><code>academic_year</code></td>
+<td>Academic year string (e.g., “2023-24”)</td>
+</tr>
+<tr class="odd">
+<td><code>cds_code</code></td>
+<td>14-digit County-District-School identifier</td>
+</tr>
+<tr class="even">
+<td><code>county_code</code></td>
+<td>2-digit county code (01-58)</td>
+</tr>
+<tr class="odd">
+<td><code>district_code</code></td>
+<td>5-digit district code</td>
+</tr>
+<tr class="even">
+<td><code>school_code</code></td>
+<td>7-digit school code</td>
+</tr>
+<tr class="odd">
+<td><code>agg_level</code></td>
+<td>Aggregation level: T (State), C (County), D (District), S
+(School)</td>
+</tr>
+<tr class="even">
+<td><code>county_name</code></td>
+<td>County name</td>
+</tr>
+<tr class="odd">
+<td><code>district_name</code></td>
+<td>District name</td>
+</tr>
+<tr class="even">
+<td><code>school_name</code></td>
+<td>School name</td>
+</tr>
+<tr class="odd">
+<td><code>charter_status</code></td>
+<td>Y (Charter), N (Non-Charter), or All</td>
+</tr>
+<tr class="even">
+<td><code>grade_level</code></td>
+<td>Grade: TK, K, 01-12, or TOTAL</td>
+</tr>
+<tr class="odd">
+<td><code>reporting_category</code></td>
+<td>CDE demographic category code</td>
+</tr>
+<tr class="even">
+<td><code>subgroup</code></td>
+<td>Human-readable subgroup name</td>
+</tr>
+<tr class="odd">
+<td><code>n_students</code></td>
+<td>Enrollment count</td>
+</tr>
+<tr class="even">
+<td><code>is_state</code>, <code>is_county</code>,
+<code>is_district</code>, <code>is_school</code></td>
+<td>Boolean aggregation flags</td>
+</tr>
+<tr class="odd">
+<td><code>is_charter</code></td>
+<td>Boolean charter indicator</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="aggregation-levels" class="section level3">
+<h3>Aggregation Levels</h3>
+<p>The data includes four aggregation levels:</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" tabindex="-1"></a><span class="co"># State-level totals</span></span>
+<span id="cb7-2"><a href="#cb7-2" tabindex="-1"></a>state <span class="ot">&lt;-</span> enr <span class="sc">%&gt;%</span></span>
+<span id="cb7-3"><a href="#cb7-3" tabindex="-1"></a>  <span class="fu">filter</span>(agg_level <span class="sc">==</span> <span class="st">&quot;T&quot;</span>)</span>
+<span id="cb7-4"><a href="#cb7-4" tabindex="-1"></a><span class="co"># or equivalently:</span></span>
+<span id="cb7-5"><a href="#cb7-5" tabindex="-1"></a>state <span class="ot">&lt;-</span> enr <span class="sc">%&gt;%</span></span>
+<span id="cb7-6"><a href="#cb7-6" tabindex="-1"></a>  <span class="fu">filter</span>(is_state)</span>
+<span id="cb7-7"><a href="#cb7-7" tabindex="-1"></a></span>
+<span id="cb7-8"><a href="#cb7-8" tabindex="-1"></a><span class="co"># County-level (58 California counties)</span></span>
+<span id="cb7-9"><a href="#cb7-9" tabindex="-1"></a>counties <span class="ot">&lt;-</span> enr <span class="sc">%&gt;%</span></span>
+<span id="cb7-10"><a href="#cb7-10" tabindex="-1"></a>  <span class="fu">filter</span>(is_county)</span>
+<span id="cb7-11"><a href="#cb7-11" tabindex="-1"></a></span>
+<span id="cb7-12"><a href="#cb7-12" tabindex="-1"></a><span class="co"># District-level</span></span>
+<span id="cb7-13"><a href="#cb7-13" tabindex="-1"></a>districts <span class="ot">&lt;-</span> enr <span class="sc">%&gt;%</span></span>
+<span id="cb7-14"><a href="#cb7-14" tabindex="-1"></a>  <span class="fu">filter</span>(is_district)</span>
+<span id="cb7-15"><a href="#cb7-15" tabindex="-1"></a></span>
+<span id="cb7-16"><a href="#cb7-16" tabindex="-1"></a><span class="co"># School-level</span></span>
+<span id="cb7-17"><a href="#cb7-17" tabindex="-1"></a>schools <span class="ot">&lt;-</span> enr <span class="sc">%&gt;%</span></span>
+<span id="cb7-18"><a href="#cb7-18" tabindex="-1"></a>  <span class="fu">filter</span>(is_school)</span></code></pre></div>
+</div>
+<div id="demographic-subgroups" class="section level3">
+<h3>Demographic Subgroups</h3>
+<p>The <code>reporting_category</code> column contains CDE codes, while
+<code>subgroup</code> provides human-readable names:</p>
+<table>
+<thead>
+<tr class="header">
+<th>Category</th>
+<th>Code</th>
+<th>Subgroup Name</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Total</td>
+<td>TA</td>
+<td>total</td>
+</tr>
+<tr class="even">
+<td>Race/Ethnicity</td>
+<td>RE_H</td>
+<td>hispanic</td>
+</tr>
+<tr class="odd">
+<td>Race/Ethnicity</td>
+<td>RE_W</td>
+<td>white</td>
+</tr>
+<tr class="even">
+<td>Race/Ethnicity</td>
+<td>RE_A</td>
+<td>asian</td>
+</tr>
+<tr class="odd">
+<td>Race/Ethnicity</td>
+<td>RE_B</td>
+<td>black</td>
+</tr>
+<tr class="even">
+<td>Race/Ethnicity</td>
+<td>RE_F</td>
+<td>filipino</td>
+</tr>
+<tr class="odd">
+<td>Race/Ethnicity</td>
+<td>RE_P</td>
+<td>pacific_islander</td>
+</tr>
+<tr class="even">
+<td>Race/Ethnicity</td>
+<td>RE_I</td>
+<td>native_american</td>
+</tr>
+<tr class="odd">
+<td>Race/Ethnicity</td>
+<td>RE_T</td>
+<td>multiracial</td>
+</tr>
+<tr class="even">
+<td>Gender</td>
+<td>GN_F</td>
+<td>female</td>
+</tr>
+<tr class="odd">
+<td>Gender</td>
+<td>GN_M</td>
+<td>male</td>
+</tr>
+<tr class="even">
+<td>Gender</td>
+<td>GN_X</td>
+<td>nonbinary</td>
+</tr>
+<tr class="odd">
+<td>Student Groups</td>
+<td>SG_EL</td>
+<td>english_learner</td>
+</tr>
+<tr class="even">
+<td>Student Groups</td>
+<td>SG_DS</td>
+<td>students_with_disabilities</td>
+</tr>
+<tr class="odd">
+<td>Student Groups</td>
+<td>SG_SD</td>
+<td>socioeconomically_disadvantaged</td>
+</tr>
+<tr class="even">
+<td>Student Groups</td>
+<td>SG_FS</td>
+<td>foster_youth</td>
+</tr>
+<tr class="odd">
+<td>Student Groups</td>
+<td>SG_HM</td>
+<td>homeless</td>
+</tr>
+<tr class="even">
+<td>Student Groups</td>
+<td>SG_MG</td>
+<td>migrant</td>
+</tr>
+</tbody>
+</table>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" tabindex="-1"></a><span class="co"># View all available subgroups</span></span>
+<span id="cb8-2"><a href="#cb8-2" tabindex="-1"></a>enr <span class="sc">%&gt;%</span></span>
+<span id="cb8-3"><a href="#cb8-3" tabindex="-1"></a>  <span class="fu">distinct</span>(reporting_category, subgroup) <span class="sc">%&gt;%</span></span>
+<span id="cb8-4"><a href="#cb8-4" tabindex="-1"></a>  <span class="fu">arrange</span>(reporting_category)</span></code></pre></div>
+</div>
+<div id="grade-levels" class="section level3">
+<h3>Grade Levels</h3>
+<p>Individual grades range from Transitional Kindergarten (TK) through
+12th grade:</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" tabindex="-1"></a><span class="co"># Available grade levels</span></span>
+<span id="cb9-2"><a href="#cb9-2" tabindex="-1"></a>enr <span class="sc">%&gt;%</span></span>
+<span id="cb9-3"><a href="#cb9-3" tabindex="-1"></a>  <span class="fu">distinct</span>(grade_level) <span class="sc">%&gt;%</span></span>
+<span id="cb9-4"><a href="#cb9-4" tabindex="-1"></a>  <span class="fu">arrange</span>(grade_level)</span>
+<span id="cb9-5"><a href="#cb9-5" tabindex="-1"></a></span>
+<span id="cb9-6"><a href="#cb9-6" tabindex="-1"></a><span class="co"># Filter to specific grades</span></span>
+<span id="cb9-7"><a href="#cb9-7" tabindex="-1"></a>elementary <span class="ot">&lt;-</span> enr <span class="sc">%&gt;%</span></span>
+<span id="cb9-8"><a href="#cb9-8" tabindex="-1"></a>  <span class="fu">filter</span>(grade_level <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">&quot;TK&quot;</span>, <span class="st">&quot;K&quot;</span>, <span class="st">&quot;01&quot;</span>, <span class="st">&quot;02&quot;</span>, <span class="st">&quot;03&quot;</span>, <span class="st">&quot;04&quot;</span>, <span class="st">&quot;05&quot;</span>))</span>
+<span id="cb9-9"><a href="#cb9-9" tabindex="-1"></a></span>
+<span id="cb9-10"><a href="#cb9-10" tabindex="-1"></a>middle_school <span class="ot">&lt;-</span> enr <span class="sc">%&gt;%</span></span>
+<span id="cb9-11"><a href="#cb9-11" tabindex="-1"></a>  <span class="fu">filter</span>(grade_level <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">&quot;06&quot;</span>, <span class="st">&quot;07&quot;</span>, <span class="st">&quot;08&quot;</span>))</span>
+<span id="cb9-12"><a href="#cb9-12" tabindex="-1"></a></span>
+<span id="cb9-13"><a href="#cb9-13" tabindex="-1"></a>high_school <span class="ot">&lt;-</span> enr <span class="sc">%&gt;%</span></span>
+<span id="cb9-14"><a href="#cb9-14" tabindex="-1"></a>  <span class="fu">filter</span>(grade_level <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">&quot;09&quot;</span>, <span class="st">&quot;10&quot;</span>, <span class="st">&quot;11&quot;</span>, <span class="st">&quot;12&quot;</span>))</span></code></pre></div>
+</div>
+</div>
+<div id="filtering-and-analysis-examples" class="section level2">
+<h2>Filtering and Analysis Examples</h2>
+<div id="top-10-largest-districts" class="section level3">
+<h3>Top 10 Largest Districts</h3>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" tabindex="-1"></a><span class="fu">library</span>(caschooldata)</span>
+<span id="cb10-2"><a href="#cb10-2" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span>
+<span id="cb10-3"><a href="#cb10-3" tabindex="-1"></a></span>
+<span id="cb10-4"><a href="#cb10-4" tabindex="-1"></a>enr <span class="ot">&lt;-</span> <span class="fu">fetch_enr</span>(<span class="dv">2024</span>)</span>
+<span id="cb10-5"><a href="#cb10-5" tabindex="-1"></a></span>
+<span id="cb10-6"><a href="#cb10-6" tabindex="-1"></a>enr <span class="sc">%&gt;%</span></span>
+<span id="cb10-7"><a href="#cb10-7" tabindex="-1"></a>  <span class="fu">filter</span>(is_district, subgroup <span class="sc">==</span> <span class="st">&quot;total&quot;</span>, grade_level <span class="sc">==</span> <span class="st">&quot;TOTAL&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb10-8"><a href="#cb10-8" tabindex="-1"></a>  <span class="fu">arrange</span>(<span class="fu">desc</span>(n_students)) <span class="sc">%&gt;%</span></span>
+<span id="cb10-9"><a href="#cb10-9" tabindex="-1"></a>  <span class="fu">select</span>(district_name, county_name, n_students) <span class="sc">%&gt;%</span></span>
+<span id="cb10-10"><a href="#cb10-10" tabindex="-1"></a>  <span class="fu">head</span>(<span class="dv">10</span>)</span></code></pre></div>
+</div>
+<div id="county-level-analysis" class="section level3">
+<h3>County-Level Analysis</h3>
+<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" tabindex="-1"></a><span class="co"># Enrollment by county</span></span>
+<span id="cb11-2"><a href="#cb11-2" tabindex="-1"></a>county_enrollment <span class="ot">&lt;-</span> enr <span class="sc">%&gt;%</span></span>
+<span id="cb11-3"><a href="#cb11-3" tabindex="-1"></a>  <span class="fu">filter</span>(is_county, subgroup <span class="sc">==</span> <span class="st">&quot;total&quot;</span>, grade_level <span class="sc">==</span> <span class="st">&quot;TOTAL&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb11-4"><a href="#cb11-4" tabindex="-1"></a>  <span class="fu">arrange</span>(<span class="fu">desc</span>(n_students)) <span class="sc">%&gt;%</span></span>
+<span id="cb11-5"><a href="#cb11-5" tabindex="-1"></a>  <span class="fu">select</span>(county_name, n_students)</span>
+<span id="cb11-6"><a href="#cb11-6" tabindex="-1"></a></span>
+<span id="cb11-7"><a href="#cb11-7" tabindex="-1"></a><span class="co"># Top 5 counties</span></span>
+<span id="cb11-8"><a href="#cb11-8" tabindex="-1"></a><span class="fu">head</span>(county_enrollment, <span class="dv">5</span>)</span></code></pre></div>
+</div>
+<div id="demographic-breakdown" class="section level3">
+<h3>Demographic Breakdown</h3>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" tabindex="-1"></a><span class="co"># State-level race/ethnicity breakdown</span></span>
+<span id="cb12-2"><a href="#cb12-2" tabindex="-1"></a>enr <span class="sc">%&gt;%</span></span>
+<span id="cb12-3"><a href="#cb12-3" tabindex="-1"></a>  <span class="fu">filter</span>(</span>
+<span id="cb12-4"><a href="#cb12-4" tabindex="-1"></a>    is_state,</span>
+<span id="cb12-5"><a href="#cb12-5" tabindex="-1"></a>    grade_level <span class="sc">==</span> <span class="st">&quot;TOTAL&quot;</span>,</span>
+<span id="cb12-6"><a href="#cb12-6" tabindex="-1"></a>    <span class="fu">grepl</span>(<span class="st">&quot;^RE_&quot;</span>, reporting_category)</span>
+<span id="cb12-7"><a href="#cb12-7" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
+<span id="cb12-8"><a href="#cb12-8" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">pct =</span> n_students <span class="sc">/</span> <span class="fu">sum</span>(n_students) <span class="sc">*</span> <span class="dv">100</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb12-9"><a href="#cb12-9" tabindex="-1"></a>  <span class="fu">select</span>(subgroup, n_students, pct) <span class="sc">%&gt;%</span></span>
+<span id="cb12-10"><a href="#cb12-10" tabindex="-1"></a>  <span class="fu">arrange</span>(<span class="fu">desc</span>(n_students))</span></code></pre></div>
+</div>
+<div id="charter-vs.-non-charter-comparison" class="section level3">
+<h3>Charter vs. Non-Charter Comparison</h3>
+<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" tabindex="-1"></a><span class="co"># State-level charter enrollment</span></span>
+<span id="cb13-2"><a href="#cb13-2" tabindex="-1"></a>charter_comparison <span class="ot">&lt;-</span> enr <span class="sc">%&gt;%</span></span>
+<span id="cb13-3"><a href="#cb13-3" tabindex="-1"></a>  <span class="fu">filter</span>(is_state, subgroup <span class="sc">==</span> <span class="st">&quot;total&quot;</span>, grade_level <span class="sc">==</span> <span class="st">&quot;TOTAL&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb13-4"><a href="#cb13-4" tabindex="-1"></a>  <span class="fu">group_by</span>(charter_status) <span class="sc">%&gt;%</span></span>
+<span id="cb13-5"><a href="#cb13-5" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">total_enrollment =</span> <span class="fu">sum</span>(n_students, <span class="at">na.rm =</span> <span class="cn">TRUE</span>))</span>
+<span id="cb13-6"><a href="#cb13-6" tabindex="-1"></a></span>
+<span id="cb13-7"><a href="#cb13-7" tabindex="-1"></a>charter_comparison</span></code></pre></div>
+</div>
+<div id="grade-level-aggregations" class="section level3">
+<h3>Grade-Level Aggregations</h3>
+<p>Use <code>enr_grade_aggs()</code> to create grade band summaries:</p>
+<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" tabindex="-1"></a><span class="co"># Create K-8, HS, K-12 aggregations</span></span>
+<span id="cb14-2"><a href="#cb14-2" tabindex="-1"></a>grade_bands <span class="ot">&lt;-</span> <span class="fu">enr_grade_aggs</span>(enr)</span>
+<span id="cb14-3"><a href="#cb14-3" tabindex="-1"></a></span>
+<span id="cb14-4"><a href="#cb14-4" tabindex="-1"></a><span class="co"># View state-level grade bands</span></span>
+<span id="cb14-5"><a href="#cb14-5" tabindex="-1"></a>grade_bands <span class="sc">%&gt;%</span></span>
+<span id="cb14-6"><a href="#cb14-6" tabindex="-1"></a>  <span class="fu">filter</span>(is_state) <span class="sc">%&gt;%</span></span>
+<span id="cb14-7"><a href="#cb14-7" tabindex="-1"></a>  <span class="fu">select</span>(grade_level, n_students)</span></code></pre></div>
+</div>
+</div>
+<div id="working-with-cds-codes" class="section level2">
+<h2>Working with CDS Codes</h2>
+<p>California uses a 14-digit County-District-School (CDS) code
+system:</p>
+<ul>
+<li><strong>Positions 1-2</strong>: County code (01-58)</li>
+<li><strong>Positions 3-7</strong>: District code (5 digits)</li>
+<li><strong>Positions 8-14</strong>: School code (7 digits)</li>
+</ul>
+<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" tabindex="-1"></a><span class="co"># Parse a CDS code</span></span>
+<span id="cb15-2"><a href="#cb15-2" tabindex="-1"></a><span class="fu">parse_cds_code</span>(<span class="st">&quot;19647331932334&quot;</span>)</span>
+<span id="cb15-3"><a href="#cb15-3" tabindex="-1"></a><span class="co"># Returns: list(county = &quot;19&quot;, district = &quot;64733&quot;, school = &quot;1932334&quot;)</span></span>
+<span id="cb15-4"><a href="#cb15-4" tabindex="-1"></a></span>
+<span id="cb15-5"><a href="#cb15-5" tabindex="-1"></a><span class="co"># Filter to a specific district using CDS pattern</span></span>
+<span id="cb15-6"><a href="#cb15-6" tabindex="-1"></a>lausd <span class="ot">&lt;-</span> enr <span class="sc">%&gt;%</span></span>
+<span id="cb15-7"><a href="#cb15-7" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="fu">grepl</span>(<span class="st">&quot;^1964733&quot;</span>, cds_code), is_school)</span></code></pre></div>
+</div>
+<div id="visualization-examples" class="section level2">
+<h2>Visualization Examples</h2>
+<div id="bar-chart-top-counties" class="section level3">
+<h3>Bar Chart: Top Counties</h3>
+<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span>
+<span id="cb16-2"><a href="#cb16-2" tabindex="-1"></a></span>
+<span id="cb16-3"><a href="#cb16-3" tabindex="-1"></a>enr <span class="ot">&lt;-</span> <span class="fu">fetch_enr</span>(<span class="dv">2024</span>)</span>
+<span id="cb16-4"><a href="#cb16-4" tabindex="-1"></a></span>
+<span id="cb16-5"><a href="#cb16-5" tabindex="-1"></a><span class="co"># Top 10 counties by enrollment</span></span>
+<span id="cb16-6"><a href="#cb16-6" tabindex="-1"></a>top_counties <span class="ot">&lt;-</span> enr <span class="sc">%&gt;%</span></span>
+<span id="cb16-7"><a href="#cb16-7" tabindex="-1"></a>  <span class="fu">filter</span>(is_county, subgroup <span class="sc">==</span> <span class="st">&quot;total&quot;</span>, grade_level <span class="sc">==</span> <span class="st">&quot;TOTAL&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb16-8"><a href="#cb16-8" tabindex="-1"></a>  <span class="fu">arrange</span>(<span class="fu">desc</span>(n_students)) <span class="sc">%&gt;%</span></span>
+<span id="cb16-9"><a href="#cb16-9" tabindex="-1"></a>  <span class="fu">head</span>(<span class="dv">10</span>)</span>
+<span id="cb16-10"><a href="#cb16-10" tabindex="-1"></a></span>
+<span id="cb16-11"><a href="#cb16-11" tabindex="-1"></a><span class="fu">ggplot</span>(top_counties, <span class="fu">aes</span>(<span class="at">x =</span> <span class="fu">reorder</span>(county_name, n_students), <span class="at">y =</span> n_students)) <span class="sc">+</span></span>
+<span id="cb16-12"><a href="#cb16-12" tabindex="-1"></a>  <span class="fu">geom_col</span>(<span class="at">fill =</span> <span class="st">&quot;steelblue&quot;</span>) <span class="sc">+</span></span>
+<span id="cb16-13"><a href="#cb16-13" tabindex="-1"></a>  <span class="fu">coord_flip</span>() <span class="sc">+</span></span>
+<span id="cb16-14"><a href="#cb16-14" tabindex="-1"></a>  <span class="fu">scale_y_continuous</span>(<span class="at">labels =</span> scales<span class="sc">::</span>comma) <span class="sc">+</span></span>
+<span id="cb16-15"><a href="#cb16-15" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
+<span id="cb16-16"><a href="#cb16-16" tabindex="-1"></a>    <span class="at">title =</span> <span class="st">&quot;Top 10 California Counties by Enrollment&quot;</span>,</span>
+<span id="cb16-17"><a href="#cb16-17" tabindex="-1"></a>    <span class="at">subtitle =</span> <span class="st">&quot;2023-24 School Year&quot;</span>,</span>
+<span id="cb16-18"><a href="#cb16-18" tabindex="-1"></a>    <span class="at">x =</span> <span class="cn">NULL</span>,</span>
+<span id="cb16-19"><a href="#cb16-19" tabindex="-1"></a>    <span class="at">y =</span> <span class="st">&quot;Total Enrollment&quot;</span></span>
+<span id="cb16-20"><a href="#cb16-20" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb16-21"><a href="#cb16-21" tabindex="-1"></a>  <span class="fu">theme_minimal</span>()</span></code></pre></div>
+</div>
+<div id="demographic-composition" class="section level3">
+<h3>Demographic Composition</h3>
+<div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span>
+<span id="cb17-2"><a href="#cb17-2" tabindex="-1"></a></span>
+<span id="cb17-3"><a href="#cb17-3" tabindex="-1"></a><span class="co"># Race/ethnicity pie chart data</span></span>
+<span id="cb17-4"><a href="#cb17-4" tabindex="-1"></a>race_data <span class="ot">&lt;-</span> enr <span class="sc">%&gt;%</span></span>
+<span id="cb17-5"><a href="#cb17-5" tabindex="-1"></a>  <span class="fu">filter</span>(</span>
+<span id="cb17-6"><a href="#cb17-6" tabindex="-1"></a>    is_state,</span>
+<span id="cb17-7"><a href="#cb17-7" tabindex="-1"></a>    grade_level <span class="sc">==</span> <span class="st">&quot;TOTAL&quot;</span>,</span>
+<span id="cb17-8"><a href="#cb17-8" tabindex="-1"></a>    <span class="fu">grepl</span>(<span class="st">&quot;^RE_&quot;</span>, reporting_category)</span>
+<span id="cb17-9"><a href="#cb17-9" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
+<span id="cb17-10"><a href="#cb17-10" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">pct =</span> n_students <span class="sc">/</span> <span class="fu">sum</span>(n_students)) <span class="sc">%&gt;%</span></span>
+<span id="cb17-11"><a href="#cb17-11" tabindex="-1"></a>  <span class="fu">select</span>(subgroup, n_students, pct)</span>
+<span id="cb17-12"><a href="#cb17-12" tabindex="-1"></a></span>
+<span id="cb17-13"><a href="#cb17-13" tabindex="-1"></a><span class="fu">ggplot</span>(race_data, <span class="fu">aes</span>(<span class="at">x =</span> <span class="st">&quot;&quot;</span>, <span class="at">y =</span> pct, <span class="at">fill =</span> subgroup)) <span class="sc">+</span></span>
+<span id="cb17-14"><a href="#cb17-14" tabindex="-1"></a>  <span class="fu">geom_bar</span>(<span class="at">stat =</span> <span class="st">&quot;identity&quot;</span>, <span class="at">width =</span> <span class="dv">1</span>) <span class="sc">+</span></span>
+<span id="cb17-15"><a href="#cb17-15" tabindex="-1"></a>  <span class="fu">coord_polar</span>(<span class="st">&quot;y&quot;</span>, <span class="at">start =</span> <span class="dv">0</span>) <span class="sc">+</span></span>
+<span id="cb17-16"><a href="#cb17-16" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">&quot;California Enrollment by Race/Ethnicity&quot;</span>) <span class="sc">+</span></span>
+<span id="cb17-17"><a href="#cb17-17" tabindex="-1"></a>  <span class="fu">theme_void</span>() <span class="sc">+</span></span>
+<span id="cb17-18"><a href="#cb17-18" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="st">&quot;right&quot;</span>)</span></code></pre></div>
+</div>
+<div id="enrollment-trend-multi-year" class="section level3">
+<h3>Enrollment Trend (Multi-Year)</h3>
+<div class="sourceCode" id="cb18"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span>
+<span id="cb18-2"><a href="#cb18-2" tabindex="-1"></a></span>
+<span id="cb18-3"><a href="#cb18-3" tabindex="-1"></a><span class="co"># Fetch multiple years</span></span>
+<span id="cb18-4"><a href="#cb18-4" tabindex="-1"></a>all_years <span class="ot">&lt;-</span> <span class="fu">fetch_enr_multi</span>(<span class="fu">c</span>(<span class="dv">2024</span>, <span class="dv">2025</span>))</span>
+<span id="cb18-5"><a href="#cb18-5" tabindex="-1"></a></span>
+<span id="cb18-6"><a href="#cb18-6" tabindex="-1"></a><span class="co"># State enrollment over time</span></span>
+<span id="cb18-7"><a href="#cb18-7" tabindex="-1"></a>state_trend <span class="ot">&lt;-</span> all_years <span class="sc">%&gt;%</span></span>
+<span id="cb18-8"><a href="#cb18-8" tabindex="-1"></a>  <span class="fu">filter</span>(is_state, subgroup <span class="sc">==</span> <span class="st">&quot;total&quot;</span>, grade_level <span class="sc">==</span> <span class="st">&quot;TOTAL&quot;</span>)</span>
+<span id="cb18-9"><a href="#cb18-9" tabindex="-1"></a></span>
+<span id="cb18-10"><a href="#cb18-10" tabindex="-1"></a><span class="fu">ggplot</span>(state_trend, <span class="fu">aes</span>(<span class="at">x =</span> end_year, <span class="at">y =</span> n_students)) <span class="sc">+</span></span>
+<span id="cb18-11"><a href="#cb18-11" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="at">color =</span> <span class="st">&quot;steelblue&quot;</span>, <span class="at">size =</span> <span class="fl">1.5</span>) <span class="sc">+</span></span>
+<span id="cb18-12"><a href="#cb18-12" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="at">color =</span> <span class="st">&quot;steelblue&quot;</span>, <span class="at">size =</span> <span class="dv">3</span>) <span class="sc">+</span></span>
+<span id="cb18-13"><a href="#cb18-13" tabindex="-1"></a>  <span class="fu">scale_y_continuous</span>(<span class="at">labels =</span> scales<span class="sc">::</span>comma) <span class="sc">+</span></span>
+<span id="cb18-14"><a href="#cb18-14" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
+<span id="cb18-15"><a href="#cb18-15" tabindex="-1"></a>    <span class="at">title =</span> <span class="st">&quot;California K-12 Enrollment&quot;</span>,</span>
+<span id="cb18-16"><a href="#cb18-16" tabindex="-1"></a>    <span class="at">x =</span> <span class="st">&quot;School Year (End Year)&quot;</span>,</span>
+<span id="cb18-17"><a href="#cb18-17" tabindex="-1"></a>    <span class="at">y =</span> <span class="st">&quot;Total Enrollment&quot;</span></span>
+<span id="cb18-18"><a href="#cb18-18" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb18-19"><a href="#cb18-19" tabindex="-1"></a>  <span class="fu">theme_minimal</span>()</span></code></pre></div>
+</div>
+</div>
+<div id="cache-management" class="section level2">
+<h2>Cache Management</h2>
+<p>The package caches downloaded data locally to avoid repeated
+downloads:</p>
+<div class="sourceCode" id="cb19"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" tabindex="-1"></a><span class="co"># Check what&#39;s cached</span></span>
+<span id="cb19-2"><a href="#cb19-2" tabindex="-1"></a><span class="fu">cache_status</span>()</span>
+<span id="cb19-3"><a href="#cb19-3" tabindex="-1"></a></span>
+<span id="cb19-4"><a href="#cb19-4" tabindex="-1"></a><span class="co"># Clear cache for a specific year</span></span>
+<span id="cb19-5"><a href="#cb19-5" tabindex="-1"></a><span class="fu">clear_enr_cache</span>(<span class="dv">2024</span>)</span>
+<span id="cb19-6"><a href="#cb19-6" tabindex="-1"></a></span>
+<span id="cb19-7"><a href="#cb19-7" tabindex="-1"></a><span class="co"># Force a fresh download (bypass cache)</span></span>
+<span id="cb19-8"><a href="#cb19-8" tabindex="-1"></a>enr_fresh <span class="ot">&lt;-</span> <span class="fu">fetch_enr</span>(<span class="dv">2024</span>, <span class="at">use_cache =</span> <span class="cn">FALSE</span>)</span></code></pre></div>
+<p>The cache is stored in a user-specific application data directory
+(via <code>rappdirs</code>). Cached data persists between R
+sessions.</p>
+</div>
+<div id="data-quality-notes" class="section level2">
+<h2>Data Quality Notes</h2>
+<ul>
+<li>Enrollment counts are based on <strong>Census Day</strong> (first
+Wednesday in October)</li>
+<li>Some cells may be suppressed for privacy (small counts)</li>
+<li>Charter and non-charter enrollments are reported separately</li>
+<li>State and county totals may include students not assigned to
+specific schools</li>
+</ul>
+</div>
+<div id="next-steps" class="section level2">
+<h2>Next Steps</h2>
+<ul>
+<li>See the <a href="district-highlights.html">District Trends &amp;
+Demographics vignette</a> for data-driven findings</li>
+<li>Explore the <a href="data-quality-qa.html">Data Quality QA
+vignette</a> for validation examples</li>
+<li>Check the function reference for detailed documentation:
+<code>?fetch_enr</code>, <code>?tidy_enr</code></li>
+<li>Visit the <a href="https://almartin82.github.io/caschooldata/">package website</a>
+for more resources</li>
+</ul>
+</div>
+
+
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

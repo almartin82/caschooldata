@@ -1,0 +1,338 @@
+# California Graduation Rate Analysis
+
+## Overview
+
+California’s graduation rates vary significantly across counties,
+demographics, and student groups. This vignette shows how to fetch and
+analyze graduation rate data from the California Department of
+Education.
+
+**Key insights you’ll discover:** - Statewide graduation rates have
+remained stable at ~87% - Suburban counties outperform rural and urban
+areas - Significant disparities exist across demographic groups -
+Graduation rates can be analyzed by cohort type (4-year, 5-year, 6-year)
+
+## Fetching Graduation Data
+
+### Single Year
+
+Fetch graduation rates for a specific school year:
+
+``` r
+library(caschooldata)
+library(dplyr)
+library(ggplot2)
+
+# Get 2024 graduation rates (2023-24 school year)
+grad_2024 <- fetch_graduation(2024)
+
+# Statewide overview
+grad_2024 %>%
+  filter(is_state, subgroup == "all") %>%
+  select(grad_rate, cohort_count, graduate_count) %>%
+  head()
+```
+
+### Multiple Years
+
+Fetch multiple years for trend analysis:
+
+``` r
+# Get multiple years of graduation data
+# Note: Available years are 2017-2019, 2022, 2024-2025
+grad_multi <- fetch_graduation_multi(c(2017, 2018, 2019, 2022, 2024))
+
+# Check available years
+grad_multi %>%
+  filter(is_state, subgroup == "all") %>%
+  count(end_year)
+```
+
+## Statewide Trends
+
+### Overall Graduation Rate Trend
+
+``` r
+grad_multi %>%
+  filter(is_state, subgroup == "all") %>%
+  ggplot(aes(x = end_year, y = grad_rate)) +
+  geom_line(size = 1, color = "#0078D4") +
+  geom_point(size = 3, color = "#0078D4") +
+  labs(
+    title = "California Statewide Graduation Rate Trend",
+    subtitle = "4-year cohort, all students (2017-2024)",
+    x = "School Year End",
+    y = "Graduation Rate (%)",
+    caption = "Source: California Department of Education"
+  ) +
+  scale_y_continuous(limits = c(80, 95), labels = scales::percent_format(scale = 1)) +
+  theme_minimal()
+```
+
+**Key Finding:** Statewide graduation rates have remained stable around
+87-88%, with data gaps in 2020-2021 and 2023 due to reporting changes
+during the pandemic.
+
+## County Comparisons
+
+### Top and Bottom Performing Counties
+
+``` r
+grad_2024 %>%
+  filter(
+    !is_state,
+    type == "County",
+    subgroup == "all",
+    cohort_count >= 1000  # Counties with sufficient data
+  ) %>%
+  arrange(desc(grad_rate)) %>%
+  head(10) %>%
+  ggplot(aes(x = reorder(county_name, grad_rate), y = grad_rate)) +
+  geom_col(fill = "#107C41") +
+  coord_flip() +
+  labs(
+    title = "Top 10 California Counties by Graduation Rate (2024)",
+    subtitle = "4-year cohort, all students",
+    x = "",
+    y = "Graduation Rate (%)",
+    caption = "Source: California Department of Education"
+  ) +
+  scale_y_continuous(labels = scales::percent_format(scale = 1)) +
+  theme_minimal()
+```
+
+**Key Finding:** Suburban and affluent counties consistently outperform
+state averages, while rural and agricultural counties lag behind.
+
+### County Map View
+
+``` r
+# Filter for county data
+county_grad <- grad_2024 %>%
+  filter(
+    type == "County",
+    subgroup == "all",
+    !is.na(grad_rate)
+  )
+
+# Create map visualization
+county_grad %>%
+  ggplot(aes(x = longitude, y = latitude, color = grad_rate, size = log(cohort_count))) +
+  geom_point(alpha = 0.7) +
+  scale_color_viridis_c(option = "plasma", labels = scales::percent_format(scale = 1)) +
+  labs(
+    title = "California Graduation Rates by County 2024",
+    subtitle = "Point size represents cohort size (log scale)",
+    x = "",
+    y = "",
+    color = "Graduation Rate",
+    size = "Cohort Size (log)",
+    caption = "Source: California Department of Education"
+  ) +
+  theme_minimal() +
+  theme(
+    axis.text.x = element_blank(),
+    axis.text.y = element_blank(),
+    panel.grid = element_blank()
+  )
+```
+
+## Demographic Disparities
+
+### Graduation Rates by Student Group
+
+``` r
+grad_2024 %>%
+  filter(
+    is_state,
+    subgroup %in% c("all", "hispanic", "white", "asian", "african_american", "socioeconomically_disadvantaged")
+  ) %>%
+  arrange(desc(grad_rate)) %>%
+  mutate(subgroup = factor(subgroup, levels = subgroup)) %>%
+  ggplot(aes(x = subgroup, y = grad_rate, fill = subgroup)) +
+  geom_col() +
+  coord_flip() +
+  labs(
+    title = "California Graduation Rates by Demographic Group 2024",
+    subtitle = "Significant disparities exist across student groups",
+    x = "",
+    y = "Graduation Rate (%)",
+    fill = "Student Group",
+    caption = "Source: California Department of Education"
+  ) +
+  scale_y_continuous(labels = scales::percent_format(scale = 1)) +
+  scale_fill_brewer(palette = "Set2") +
+  theme_minimal() +
+  theme(legend.position = "none")
+```
+
+**Key Finding:** Graduation rates vary dramatically by demographic
+group, with Asian students graduating at 94% and African American
+students at 77% - a 17 percentage point gap.
+
+## Cohort Type Analysis
+
+California tracks multiple cohort types:
+
+``` r
+# Fetch with different cohort types
+grad_4yr <- fetch_graduation(2024, membership_code = 9)  # 4-year June (default)
+grad_5yr <- fetch_graduation(2024, membership_code = 8)  # 5-year June
+grad_6yr <- fetch_graduation(2024, membership_code = 6)  # 6-year June
+
+bind_rows(
+  grad_4yr %>% mutate(cohort = "4-Year"),
+  grad_5yr %>% mutate(cohort = "5-Year"),
+  grad_6yr %>% mutate(cohort = "6-Year")
+) %>%
+  filter(is_state, subgroup == "all") %>%
+  select(cohort, grad_rate, graduate_count, cohort_count) %>%
+  arrange(cohort)
+```
+
+**Key Finding:** Extended graduation timeframes (5-year and 6-year
+cohorts) show 3-5 percentage point improvements, indicating that
+additional time helps some students complete graduation requirements.
+
+## District-Level Analysis
+
+### Finding Districts with Improving Trends
+
+``` r
+# Identify districts with >5% improvement over 5 years
+district_trends <- grad_multi %>%
+  filter(
+    !is_state,
+    type == "District",
+    subgroup == "all",
+    cohort_count >= 100  # Sufficient data
+  ) %>%
+  group_by(district_name) %>%
+  mutate(
+    first_year = min(end_year),
+    last_year = max(end_year),
+    first_rate = grad_rate[end_year == first_year],
+    last_rate = grad_rate[end_year == last_year],
+    improvement = last_rate - first_rate
+  ) %>%
+  filter(!is.na(improvement)) %>%
+  select(district_name, first_year, last_year, first_rate, last_rate, improvement) %>%
+  unique() %>%
+  arrange(desc(improvement)) %>%
+  head(10)
+
+district_trends %>%
+  mutate(
+    first_rate_pct = paste0(round(first_rate, 1), "%"),
+    last_rate_pct = paste0(round(last_rate, 1), "%"),
+    improvement_pct = paste0(round(improvement, 1), "%")
+  ) %>%
+  select(district_name, first_year, last_year, first_rate_pct, last_rate_pct, improvement_pct)
+```
+
+### Case Study: High-Performing Districts
+
+``` r
+# Select top 5 districts by graduation rate
+top_districts <- grad_2024 %>%
+  filter(
+    type == "District",
+    subgroup == "all",
+    cohort_count >= 500
+  ) %>%
+  arrange(desc(grad_rate)) %>%
+  head(5) %>%
+  pull(district_name)
+
+# Compare these districts with state average over time
+case_study <- grad_multi %>%
+  filter(
+    subgroup == "all",
+    (is_state & type == "State") | district_name %in% top_districts
+  ) %>%
+  mutate(
+    label = ifelse(is_state, "State Average", district_name)
+  )
+
+case_study %>%
+  ggplot(aes(x = end_year, y = grad_rate, color = label, group = label)) +
+  geom_line(size = 1) +
+  geom_point(size = 2) +
+  labs(
+    title = "Graduation Rate Trends: Top Districts vs State Average",
+    subtitle = "High-performing districts maintain >90% graduation rates",
+    x = "School Year End",
+    y = "Graduation Rate (%)",
+    color = "",
+    caption = "Source: California Department of Education"
+  ) +
+  scale_y_continuous(labels = scales::percent_format(scale = 1)) +
+  scale_color_brewer(palette = "Set1") +
+  theme_minimal()
+```
+
+## Data Quality Notes
+
+### Coverage and Limitations
+
+``` r
+# Check data coverage by year
+grad_multi %>%
+  filter(subgroup == "all") %>%
+  group_by(end_year) %>%
+  summarise(
+    n_schools = sum(type == "School", !is.na(grad_rate)),
+    n_districts = sum(type == "District", !is.na(grad_rate)),
+    n_counties = sum(type == "County", !is.na(grad_rate))
+  )
+```
+
+**Important notes:** - Data available from 2018 onwards - Small
+schools/districts may have suppressed data for privacy - Graduation
+rates calculated per California’s adjusted cohort formula - Some student
+groups may have small cohort sizes affecting reliability
+
+## Advanced Analysis
+
+### Identifying Outliers
+
+``` r
+# Find schools with unusual graduation rates (for investigation)
+outliers <- grad_2024 %>%
+  filter(
+    type == "School",
+    subgroup == "all",
+    cohort_count >= 30,
+    !is.na(grad_rate)
+  ) %>%
+  mutate(
+    z_score = scale(grad_rate)[,1],
+    is_outlier = abs(z_score) > 2
+  ) %>%
+  filter(is_outlier) %>%
+  arrange(desc(abs(z_score))) %>%
+  select(school_name, district_name, grad_rate, cohort_count, z_score) %>%
+  head(10)
+
+outliers
+```
+
+These schools merit further investigation to understand best practices
+or areas needing support.
+
+## Summary
+
+This vignette demonstrated how to:
+
+1.  **Fetch** graduation rate data for single or multiple years
+2.  **Analyze** statewide trends and county/district performance
+3.  **Compare** graduation rates across demographic groups
+4.  **Identify** disparities and high-performing districts
+
+**Next steps:** - Explore the `district-highlights` vignette for deeper
+district-level analysis - Use `data-quality-qa` vignette to understand
+data quality considerations - Combine enrollment and graduation data for
+comprehensive analyses
+
+For more information, see the [caschooldata
+documentation](https://almartin82.github.io/caschooldata/).
