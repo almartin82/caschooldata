@@ -641,10 +641,11 @@ sessionInfo()
     ## [1] stats     graphics  grDevices utils     datasets  methods   base     
     ## 
     ## other attached packages:
-    ## [1] ggplot2_4.0.1      tidyr_1.3.2        dplyr_1.1.4        caschooldata_0.1.0
+    ## [1] rmarkdown_2.30     ggplot2_4.0.1      tidyr_1.3.2        dplyr_1.1.4       
+    ## [5] caschooldata_0.1.0
     ## 
     ## loaded via a namespace (and not attached):
-    ##  [1] utf8_1.2.6         rappdirs_0.3.3     sass_0.4.10        generics_0.1.4    
+    ##  [1] utf8_1.2.6         rappdirs_0.3.4     sass_0.4.10        generics_0.1.4    
     ##  [5] hms_1.1.4          digest_0.6.39      magrittr_2.0.4     evaluate_1.0.5    
     ##  [9] grid_4.5.2         RColorBrewer_1.1-3 fastmap_1.2.0      jsonlite_2.0.0    
     ## [13] httr_1.4.7         purrr_1.2.1        scales_1.4.0       codetools_0.2-20  
@@ -655,6 +656,6 @@ sessionInfo()
     ## [33] fs_1.6.6           bit_4.6.0          vroom_1.6.7        ragg_1.5.0        
     ## [37] pkgconfig_2.0.3    desc_1.4.3         pkgdown_2.2.0      pillar_1.11.1     
     ## [41] bslib_0.9.0        gtable_0.3.6       glue_1.8.0         systemfonts_1.3.1 
-    ## [45] xfun_0.55          tibble_3.3.1       tidyselect_1.2.1   knitr_1.51        
-    ## [49] farver_2.1.2       htmltools_0.5.9    rmarkdown_2.30     labeling_0.4.3    
-    ## [53] readr_2.1.6        compiler_4.5.2     S7_0.2.1
+    ## [45] xfun_0.56          tibble_3.3.1       tidyselect_1.2.1   knitr_1.51        
+    ## [49] farver_2.1.2       htmltools_0.5.9    labeling_0.4.3     readr_2.1.6       
+    ## [53] compiler_4.5.2     S7_0.2.1
