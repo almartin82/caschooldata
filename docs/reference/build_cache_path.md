@@ -16,7 +16,7 @@ build_cache_path(end_year, cache_type)
 
 - cache_type:
 
-  Type of cache ("tidy" or "wide")
+  Type of cache ("tidy", "wide", "grad_tidy", "grad_wide")
 
 ## Value
 
