@@ -9,3 +9,7 @@ src/*.dll
 /Meta/
 *.Rcheck/
 *.log
+
+# Python
+__pycache__/
+*.pyc
