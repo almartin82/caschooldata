@@ -7,6 +7,84 @@
 #
 # ==============================================================================
 
+#' @importFrom utils unzip
+NULL
+
+#' Get URL version suffix for a given year
+#'
+#' The CAASPP portal uses different version suffixes for different years.
+#' This function returns the correct version for each year.
+#'
+#' @param end_year School year end
+#' @return Version suffix string (e.g., "v1", "v2", "v3", "v4")
+#' @keywords internal
+get_caaspp_version <- function(end_year) {
+  # Version mapping based on actual portal URLs (as of January 2026)
+  version_map <- c(
+    "2015" = "v3",
+    "2016" = "v3",
+    "2017" = "v2",
+    "2018" = "v3",
+    "2019" = "v4",
+    "2020" = "v1",  # Limited data due to COVID
+    "2021" = "v2",
+    "2022" = "v1",
+    "2023" = "v1",
+    "2024" = "v1",
+    "2025" = "v1"
+  )
+  unname(version_map[as.character(end_year)])
+}
+
+
+#' Build CAASPP research file URL
+#'
+#' Constructs the direct download URL for CAASPP research files.
+#'
+#' @param end_year School year end
+#' @param file_type One of "1" (All Students), "all" (All Student Groups),
+#'   "all_ela" (All Groups ELA only), "all_math" (All Groups Math only)
+#' @param format One of "csv" (caret-delimited) or "ascii" (fixed-width)
+#' @return URL string
+#' @keywords internal
+build_caaspp_url <- function(end_year,
+                             file_type = c("1", "all", "all_ela", "all_math"),
+                             format = c("csv", "ascii")) {
+  file_type <- match.arg(file_type)
+  format <- match.arg(format)
+
+  version <- get_caaspp_version(end_year)
+  base_url <- "https://caaspp-elpac.ets.org/caaspp/researchfiles"
+
+  # Build file name based on file type
+  if (file_type == "1") {
+    filename <- sprintf("sb_ca%d_1_%s_%s.zip", end_year, format, version)
+  } else if (file_type == "all") {
+    filename <- sprintf("sb_ca%d_all_%s_%s.zip", end_year, format, version)
+  } else if (file_type == "all_ela") {
+    filename <- sprintf("sb_ca%d_all_%s_ela_%s.zip", end_year, format, version)
+  } else {  # all_math
+    filename <- sprintf("sb_ca%d_all_%s_math_%s.zip", end_year, format, version)
+  }
+
+  paste0(base_url, "/", filename)
+}
+
+
+#' Build CAASPP entities file URL
+#'
+#' @param end_year School year end
+#' @param format One of "csv" or "ascii"
+#' @return URL string
+#' @keywords internal
+build_entities_url <- function(end_year, format = c("csv", "ascii")) {
+  format <- match.arg(format)
+  base_url <- "https://caaspp-elpac.ets.org/caaspp/researchfiles"
+  filename <- sprintf("sb_ca%dentities_%s.zip", end_year, format)
+  paste0(base_url, "/", filename)
+}
+
+
 #' Get raw CAASPP assessment data
 #'
 #' Downloads raw CAASPP Smarter Balanced assessment research files from the
@@ -14,7 +92,7 @@
 #' ELA and Mathematics.
 #'
 #' @param end_year School year end (e.g., 2023 for 2022-23 school year).
-#'   Supports 2015-2024.
+#'   Supports 2015-2025.
 #' @param subject Assessment subject: "ELA", "Math", or "Both" (default).
 #' @param student_group "ALL" (default) for all students, or "GROUPS" for all
 #'   student group breakdowns.
@@ -31,9 +109,9 @@
 #' ## Available Years:
 #' \itemize{
 #'   \item 2015-2019: Pre-COVID baseline data
-#'   \item 2020: Assessment year (COVID-19 disruptions)
+#'   \item 2020: No statewide testing (COVID-19)
 #'   \item 2021: Limited data due to pandemic
-#'   \item 2022-2024: Full post-pandemic data
+#'   \item 2022-2025: Full post-pandemic data
 #' }
 #'
 #' ## File Format:
@@ -57,18 +135,18 @@
 #' @export
 #' @examples
 #' \dontrun{
-#' # Download 2023 CAASPP data (both ELA and Math)
-#' raw_2023 <- get_raw_assess(2023)
+#' # Download 2024 CAASPP data (both ELA and Math)
+#' raw_2024 <- get_raw_assess(2024)
 #'
 #' # Download only ELA results
-#' raw_2023_ela <- get_raw_assess(2023, subject = "ELA")
+#' raw_2024_ela <- get_raw_assess(2024, subject = "ELA")
 #'
 #' # Download with student group breakdowns
-#' raw_2023_groups <- get_raw_assess(2023, student_group = "GROUPS")
+#' raw_2024_groups <- get_raw_assess(2024, student_group = "GROUPS")
 #'
 #' # Access test results and entity names
-#' test_data <- raw_2023$test_data
-#' entities <- raw_2023$entities
+#' test_data <- raw_2024$test_data
+#' entities <- raw_2024$entities
 #' }
 get_raw_assess <- function(end_year,
                            subject = c("Both", "ELA", "Math"),
@@ -78,84 +156,127 @@ get_raw_assess <- function(end_year,
   student_group <- match.arg(student_group)
 
   # Validate year
-  available_years <- 2015:2024
+  available_years <- get_available_assess_years()$all_years
   if (!end_year %in% available_years) {
     stop(paste0(
-      "end_year must be between 2015 and 2024.\n",
+      "end_year must be one of: ", paste(available_years, collapse = ", "), ".\n",
       "Note: CAASPP assessments started in 2014-15 (end_year=2015).\n",
-      "2020 data may be limited due to COVID-19 disruptions."
+      "2020 had no statewide testing due to COVID-19."
     ))
   }
 
-  # Map end_year to CAASPP test year
-  # end_year 2023 = 2022-23 school year = test year 2023
-  test_year <- end_year
+  # Special handling for 2020 (COVID year)
+  if (end_year == 2020) {
+    stop(
+      "2020 CAASPP data is not available.\n",
+      "California did not administer statewide assessments in Spring 2020 ",
+      "due to the COVID-19 pandemic.\n",
+      "Use 2019 for pre-pandemic or 2021+ for post-pandemic data."
+    )
+  }
 
-  # Build base URL for research files portal
-  base_url <- "https://caaspp-elpac.ets.org/caaspp/ResearchFileListSB"
-  portal_url <- paste0(
-    base_url,
-    "?ps=true&lstTestYear=", test_year,
-    "&lstTestType=B",  # B = Smarter Balanced
-    "&lstCounty=00",   # 00 = statewide
-    "&lstDistrict=00000"  # 00000 = all districts
-  )
+  # Determine file type based on parameters
+  if (student_group == "ALL") {
+    file_type <- "1"  # All Students combined file
+  } else if (subject == "ELA") {
+    file_type <- "all_ela"
+  } else if (subject == "Math") {
+    file_type <- "all_math"
+  } else {
+    file_type <- "all"  # All student groups, both subjects
+  }
 
-  # NOTE: The CAASPP portal uses JavaScript to generate download links,
-  # making direct URL discovery challenging. This function provides
-  # documentation and the manual download workflow.
-  #
-  # For automated downloads, we use import_local_*() fallback or
-  # implement URL pattern discovery.
+  # Build URLs
+  data_url <- build_caaspp_url(end_year, file_type = file_type, format = "csv")
+  entities_url <- build_entities_url(end_year, format = "csv")
 
   message(paste0(
-    "\n",
-    "CAASPP Assessment Data Download\n",
-    "==============================\n",
-    "Year: ", end_year, " (", end_year-1, "-", end_year, " school year)\n",
-    "Subject: ", subject, "\n",
-    "Student Groups: ", student_group, "\n\n",
-    "DATA SOURCE: CAASPP Research Files Portal (ETS)\n",
-    "Portal URL: ", portal_url, "\n\n",
-    "MANUAL DOWNLOAD INSTRUCTIONS:\n",
-    "1. Visit the portal URL above\n",
-    "2. Under 'Statewide Files', download:\n",
-    "   - 'California Statewide research file, All Students, caret-delimited'\n",
-    "3. Under 'Entity Files', download:\n",
-    "   - Entity file for ", test_year, "\n",
-    "4. Save both files to a local directory\n\n",
-    "AUTOMATED DOWNLOAD:\n",
-    "Direct URL patterns are not publicly documented.\n",
-    "Use import_local_assess() to load manually downloaded files.\n\n",
-    "For more information, see:\n",
-    "https://github.com/almartin82/caschooldata/blob/main/",
-    "ASSESSMENT-EXPANSION-RESEARCH.md\n"
+    "Downloading CAASPP ", end_year, " assessment data...\n",
+    "  Subject: ", subject, "\n",
+    "  Student Groups: ", student_group
   ))
 
-  # Attempt to construct download URLs based on observed patterns
-  # These patterns may change and should be verified
+  # Create temp directory
+  temp_dir <- tempdir()
 
-  # File naming pattern (hypothetical, needs verification):
-  # sb_ca_{test_year}_allstudents_csv.txt
-  # entities_{test_year}.txt
+  # Download and extract data file
+  data_zip <- file.path(temp_dir, paste0("caaspp_data_", end_year, ".zip"))
+  entities_zip <- file.path(temp_dir, paste0("caaspp_entities_", end_year, ".zip"))
 
-  file_pattern <- list(
-    test_data = paste0("sb_ca_", test_year, "_allstudents_csv"),
-    entities = paste0("entities_", test_year)
+  tryCatch({
+    # Download data file
+    message("  Downloading test data...")
+    utils::download.file(data_url, data_zip, mode = "wb", quiet = TRUE)
+
+    # Download entities file
+    message("  Downloading entities...")
+    utils::download.file(entities_url, entities_zip, mode = "wb", quiet = TRUE)
+  }, error = function(e) {
+    stop(
+      "Failed to download CAASPP files.\n",
+      "Error: ", e$message, "\n",
+      "Data URL: ", data_url, "\n",
+      "Entities URL: ", entities_url, "\n\n",
+      "If URLs have changed, visit the CAASPP portal manually:\n",
+      "https://caaspp-elpac.ets.org/caaspp/ResearchFileListSB"
+    )
+  })
+
+  # Extract and read data file
+  message("  Extracting and parsing...")
+  unzip(data_zip, exdir = temp_dir)
+  unzip(entities_zip, exdir = temp_dir)
+
+  # Find the extracted text files
+  data_files <- list.files(temp_dir, pattern = sprintf("sb_ca%d.*csv.*\\.txt$", end_year),
+                          full.names = TRUE)
+  entity_files <- list.files(temp_dir, pattern = sprintf("sb_ca%dentities.*\\.txt$", end_year),
+                            full.names = TRUE)
+
+  if (length(data_files) == 0) {
+    stop("Could not find extracted data file in temp directory")
+  }
+  if (length(entity_files) == 0) {
+    stop("Could not find extracted entities file in temp directory")
+  }
+
+  # Read the caret-delimited files
+  test_data <- readr::read_delim(
+    data_files[1],
+    delim = "^",
+    col_types = readr::cols(.default = "c"),
+    na = c("", "*", "N/A"),
+    show_col_types = FALSE
   )
 
-  # Return metadata (actual download requires manual intervention
-  # or URL pattern verification)
+  entities <- readr::read_delim(
+    entity_files[1],
+    delim = "^",
+    col_types = readr::cols(.default = "c"),
+    show_col_types = FALSE
+  )
+
+  message(paste0(
+    "  Downloaded: ", nrow(test_data), " assessment records, ",
+    nrow(entities), " entities"
+  ))
+
+  # Clean up temp files
+  unlink(data_zip)
+  unlink(entities_zip)
+  unlink(data_files)
+  unlink(entity_files)
+
+  # Return result
   result <- list(
-    test_data = NULL,
-    entities = NULL,
+    test_data = test_data,
+    entities = entities,
     year = end_year,
-    test_year = test_year,
+    source_url = data_url,
+    entities_url = entities_url,
     subject = subject,
     student_group = student_group,
-    portal_url = portal_url,
-    file_pattern = file_pattern,
-    status = "manual_download_required"
+    status = "success"
   )
 
   result
@@ -178,9 +299,9 @@ get_raw_assess <- function(end_year,
 #' \dontrun{
 #' # Import manually downloaded files
 #' local_data <- import_local_assess(
-#'   test_data_path = "~/Downloads/sb_ca_2023_allstudents_csv.txt",
-#'   entities_path = "~/Downloads/entities_2023.txt",
-#'   end_year = 2023
+#'   test_data_path = "~/Downloads/sb_ca2024_1_csv_v1.txt",
+#'   entities_path = "~/Downloads/sb_ca2024entities_csv.txt",
+#'   end_year = 2024
 #' )
 #'
 #' test_data <- local_data$test_data
@@ -201,15 +322,17 @@ import_local_assess <- function(test_data_path,
   message("Reading test data from: ", test_data_path)
   test_data <- readr::read_delim(
     test_data_path,
-    delim = "|",  # Caret-delimited
-    na = c("", "*", "N/A", "*"),
+    delim = "^",  # Caret-delimited (^)
+    col_types = readr::cols(.default = "c"),
+    na = c("", "*", "N/A"),
     show_col_types = FALSE
   )
 
   message("Reading entities from: ", entities_path)
   entities <- readr::read_delim(
     entities_path,
-    delim = "|",
+    delim = "^",  # Caret-delimited (^)
+    col_types = readr::cols(.default = "c"),
     show_col_types = FALSE
   )
 
@@ -229,34 +352,58 @@ import_local_assess <- function(test_data_path,
 }
 
 
-#' Download CAASPP research file (direct URL attempt)
+#' Check if CAASPP URL is accessible
 #'
-#' Attempts to download a CAASPP research file using a constructed URL.
-#' This is an internal helper function that may fail if URL patterns change.
+#' Tests if a CAASPP research file URL is accessible.
 #'
-#' @param url Direct download URL
-#' @param destfile Destination file path
-#' @param quiet If TRUE, suppress download progress messages
-#'
-#' @return Invisible TRUE if successful, stops with error if failed
-#'
+#' @param url URL to test
+#' @return TRUE if accessible, FALSE otherwise
 #' @keywords internal
-download_caaspp_file <- function(url, destfile, quiet = FALSE) {
+check_caaspp_url <- function(url) {
+  tryCatch({
+    response <- httr::HEAD(url, httr::timeout(10))
+    httr::status_code(response) == 200
+  }, error = function(e) {
+    FALSE
+  })
+}
 
-  # Check if URL is accessible
-  response <- httr::HEAD(url)
 
-  if (httr::http_error(response)) {
-    stop(
-      "Unable to download from URL: ", url, "\n",
-      "Status: ", httr::status_code(response), "\n\n",
-      "The URL may be incorrect or require authentication.\n",
-      "Please download manually from the CAASPP portal."
+#' Get available CAASPP assessment years
+#'
+#' Returns a vector of years for which CAASPP assessment data is available.
+#'
+#' @return Named list with:
+#'   \itemize{
+#'     \item \code{min_year}: First available year (2015)
+#'     \item \code{max_year}: Last available year (2025)
+#'     \item \code{all_years}: All available years (excluding 2020)
+#'     \item \code{note}: Special notes about data availability
+#'   }
+#'
+#' @export
+#' @examples
+#' \dontrun{
+#' # Check available assessment years
+#' years <- get_available_assess_years()
+#' print(years)
+#'
+#' # Fetch all available years
+#' all_assess <- fetch_assess_multi(years$all_years)
+#' }
+get_available_assess_years <- function() {
+  # All years with CAASPP data (excluding 2020 - COVID)
+  all_years <- c(2015:2019, 2021:2025)
+
+  list(
+    min_year = 2015,
+    max_year = 2025,
+    all_years = all_years,
+    covid_year = 2020,
+    note = paste(
+      "CAASPP assessments started in 2014-15 (end_year=2015).",
+      "2020 had no statewide testing due to COVID-19.",
+      "2021 data has limited participation due to pandemic."
     )
-  }
-
-  # Download file
-  utils::download.file(url, destfile = destfile, quiet = quiet, mode = "wb")
-
-  invisible(TRUE)
+  )
 }
