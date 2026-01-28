@@ -18,8 +18,8 @@ NULL
 #' California Department of Education. Includes test results for grades 3-8
 #' and 11 in ELA and Mathematics.
 #'
-#' @param end_year School year end (e.g., 2023 for 2022-23 school year).
-#'   Supports 2015-2024. Note: 2020 data may be limited due to COVID-19.
+#' @param end_year School year end (e.g., 2024 for 2023-24 school year).
+#'   Supports 2015-2025. Note: 2020 had no statewide testing due to COVID-19.
 #' @param tidy If TRUE (default), returns data in long (tidy) format with
 #'   metric_type and metric_value columns. If FALSE, returns wide format
 #'   with separate columns for each metric.
@@ -47,26 +47,14 @@ NULL
 #' ## Available Years:
 #' \itemize{
 #'   \item 2015-2019: Pre-COVID baseline data
-#'   \item 2020: Limited data (COVID-19 disruptions)
+#'   \item 2020: No statewide testing (COVID-19)
 #'   \item 2021: Reduced participation
-#'   \item 2022-2024: Full post-pandemic data
+#'   \item 2022-2025: Full post-pandemic data
 #' }
 #'
 #' ## Data Source:
 #' California CAASPP Smarter Balanced Assessments
 #' Portal: https://caaspp-elpac.ets.org/caaspp/ResearchFileListSB
-#'
-#' ## Manual Download Required:
-#' The CAASPP portal does not provide publicly documented direct download URLs.
-#' Users must:
-#' \enumerate{
-#'   \item Visit the CAASPP Research Files portal
-#'   \item Download statewide research files (caret-delimited format)
-#'   \item Use \code{\link{import_local_assess}()} to load the files
-#'   \item This function will then process the data
-#' }
-#'
-#' See \code{vignette("assessment")} for detailed examples.
 #'
 #' @export
 #' @examples
@@ -74,28 +62,17 @@ NULL
 #' library(caschooldata)
 #' library(dplyr)
 #'
-#' # After manually downloading CAASPP files:
-#' local_files <- import_local_assess(
-#'   test_data_path = "~/Downloads/sb_ca_2023_allstudents_csv.txt",
-#'   entities_path = "~/Downloads/entities_2023.txt",
-#'   end_year = 2023
-#' )
-#'
-#' # Fetch processed assessment data
-#' assess_2023 <- fetch_assess(
-#'   end_year = 2023,
-#'   local_data = local_files,
-#'   tidy = TRUE
-#' )
+#' # Fetch 2024 assessment data
+#' assess_2024 <- fetch_assess(end_year = 2024, tidy = TRUE)
 #'
 #' # State-level 11th grade proficiency
-#' state_11_prof <- assess_2023 %>%
+#' state_11_prof <- assess_2024 %>%
 #'   filter(agg_level == "T",
 #'          grade == "11",
 #'          metric_type == "pct_met_and_above")
 #'
 #' # District-level comparison
-#' district_ela <- assess_2023 %>%
+#' district_ela <- assess_2024 %>%
 #'   filter(agg_level == "D",
 #'          grade == "11",
 #'          subject == "ELA",
@@ -113,13 +90,20 @@ fetch_assess <- function(end_year,
   student_group <- match.arg(student_group)
 
   # Validate year
-  available_years <- 2015:2024
+  available_years <- get_available_assess_years()$all_years
   if (!end_year %in% available_years) {
     stop(paste0(
-      "end_year must be between 2015 and 2024.\n",
+      "end_year must be one of: ", paste(available_years, collapse = ", "), ".\n",
       "CAASPP assessments started in 2014-15 (end_year=2015).\n",
-      "2020 data may be limited due to COVID-19 disruptions."
+      "2020 had no statewide testing due to COVID-19."
     ))
+  }
+
+  # Check cache first
+  cache_type <- if (tidy) "assess_tidy" else "assess_wide"
+  if (use_cache && cache_exists(end_year, cache_type)) {
+    message(paste("Using cached assessment data for", end_year))
+    return(read_cache(end_year, cache_type))
   }
 
   # Check if local_data is provided
@@ -128,36 +112,18 @@ fetch_assess <- function(end_year,
     message("Using locally imported assessment data")
     processed <- process_assess(local_data$test_data, end_year)
   } else {
-    # Attempt to download (will provide manual instructions)
-    message("\nCAASPP assessment data requires manual download from the ETS portal.")
-    message("Attempting to locate cached data or provide download instructions...\n")
-
-    # Check cache first
-    cache_type <- if (tidy) "assess_tidy" else "assess_wide"
-    if (use_cache && cache_exists(end_year, cache_type)) {
-      message(paste("Using cached assessment data for", end_year))
-      return(read_cache(end_year, cache_type))
-    }
-
-    # Try to download (will fail with instructions)
+    # Download directly from CAASPP portal
     raw <- get_raw_assess(
       end_year = end_year,
       subject = subject,
       student_group = student_group
     )
 
-    if (is.null(raw$test_data)) {
+    if (is.null(raw$test_data) || nrow(raw$test_data) == 0) {
       stop(
-        "No test data found. Please download CAASPP files manually:\n\n",
-        "1. Visit: ", raw$portal_url, "\n",
-        "2. Download 'California Statewide research file, All Students, ",
-        "caret-delimited'\n",
-        "3. Download the Entity file for ", raw$test_year, "\n",
-        "4. Use import_local_assess() to load the files\n",
-        "5. Pass the result to fetch_assess(local_data = ...)\n\n",
-        "For detailed instructions, see:\n",
-        "https://github.com/almartin82/caschooldata/blob/main/",
-        "ASSESSMENT-EXPANSION-RESEARCH.md"
+        "Failed to download CAASPP data for ", end_year, ".\n",
+        "Please try again or download manually from:\n",
+        "https://caaspp-elpac.ets.org/caaspp/ResearchFileListSB"
       )
     }
 
@@ -173,8 +139,7 @@ fetch_assess <- function(end_year,
   }
 
   # Cache the result
-  if (use_cache && is.null(local_data)) {
-    cache_type <- if (tidy) "assess_tidy" else "assess_wide"
+  if (use_cache) {
     write_cache(result, end_year, cache_type)
   }
 
@@ -185,8 +150,9 @@ fetch_assess <- function(end_year,
 #' Fetch CAASPP assessment data for multiple years
 #'
 #' Convenience function to download assessment data for multiple years at once.
+#' Note: 2020 is automatically excluded (no statewide testing due to COVID-19).
 #'
-#' @param years Vector of school year ends (e.g., c(2019, 2020, 2021))
+#' @param years Vector of school year ends (e.g., c(2019, 2021, 2022))
 #' @param tidy If TRUE (default), returns tidy format
 #' @param subject Assessment subject: "Both" (default), "ELA", or "Math"
 #' @param student_group "ALL" (default) or "GROUPS"
@@ -198,13 +164,13 @@ fetch_assess <- function(end_year,
 #' @export
 #' @examples
 #' \dontrun{
-#' # Get 2019-2023 assessment data
+#' # Get 2019-2024 assessment data (2020 automatically excluded)
 #' assess_multi <- fetch_assess_multi(
-#'   years = 2019:2023,
+#'   years = 2019:2024,
 #'   tidy = TRUE
 #' )
 #'
-#' # Calculate 5-year trend
+#' # Calculate multi-year trend
 #' library(dplyr)
 #'
 #' state_trend <- assess_multi %>%
@@ -228,56 +194,58 @@ fetch_assess_multi <- function(years,
   subject <- match.arg(subject)
   student_group <- match.arg(student_group)
 
-  results <- purrr::map_df(years, function(y) {
-    local_data <- if (!is.null(local_data_list) && y %in% names(local_data_list)) {
-      local_data_list[[y]]
-    } else {
-      NULL
+  # Get available years
+  available <- get_available_assess_years()
+
+  # Remove 2020 if present (COVID year - no statewide testing)
+  if (2020 %in% years) {
+    warning("2020 excluded: No statewide CAASPP testing due to COVID-19.")
+    years <- years[years != 2020]
+  }
+
+  # Validate years
+  invalid_years <- years[!years %in% available$all_years]
+  if (length(invalid_years) > 0) {
+    stop(paste0(
+      "Invalid years: ", paste(invalid_years, collapse = ", "), "\n",
+      "Valid years are: ", paste(available$all_years, collapse = ", ")
+    ))
+  }
+
+  if (length(years) == 0) {
+    stop("No valid years to fetch")
+  }
+
+  # Fetch each year
+  results <- purrr::map(
+    years,
+    function(y) {
+      message(paste("Fetching", y, "..."))
+      local_data <- if (!is.null(local_data_list) && as.character(y) %in% names(local_data_list)) {
+        local_data_list[[as.character(y)]]
+      } else {
+        NULL
+      }
+
+      tryCatch({
+        fetch_assess(
+          end_year = y,
+          tidy = tidy,
+          subject = subject,
+          student_group = student_group,
+          local_data = local_data,
+          use_cache = use_cache
+        )
+      }, error = function(e) {
+        warning(paste("Failed to fetch year", y, ":", e$message))
+        data.frame()
+      })
     }
-
-    fetch_assess(
-      end_year = y,
-      tidy = tidy,
-      subject = subject,
-      student_group = student_group,
-      local_data = local_data,
-      use_cache = use_cache
-    )
-  })
-
-  results
-}
-
-
-#' Get available CAASPP assessment years
-#'
-#' Returns a vector of years for which CAASPP assessment data is available.
-#'
-#' @return Named list with:
-#'   \itemize{
-#'     \item \code{min_year}: First available year (2015)
-#'     \item \code{max_year}: Last available year (2024)
-#'     \item \code{all_years}: All available years
-#'     \item \code{note}: Special notes about data availability
-#'   }
-#'
-#' @export
-#' @examples
-#' \dontrun{
-#' # Check available assessment years
-#' years <- get_available_assess_years()
-#' print(years)
-#'
-#' # Fetch all available years
-#' all_assess <- fetch_assess_multi(years$all_years)
-#' }
-get_available_assess_years <- function() {
-
-  list(
-    min_year = 2015,
-    max_year = 2024,
-    all_years = 2015:2024,
-    note = "CAASPP assessments started in 2014-15 (end_year=2015). ",
-           "2020 data may be limited due to COVID-19 disruptions."
   )
+
+  # Combine, filtering out empty data frames
+  results <- results[!sapply(results, function(x) nrow(x) == 0)]
+  dplyr::bind_rows(results)
 }
+
+

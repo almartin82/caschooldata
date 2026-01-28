@@ -68,8 +68,8 @@ NULL
 #' @examples
 #' \dontrun{
 #' # Process raw assessment data
-#' raw <- get_raw_assess(2023)
-#' processed <- process_assess(raw$test_data, 2023)
+#' raw <- get_raw_assess(2024)
+#' processed <- process_assess(raw$test_data, 2024)
 #'
 #' # View processed data
 #' head(processed)
@@ -81,142 +81,130 @@ NULL
 #' }
 process_assess <- function(raw_data, end_year) {
 
-  # Check if raw_data is NULL (manual download required)
+  # Check if raw_data is NULL
   if (is.null(raw_data)) {
     stop(
       "Raw assessment data is NULL.\n",
-      "Please download CAASPP files manually from the portal:\n",
-      "1. Visit: https://caaspp-elpac.ets.org/caaspp/ResearchFileListSB\n",
-      "2. Download statewide research file (All Students, caret-delimited)\n",
-      "3. Use import_local_assess() to load the files\n",
-      "4. Then process_assess() to process the data"
+      "Please use get_raw_assess() or import_local_assess() first."
     )
   }
 
-  # Define expected column mapping based on 2023 file layout
-  # Column names may vary slightly across years, so we'll standardize
+  # Check if raw_data has rows
+  if (nrow(raw_data) == 0) {
+    stop("Raw assessment data has no rows.")
+  }
 
   # First, let's see what columns we actually have
   actual_cols <- names(raw_data)
 
-  # Common column name patterns (may need adjustment for different years)
+  # CAASPP column mapping (based on 2024 file structure)
+  # Column names are consistent across years (2015-2025)
   col_mapping <- list(
     # Entity identifiers
-    county_code = c("County Code", "County_Code", "CNTYCODE", "county_code"),
-    district_code = c("District Code", "District_Code", "DISTCODE", "district_code"),
-    school_code = c("School Code", "School_Code", "SCHCODE", "school_code"),
+    county_code = "County Code",
+    district_code = "District Code",
+    district_name = "District Name",
+    school_code = "School Code",
+    school_name = "School Name",
+    type_id = "Type ID",
 
     # Test information
-    test_year = c("Test Year", "Test_Year", "TestYear", "test_year"),
-    test_id = c("Test ID", "Test_ID", "TestID", "test_id", "Test Code", "Test_Code"),
-    subject = c("Subject", "subject", "Test Type", "Test_Type"),
-    grade = c("Grade", "grade", "Grade Level", "Grade_Level"),
+    test_year = "Test Year",
+    test_type = "Test Type",
+    test_id = "Test ID",
+    student_group_id = "Student Group ID",
+    grade = "Grade",
 
-    # Student groups
-    student_group_code = c("Student Group Code", "Student_Group_Code",
-                          "SubGroup ID", "SubGroupID", " subgroup_id"),
+    # Student counts
+    n_enrolled = "Total Students Enrolled",
+    n_tested = "Total Students Tested",
+    n_tested_with_scores = "Total Students Tested with Scores",
 
     # Performance metrics
-    mean_scale_score = c("Mean Scale Score", "Mean_Scale_Score",
-                        "MeanScore", "mean_scale_score",
-                        "Average Scale Score"),
+    mean_scale_score = "Mean Scale Score",
 
     # Percentages
-    pct_exceeded = c("Percentage Standard Exceeded",
-                    "Percentage_Standard_Exceeded",
-                    "PctExceeded", "pct_exceeded",
-                    "Percent Exceeded"),
-
-    pct_met = c("Percentage Standard Met",
-               "Percentage_Standard_Met",
-               "PctMet", "pct_met",
-               "Percent Met"),
-
-    pct_met_and_above = c("Percentage Standard Met and Above",
-                         "Percentage_Standard_Met_and_Above",
-                         "PctMetAndAbove", "pct_met_and_above",
-                         "Percent Met and Above"),
-
-    pct_nearly_met = c("Percentage Standard Nearly Met",
-                      "Percentage_Standard_Nearly_Met",
-                      "PctNearlyMet", "pct_nearly_met",
-                      "Percent Nearly Met"),
-
-    pct_not_met = c("Percentage Standard Not Met",
-                   "Percentage_Standard_Not_Met",
-                   "PctNotMet", "pct_not_met",
-                   "Percent Not Met"),
+    pct_exceeded = "Percentage Standard Exceeded",
+    pct_met = "Percentage Standard Met",
+    pct_met_and_above = "Percentage Standard Met and Above",
+    pct_nearly_met = "Percentage Standard Nearly Met",
+    pct_not_met = "Percentage Standard Not Met",
 
     # Counts
-    n_tested = c("Number Tested", "Number_Tested", "TestedCount", "n_tested"),
-    n_exceeded = c("Number Exceeded", "Number_Exceeded", "ExceededCount"),
-    n_met = c("Number Met", "Number_Met", "MetCount"),
-    n_met_and_above = c("Number Met and Above", "Number_Met_and_Above"),
-    n_nearly_met = c("Number Nearly Met", "Number_Nearly_Met"),
-    n_not_met = c("Number Not Met", "Number_Not_Met")
+    n_exceeded = "Count Standard Exceeded",
+    n_met = "Count Standard Met",
+    n_met_and_above = "Count Standard Met and Above",
+    n_nearly_met = "Count Standard Nearly Met",
+    n_not_met = "Count Standard Not Met"
   )
 
-  # Helper function to find column by any of its possible names
-  find_col <- function(patterns) {
-    for (pattern in patterns) {
-      matches <- actual_cols[grepl(pattern, actual_cols, ignore.case = TRUE)]
-      if (length(matches) > 0) {
-        return(matches[1])
-      }
-    }
-    return(NULL)
-  }
-
-  # Build new column mapping
-  new_cols <- list()
-  for (target_name in names(col_mapping)) {
-    found <- find_col(col_mapping[[target_name]])
-    if (!is.null(found)) {
-      new_cols[[target_name]] <- found
+  # Build column renaming list (only for columns that exist)
+  rename_list <- list()
+  for (new_name in names(col_mapping)) {
+    old_name <- col_mapping[[new_name]]
+    if (old_name %in% actual_cols) {
+      rename_list[[new_name]] <- old_name
     }
   }
 
   # Rename columns to standardized names
-  if (length(new_cols) > 0) {
+  if (length(rename_list) > 0) {
     raw_data <- raw_data %>%
-      dplyr::rename(!!!new_cols)
+      dplyr::rename(!!!rename_list)
   }
 
   # Add end_year
-  raw_data$end_year <- end_year
+  raw_data$end_year <- as.integer(end_year)
 
-  # Construct CDS code (14 digits: CCDDDDSSSSSSS)
+  # Map test_id to subject
+  # Test ID 1 = ELA, Test ID 2 = Math
+  if ("test_id" %in% names(raw_data)) {
+    raw_data <- raw_data %>%
+      dplyr::mutate(
+        subject = dplyr::case_when(
+          test_id == "1" ~ "ELA",
+          test_id == "2" ~ "Math",
+          TRUE ~ paste0("Test_", test_id)
+        )
+      )
+  }
+
+  # Construct CDS code (14 digits: CCDDDDDSSSSSS)
   # County: 2 digits, District: 5 digits, School: 7 digits
   if (all(c("county_code", "district_code", "school_code") %in% names(raw_data))) {
     raw_data <- raw_data %>%
       dplyr::mutate(
-        cds_code = stringr::str_interp(
-          "${sprintf('%02d', as.integer(county_code))}${sprintf('%05d', as.integer(district_code))}${sprintf('%07s', school_code)}"
+        cds_code = paste0(
+          sprintf("%02s", county_code),
+          sprintf("%05s", district_code),
+          sprintf("%07s", school_code)
         )
       )
   }
 
-  # Determine aggregation level
-  # School code "0000000" or "00000000" indicates district summary
-  if ("school_code" %in% names(raw_data)) {
+  # Determine aggregation level based on type_id and codes
+  # Type ID: 4 = State, 5 = County, 6 = District, 7 = School
+  if ("type_id" %in% names(raw_data)) {
     raw_data <- raw_data %>%
       dplyr::mutate(
         agg_level = dplyr::case_when(
-          school_code %in% c("0000000", "00000000", "0") ~ "D",
-          school_code == "" ~ "D",
+          type_id == "4" ~ "T",  # State
+          type_id == "5" ~ "C",  # County
+          type_id == "6" ~ "D",  # District
+          type_id == "7" ~ "S",  # School
+          # Fallback based on codes
+          county_code == "00" & district_code == "00000" & school_code == "0000000" ~ "T",
+          school_code == "0000000" ~ "D",
           TRUE ~ "S"
         )
       )
-  }
-
-  # Clean subject column
-  if ("subject" %in% names(raw_data)) {
+  } else if (all(c("county_code", "district_code", "school_code") %in% names(raw_data))) {
     raw_data <- raw_data %>%
       dplyr::mutate(
-        subject = dplyr::case_when(
-          grepl("ELA|English|Literacy", subject, ignore.case = TRUE) ~ "ELA",
-          grepl("Math|Mathematics", subject, ignore.case = TRUE) ~ "Math",
-          TRUE ~ as.character(subject)
+        agg_level = dplyr::case_when(
+          county_code == "00" & district_code == "00000" & school_code == "0000000" ~ "T",
+          school_code == "0000000" ~ "D",
+          TRUE ~ "S"
         )
       )
   }
@@ -225,7 +213,10 @@ process_assess <- function(raw_data, end_year) {
   if ("grade" %in% names(raw_data)) {
     raw_data <- raw_data %>%
       dplyr::mutate(
-        grade = sprintf("%02d", as.integer(grade))
+        grade = dplyr::case_when(
+          grade == "13" ~ "13",  # All grades combined
+          TRUE ~ sprintf("%02d", as.integer(grade))
+        )
       )
   }
 
@@ -239,9 +230,15 @@ process_assess <- function(raw_data, end_year) {
     }
   }
 
+  # Convert mean scale score to numeric
+  if ("mean_scale_score" %in% names(raw_data)) {
+    raw_data$mean_scale_score <- as.numeric(raw_data$mean_scale_score)
+  }
+
   # Convert count columns to integer
-  count_cols <- c("n_tested", "n_exceeded", "n_met",
-                  "n_met_and_above", "n_nearly_met", "n_not_met")
+  count_cols <- c("n_enrolled", "n_tested", "n_tested_with_scores",
+                  "n_exceeded", "n_met", "n_met_and_above",
+                  "n_nearly_met", "n_not_met")
 
   for (col in count_cols) {
     if (col %in% names(raw_data)) {
@@ -253,19 +250,18 @@ process_assess <- function(raw_data, end_year) {
   standard_cols <- c(
     "end_year", "cds_code",
     "county_code", "district_code", "school_code",
-    "agg_level",
-    "grade", "subject", "test_id", "student_group_code",
+    "district_name", "school_name",
+    "agg_level", "type_id",
+    "grade", "subject", "test_id", "student_group_id",
     "mean_scale_score",
     "pct_exceeded", "pct_met", "pct_met_and_above",
     "pct_nearly_met", "pct_not_met",
-    "n_tested", "n_exceeded", "n_met",
-    "n_met_and_above", "n_nearly_met", "n_not_met"
+    "n_enrolled", "n_tested", "n_tested_with_scores",
+    "n_exceeded", "n_met", "n_met_and_above",
+    "n_nearly_met", "n_not_met"
   )
 
   available_cols <- intersect(standard_cols, names(raw_data))
-
-  # Also keep any columns that weren't mapped (for debugging)
-  unmapped_cols <- setdiff(names(raw_data), available_cols)
 
   result <- raw_data %>%
     dplyr::select(dplyr::all_of(available_cols))
@@ -309,12 +305,13 @@ process_assess <- function(raw_data, end_year) {
   }
 
   # Check for state-level data
-  if (!any(result$agg_level == "T", na.rm = TRUE) &&
-      !any(result$grade == "13", na.rm = TRUE)) {
-    warning(
-      "No state-level summary rows found.\n",
-      "Data may not include statewide aggregations."
-    )
+  if ("agg_level" %in% names(result)) {
+    if (!any(result$agg_level == "T", na.rm = TRUE)) {
+      warning(
+        "No state-level summary rows found.\n",
+        "Data may not include statewide aggregations."
+      )
+    }
   }
 
   # Add class for printing

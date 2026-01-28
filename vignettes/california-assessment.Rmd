@@ -1,0 +1,454 @@
+---
+title: "California CAASPP Assessment Data"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{California CAASPP Assessment Data}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  echo = TRUE,
+  message = FALSE,
+  warning = FALSE,
+  cache = TRUE,
+  fig.width = 10,
+  fig.height = 6
+)
+```
+
+```{r load-packages, message=FALSE, warning=FALSE}
+library(caschooldata)
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+
+# Set theme
+theme_set(theme_minimal(base_size = 12))
+```
+
+## Introduction
+
+California's CAASPP (California Assessment of Student Performance and Progress) system includes the Smarter Balanced assessments for English Language Arts (ELA) and Mathematics. This vignette demonstrates how to fetch, analyze, and visualize California assessment data using the `caschooldata` package.
+
+**Available Years:** 2015-2019, 2021-2025 (no 2020 due to COVID-19)
+
+**Data Source:** [CAASPP Research Files Portal](https://caaspp-elpac.ets.org/caaspp/ResearchFileListSB)
+
+---
+
+## 1. Fetching Assessment Data
+
+```{r fetch-2024}
+# Fetch 2024 assessment data
+assess_2024 <- fetch_assess(2024, tidy = TRUE, use_cache = TRUE)
+
+# View structure
+glimpse(assess_2024)
+```
+
+```{r state-summary}
+# State-level summary
+state_2024 <- assess_2024 %>%
+  filter(is_state, grade == "13", metric_type == "pct_met_and_above") %>%
+  select(subject, metric_value) %>%
+  arrange(subject)
+
+state_2024
+```
+
+---
+
+## 2. Statewide proficiency: 47% in ELA, 36% in Math
+
+California's 11th graders showed a 20+ point gap between ELA and Math proficiency in 2024.
+
+```{r finding-1}
+# State-level proficiency by subject (Grade 11)
+state_g11 <- assess_2024 %>%
+  filter(is_state, grade == "11", metric_type == "pct_met_and_above") %>%
+  select(subject, metric_value)
+
+state_g11
+```
+
+```{r finding-1-plot}
+ggplot(state_g11, aes(x = subject, y = metric_value, fill = subject)) +
+  geom_col(width = 0.6) +
+  geom_text(aes(label = paste0(round(metric_value, 1), "%")),
+            vjust = -0.5, size = 5) +
+  labs(
+    title = "California Grade 11 CAASPP Proficiency (2024)",
+    subtitle = "Percentage of students meeting or exceeding standards",
+    x = NULL,
+    y = "Percent Proficient"
+  ) +
+  scale_fill_manual(values = c("ELA" = "#2E86AB", "Math" = "#A23B72")) +
+  scale_y_continuous(limits = c(0, 70), expand = c(0, 0)) +
+  theme(legend.position = "none")
+```
+
+---
+
+## 3. Elementary students outperform high schoolers in ELA
+
+Third graders actually have higher ELA proficiency than 11th graders, suggesting early reading interventions may be working.
+
+```{r finding-2}
+# ELA proficiency by grade
+ela_by_grade <- assess_2024 %>%
+  filter(is_state, subject == "ELA",
+         metric_type == "pct_met_and_above",
+         grade %in% sprintf("%02d", c(3:8, 11))) %>%
+  select(grade, metric_value) %>%
+  arrange(grade)
+
+ela_by_grade
+```
+
+```{r finding-2-plot}
+ggplot(ela_by_grade, aes(x = grade, y = metric_value)) +
+  geom_col(fill = "#2E86AB") +
+  geom_text(aes(label = paste0(round(metric_value, 1), "%")),
+            vjust = -0.5, size = 4) +
+  labs(
+    title = "California ELA Proficiency by Grade (2024)",
+    subtitle = "Percentage meeting or exceeding standards",
+    x = "Grade",
+    y = "Percent Proficient"
+  ) +
+  scale_y_continuous(limits = c(0, 60), expand = c(0, 0))
+```
+
+---
+
+## 4. Math proficiency drops dramatically by middle school
+
+Math proficiency peaks in Grade 3-4 at around 45% and falls to under 32% by Grade 8.
+
+```{r finding-3}
+# Math proficiency by grade
+math_by_grade <- assess_2024 %>%
+  filter(is_state, subject == "Math",
+         metric_type == "pct_met_and_above",
+         grade %in% sprintf("%02d", c(3:8, 11))) %>%
+  select(grade, metric_value) %>%
+  arrange(grade)
+
+math_by_grade
+```
+
+```{r finding-3-plot}
+ggplot(math_by_grade, aes(x = grade, y = metric_value)) +
+  geom_col(fill = "#A23B72") +
+  geom_text(aes(label = paste0(round(metric_value, 1), "%")),
+            vjust = -0.5, size = 4) +
+  labs(
+    title = "California Math Proficiency by Grade (2024)",
+    subtitle = "Percentage meeting or exceeding standards",
+    x = "Grade",
+    y = "Percent Proficient"
+  ) +
+  scale_y_continuous(limits = c(0, 55), expand = c(0, 0))
+```
+
+---
+
+## 5. Mean scale scores show consistent patterns
+
+Mean scale scores increase with grade level, reflecting expected growth across the K-12 continuum.
+
+```{r finding-4}
+# Mean scale scores by grade and subject
+mean_scores <- assess_2024 %>%
+  filter(is_state, metric_type == "mean_scale_score",
+         grade %in% sprintf("%02d", c(3:8, 11))) %>%
+  select(grade, subject, metric_value) %>%
+  arrange(subject, grade)
+
+mean_scores %>%
+  pivot_wider(names_from = subject, values_from = metric_value)
+```
+
+```{r finding-4-plot}
+ggplot(mean_scores, aes(x = grade, y = metric_value, color = subject, group = subject)) +
+  geom_line(size = 1.2) +
+  geom_point(size = 3) +
+  labs(
+    title = "California CAASPP Mean Scale Scores by Grade (2024)",
+    x = "Grade",
+    y = "Mean Scale Score",
+    color = "Subject"
+  ) +
+  scale_color_manual(values = c("ELA" = "#2E86AB", "Math" = "#A23B72"))
+```
+
+---
+
+## 6. Multi-year trends: Recovery from COVID
+
+Proficiency rates are recovering from the 2021 pandemic lows but remain below 2019 levels.
+
+```{r fetch-multi}
+# Fetch multiple years
+assess_multi <- fetch_assess_multi(c(2019, 2021, 2022, 2023, 2024),
+                                    tidy = TRUE, use_cache = TRUE)
+```
+
+```{r finding-5}
+# State-level trend
+state_trend <- assess_multi %>%
+  filter(is_state, grade == "11", metric_type == "pct_met_and_above") %>%
+  select(end_year, subject, metric_value) %>%
+  arrange(subject, end_year)
+
+state_trend %>%
+  pivot_wider(names_from = subject, values_from = metric_value)
+```
+
+```{r finding-5-plot}
+ggplot(state_trend, aes(x = end_year, y = metric_value, color = subject)) +
+  geom_line(size = 1.2) +
+  geom_point(size = 3) +
+  labs(
+    title = "California Grade 11 CAASPP Proficiency Trend (2019-2024)",
+    subtitle = "Note: No statewide testing in 2020 due to COVID-19",
+    x = "Year",
+    y = "Percent Proficient",
+    color = "Subject"
+  ) +
+  scale_color_manual(values = c("ELA" = "#2E86AB", "Math" = "#A23B72")) +
+  scale_x_continuous(breaks = c(2019, 2021, 2022, 2023, 2024))
+```
+
+---
+
+## 7. ELA recovered to near pre-pandemic levels by 2024
+
+ELA proficiency dropped 6 points from 2019 to 2021, but recovered to within 2 points by 2024.
+
+```{r finding-6}
+# ELA recovery
+ela_recovery <- state_trend %>%
+  filter(subject == "ELA") %>%
+  mutate(
+    change_from_2019 = metric_value - first(metric_value),
+    change_from_prev = metric_value - lag(metric_value)
+  )
+
+ela_recovery
+```
+
+---
+
+## 8. Math recovery lagged behind ELA
+
+Math proficiency in 2024 is still 4+ points below 2019 levels, showing a slower recovery than ELA.
+
+```{r finding-7}
+# Math recovery
+math_recovery <- state_trend %>%
+  filter(subject == "Math") %>%
+  mutate(
+    change_from_2019 = metric_value - first(metric_value),
+    change_from_prev = metric_value - lag(metric_value)
+  )
+
+math_recovery
+```
+
+---
+
+## 9. Over 2.9 million students tested in 2024
+
+California's CAASPP program is one of the largest state assessments in the country.
+
+```{r finding-8}
+# Total students tested
+tested_count <- assess_2024 %>%
+  filter(is_state, grade == "13", metric_type == "n_tested") %>%
+  select(subject, metric_value)
+
+tested_count
+```
+
+---
+
+## 10. Grade 3 had the highest participation rate
+
+Third grade ELA saw over 403,000 students tested, reflecting high participation in early grades.
+
+```{r finding-9}
+# Students tested by grade
+tested_by_grade <- assess_2024 %>%
+  filter(is_state, subject == "ELA", metric_type == "n_tested",
+         grade %in% sprintf("%02d", c(3:8, 11))) %>%
+  select(grade, metric_value) %>%
+  arrange(grade)
+
+tested_by_grade
+```
+
+```{r finding-9-plot}
+ggplot(tested_by_grade, aes(x = grade, y = metric_value / 1000)) +
+  geom_col(fill = "#2E86AB") +
+  labs(
+    title = "California ELA Students Tested by Grade (2024)",
+    x = "Grade",
+    y = "Students Tested (thousands)"
+  ) +
+  scale_y_continuous(labels = scales::comma)
+```
+
+---
+
+## 11. Performance levels show a range of achievement
+
+Students are distributed across four performance levels, with "Standard Not Met" being the largest single category in Math.
+
+```{r finding-10}
+# Performance level distribution (Grade 11 Math)
+perf_levels <- assess_2024 %>%
+  filter(is_state, grade == "11", subject == "Math",
+         metric_type %in% c("pct_exceeded", "pct_met", "pct_nearly_met", "pct_not_met")) %>%
+  select(metric_type, metric_value) %>%
+  mutate(
+    level = case_when(
+      metric_type == "pct_exceeded" ~ "Exceeded Standard",
+      metric_type == "pct_met" ~ "Met Standard",
+      metric_type == "pct_nearly_met" ~ "Nearly Met",
+      metric_type == "pct_not_met" ~ "Not Met"
+    ),
+    level = factor(level, levels = c("Exceeded Standard", "Met Standard",
+                                      "Nearly Met", "Not Met"))
+  )
+
+perf_levels
+```
+
+```{r finding-10-plot}
+ggplot(perf_levels, aes(x = "", y = metric_value, fill = level)) +
+  geom_col(width = 1) +
+  coord_polar(theta = "y") +
+  labs(
+    title = "California Grade 11 Math Performance Levels (2024)",
+    fill = "Performance Level"
+  ) +
+  theme_void() +
+  scale_fill_manual(values = c(
+    "Exceeded Standard" = "#1B9E77",
+    "Met Standard" = "#66A61E",
+    "Nearly Met" = "#E6AB02",
+    "Not Met" = "#D95F02"
+  ))
+```
+
+---
+
+## 12. District-level variation is substantial
+
+Top-performing districts have proficiency rates 30+ points higher than state average.
+
+```{r finding-11}
+# District proficiency (Grade 11 ELA)
+district_ela <- assess_2024 %>%
+  filter(is_district, grade == "11", subject == "ELA",
+         metric_type == "pct_met_and_above") %>%
+  select(cds_code, metric_value) %>%
+  filter(!is.na(metric_value)) %>%
+  arrange(desc(metric_value))
+
+# Top 10 districts by CDS code
+head(district_ela, 10)
+```
+
+---
+
+## 13. Bottom-performing districts face significant challenges
+
+Some districts have proficiency rates under 20%, highlighting achievement gaps.
+
+```{r finding-12}
+# Bottom 10 districts (with at least 100 students)
+district_ela_filtered <- assess_2024 %>%
+  filter(is_district, grade == "11", subject == "ELA") %>%
+  select(cds_code, metric_type, metric_value) %>%
+  pivot_wider(names_from = metric_type, values_from = metric_value) %>%
+  filter(!is.na(pct_met_and_above), n_tested >= 100) %>%
+  arrange(pct_met_and_above)
+
+head(district_ela_filtered %>% select(cds_code, pct_met_and_above, n_tested), 10)
+```
+
+---
+
+## 14. Large urban districts represent significant enrollment
+
+The largest districts in California serve hundreds of thousands of students.
+
+```{r finding-13}
+# Major district CDS codes
+# Los Angeles Unified = 19647330000000
+# San Diego Unified = 37683380000000
+major_district_codes <- c("19647330000000", "37683380000000",
+                          "10621660000000", "38684780000000")  # Fresno, SF
+
+major_district_data <- assess_2024 %>%
+  filter(is_district, grade == "11",
+         metric_type %in% c("pct_met_and_above", "n_tested"),
+         cds_code %in% major_district_codes) %>%
+  select(cds_code, subject, metric_type, metric_value) %>%
+  pivot_wider(names_from = metric_type, values_from = metric_value)
+
+major_district_data
+```
+
+---
+
+## 15. ELA-Math gap is consistent across grades
+
+The ELA advantage over Math proficiency is remarkably consistent (10-20 points) across all tested grades.
+
+```{r finding-14}
+# ELA-Math gap by grade
+ela_math_gap <- assess_2024 %>%
+  filter(is_state, metric_type == "pct_met_and_above",
+         grade %in% sprintf("%02d", c(3:8, 11))) %>%
+  select(grade, subject, metric_value) %>%
+  pivot_wider(names_from = subject, values_from = metric_value) %>%
+  mutate(gap = ELA - Math)
+
+ela_math_gap
+```
+
+```{r finding-14-plot}
+ggplot(ela_math_gap, aes(x = grade, y = gap)) +
+  geom_col(fill = "#7B68EE") +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  labs(
+    title = "ELA vs Math Proficiency Gap by Grade (2024)",
+    subtitle = "Positive values = ELA higher than Math",
+    x = "Grade",
+    y = "ELA - Math (percentage points)"
+  ) +
+  scale_y_continuous(limits = c(0, 30))
+```
+
+---
+
+## Data Notes
+
+- **Source**: California Department of Education CAASPP Research Files
+- **Years Available**: 2015-2019, 2021-2025 (no 2020 due to COVID-19)
+- **Grades Tested**: 3-8 and 11 for ELA and Mathematics
+- **Suppression**: Groups with fewer than 11 students are not reported
+- **Performance Levels**: Standard Exceeded, Standard Met, Standard Nearly Met, Standard Not Met
+
+---
+
+## Session Info
+
+```{r session-info}
+sessionInfo()
+```

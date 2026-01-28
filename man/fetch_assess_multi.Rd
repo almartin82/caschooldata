@@ -14,7 +14,7 @@ fetch_assess_multi(
 )
 }
 \arguments{
-\item{years}{Vector of school year ends (e.g., c(2019, 2020, 2021))}
+\item{years}{Vector of school year ends (e.g., c(2019, 2021, 2022))}
 
 \item{tidy}{If TRUE (default), returns tidy format}
 
@@ -31,16 +31,17 @@ Combined tibble with data for all requested years
 }
 \description{
 Convenience function to download assessment data for multiple years at once.
+Note: 2020 is automatically excluded (no statewide testing due to COVID-19).
 }
 \examples{
 \dontrun{
-# Get 2019-2023 assessment data
+# Get 2019-2024 assessment data (2020 automatically excluded)
 assess_multi <- fetch_assess_multi(
-  years = 2019:2023,
+  years = 2019:2024,
   tidy = TRUE
 )
 
-# Calculate 5-year trend
+# Calculate multi-year trend
 library(dplyr)
 
 state_trend <- assess_multi \%>\%

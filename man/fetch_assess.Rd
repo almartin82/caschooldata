@@ -14,8 +14,8 @@ fetch_assess(
 )
 }
 \arguments{
-\item{end_year}{School year end (e.g., 2023 for 2022-23 school year).
-Supports 2015-2024. Note: 2020 data may be limited due to COVID-19.}
+\item{end_year}{School year end (e.g., 2024 for 2023-24 school year).
+Supports 2015-2025. Note: 2020 had no statewide testing due to COVID-19.}
 
 \item{tidy}{If TRUE (default), returns data in long (tidy) format with
 metric_type and metric_value columns. If FALSE, returns wide format
@@ -55,9 +55,9 @@ and 11 in ELA and Mathematics.
 
 \itemize{
 \item 2015-2019: Pre-COVID baseline data
-\item 2020: Limited data (COVID-19 disruptions)
+\item 2020: No statewide testing (COVID-19)
 \item 2021: Reduced participation
-\item 2022-2024: Full post-pandemic data
+\item 2022-2025: Full post-pandemic data
 }
 }
 
@@ -66,48 +66,23 @@ and 11 in ELA and Mathematics.
 California CAASPP Smarter Balanced Assessments
 Portal: https://caaspp-elpac.ets.org/caaspp/ResearchFileListSB
 }
-
-\subsection{Manual Download Required:}{
-
-The CAASPP portal does not provide publicly documented direct download URLs.
-Users must:
-\enumerate{
-\item Visit the CAASPP Research Files portal
-\item Download statewide research files (caret-delimited format)
-\item Use \code{\link{import_local_assess}()} to load the files
-\item This function will then process the data
-}
-
-See \code{vignette("assessment")} for detailed examples.
-}
 }
 \examples{
 \dontrun{
 library(caschooldata)
 library(dplyr)
 
-# After manually downloading CAASPP files:
-local_files <- import_local_assess(
-  test_data_path = "~/Downloads/sb_ca_2023_allstudents_csv.txt",
-  entities_path = "~/Downloads/entities_2023.txt",
-  end_year = 2023
-)
-
-# Fetch processed assessment data
-assess_2023 <- fetch_assess(
-  end_year = 2023,
-  local_data = local_files,
-  tidy = TRUE
-)
+# Fetch 2024 assessment data
+assess_2024 <- fetch_assess(end_year = 2024, tidy = TRUE)
 
 # State-level 11th grade proficiency
-state_11_prof <- assess_2023 \%>\%
+state_11_prof <- assess_2024 \%>\%
   filter(agg_level == "T",
          grade == "11",
          metric_type == "pct_met_and_above")
 
 # District-level comparison
-district_ela <- assess_2023 \%>\%
+district_ela <- assess_2024 \%>\%
   filter(agg_level == "D",
          grade == "11",
          subject == "ELA",

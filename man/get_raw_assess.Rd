@@ -12,7 +12,7 @@ get_raw_assess(
 }
 \arguments{
 \item{end_year}{School year end (e.g., 2023 for 2022-23 school year).
-Supports 2015-2024.}
+Supports 2015-2025.}
 
 \item{subject}{Assessment subject: "ELA", "Math", or "Both" (default).}
 
@@ -38,9 +38,9 @@ ELA and Mathematics.
 
 \itemize{
 \item 2015-2019: Pre-COVID baseline data
-\item 2020: Assessment year (COVID-19 disruptions)
+\item 2020: No statewide testing (COVID-19)
 \item 2021: Limited data due to pandemic
-\item 2022-2024: Full post-pandemic data
+\item 2022-2025: Full post-pandemic data
 }
 }
 
@@ -64,18 +64,18 @@ https://caaspp-elpac.ets.org/caaspp/ResearchFileListSB
 }
 \examples{
 \dontrun{
-# Download 2023 CAASPP data (both ELA and Math)
-raw_2023 <- get_raw_assess(2023)
+# Download 2024 CAASPP data (both ELA and Math)
+raw_2024 <- get_raw_assess(2024)
 
 # Download only ELA results
-raw_2023_ela <- get_raw_assess(2023, subject = "ELA")
+raw_2024_ela <- get_raw_assess(2024, subject = "ELA")
 
 # Download with student group breakdowns
-raw_2023_groups <- get_raw_assess(2023, student_group = "GROUPS")
+raw_2024_groups <- get_raw_assess(2024, student_group = "GROUPS")
 
 # Access test results and entity names
-test_data <- raw_2023$test_data
-entities <- raw_2023$entities
+test_data <- raw_2024$test_data
+entities <- raw_2024$entities
 }
 }
 \seealso{
