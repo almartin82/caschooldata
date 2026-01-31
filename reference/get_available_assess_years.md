@@ -14,9 +14,9 @@ Named list with:
 
 - `min_year`: First available year (2015)
 
-- `max_year`: Last available year (2024)
+- `max_year`: Last available year (2025)
 
-- `all_years`: All available years
+- `all_years`: All available years (excluding 2020)
 
 - `note`: Special notes about data availability
 

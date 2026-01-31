@@ -34,9 +34,9 @@ List containing parsed test_data and entities data frames
 if (FALSE) { # \dontrun{
 # Import manually downloaded files
 local_data <- import_local_assess(
-  test_data_path = "~/Downloads/sb_ca_2023_allstudents_csv.txt",
-  entities_path = "~/Downloads/entities_2023.txt",
-  end_year = 2023
+  test_data_path = "~/Downloads/sb_ca2024_1_csv_v1.txt",
+  entities_path = "~/Downloads/sb_ca2024entities_csv.txt",
+  end_year = 2024
 )
 
 test_data <- local_data$test_data

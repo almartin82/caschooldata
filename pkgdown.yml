@@ -2,11 +2,12 @@ pandoc: 3.1.11
 pkgdown: 2.2.0
 pkgdown_sha: ~
 articles:
+  california-assessment: california-assessment.html
   data-quality-qa: data-quality-qa.html
   district-highlights: district-highlights.html
   graduation-rates: graduation-rates.html
   quickstart: quickstart.html
-last_built: 2026-01-24T16:20Z
+last_built: 2026-01-31T15:16Z
 urls:
   reference: https://almartin82.github.io/caschooldata/reference
   article: https://almartin82.github.io/caschooldata/articles

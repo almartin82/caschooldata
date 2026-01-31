@@ -66,8 +66,8 @@ and 11 in ELA and Mathematics.</p>
 
 
 <dl><dt id="arg-end-year">end_year<a class="anchor" aria-label="anchor" href="#arg-end-year"></a></dt>
-<dd><p>School year end (e.g., 2023 for 2022-23 school year).
-Supports 2015-2024. Note: 2020 data may be limited due to COVID-19.</p></dd>
+<dd><p>School year end (e.g., 2024 for 2023-24 school year).
+Supports 2015-2025. Note: 2020 had no statewide testing due to COVID-19.</p></dd>
 
 
 <dt id="arg-tidy">tidy<a class="anchor" aria-label="anchor" href="#arg-tidy"></a></dt>
@@ -114,9 +114,9 @@ CAASPP files from the portal.</p></dd>
 
 
 <ul><li><p>2015-2019: Pre-COVID baseline data</p></li>
-<li><p>2020: Limited data (COVID-19 disruptions)</p></li>
+<li><p>2020: No statewide testing (COVID-19)</p></li>
 <li><p>2021: Reduced participation</p></li>
-<li><p>2022-2024: Full post-pandemic data</p></li>
+<li><p>2022-2025: Full post-pandemic data</p></li>
 </ul></div>
 
 <div class="section">
@@ -127,18 +127,6 @@ CAASPP files from the portal.</p></dd>
 Portal: https://caaspp-elpac.ets.org/caaspp/ResearchFileListSB</p>
 </div>
 
-<div class="section">
-<h3 id="manual-download-required-">Manual Download Required:<a class="anchor" aria-label="anchor" href="#manual-download-required-"></a></h3>
-
-
-<p>The CAASPP portal does not provide publicly documented direct download URLs.
-Users must:</p><ol><li><p>Visit the CAASPP Research Files portal</p></li>
-<li><p>Download statewide research files (caret-delimited format)</p></li>
-<li><p>Use <code><a href="import_local_assess.html">import_local_assess()</a></code> to load the files</p></li>
-<li><p>This function will then process the data</p></li>
-</ol><p>See <code>vignette("assessment")</code> for detailed examples.</p>
-</div>
-
     </div>
 
     <div class="section level2">
@@ -147,28 +135,17 @@ Users must:</p><ol><li><p>Visit the CAASPP Research Files portal</p></li>
 <span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://almartin82.github.io/caschooldata/">caschooldata</a></span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org" class="external-link">dplyr</a></span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co"># After manually downloading CAASPP files:</span></span></span>
-<span class="r-in"><span><span class="va">local_files</span> <span class="op">&lt;-</span> <span class="fu"><a href="import_local_assess.html">import_local_assess</a></span><span class="op">(</span></span></span>
-<span class="r-in"><span>  test_data_path <span class="op">=</span> <span class="st">"~/Downloads/sb_ca_2023_allstudents_csv.txt"</span>,</span></span>
-<span class="r-in"><span>  entities_path <span class="op">=</span> <span class="st">"~/Downloads/entities_2023.txt"</span>,</span></span>
-<span class="r-in"><span>  end_year <span class="op">=</span> <span class="fl">2023</span></span></span>
-<span class="r-in"><span><span class="op">)</span></span></span>
-<span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co"># Fetch processed assessment data</span></span></span>
-<span class="r-in"><span><span class="va">assess_2023</span> <span class="op">&lt;-</span> <span class="fu">fetch_assess</span><span class="op">(</span></span></span>
-<span class="r-in"><span>  end_year <span class="op">=</span> <span class="fl">2023</span>,</span></span>
-<span class="r-in"><span>  local_data <span class="op">=</span> <span class="va">local_files</span>,</span></span>
-<span class="r-in"><span>  tidy <span class="op">=</span> <span class="cn">TRUE</span></span></span>
-<span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="co"># Fetch 2024 assessment data</span></span></span>
+<span class="r-in"><span><span class="va">assess_2024</span> <span class="op">&lt;-</span> <span class="fu">fetch_assess</span><span class="op">(</span>end_year <span class="op">=</span> <span class="fl">2024</span>, tidy <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># State-level 11th grade proficiency</span></span></span>
-<span class="r-in"><span><span class="va">state_11_prof</span> <span class="op">&lt;-</span> <span class="va">assess_2023</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span></span>
+<span class="r-in"><span><span class="va">state_11_prof</span> <span class="op">&lt;-</span> <span class="va">assess_2024</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span></span>
 <span class="r-in"><span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">agg_level</span> <span class="op">==</span> <span class="st">"T"</span>,</span></span>
 <span class="r-in"><span>         <span class="va">grade</span> <span class="op">==</span> <span class="st">"11"</span>,</span></span>
 <span class="r-in"><span>         <span class="va">metric_type</span> <span class="op">==</span> <span class="st">"pct_met_and_above"</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># District-level comparison</span></span></span>
-<span class="r-in"><span><span class="va">district_ela</span> <span class="op">&lt;-</span> <span class="va">assess_2023</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span></span>
+<span class="r-in"><span><span class="va">district_ela</span> <span class="op">&lt;-</span> <span class="va">assess_2024</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span></span>
 <span class="r-in"><span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">agg_level</span> <span class="op">==</span> <span class="st">"D"</span>,</span></span>
 <span class="r-in"><span>         <span class="va">grade</span> <span class="op">==</span> <span class="st">"11"</span>,</span></span>
 <span class="r-in"><span>         <span class="va">subject</span> <span class="op">==</span> <span class="st">"ELA"</span>,</span></span>

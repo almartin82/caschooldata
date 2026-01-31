@@ -1,7 +1,8 @@
 # Fetch CAASPP assessment data for multiple years
 
 Convenience function to download assessment data for multiple years at
-once.
+once. Note: 2020 is automatically excluded (no statewide testing due to
+COVID-19).
 
 ## Usage
 
@@ -20,7 +21,7 @@ fetch_assess_multi(
 
 - years:
 
-  Vector of school year ends (e.g., c(2019, 2020, 2021))
+  Vector of school year ends (e.g., c(2019, 2021, 2022))
 
 - tidy:
 
@@ -50,13 +51,13 @@ Combined tibble with data for all requested years
 
 ``` r
 if (FALSE) { # \dontrun{
-# Get 2019-2023 assessment data
+# Get 2019-2024 assessment data (2020 automatically excluded)
 assess_multi <- fetch_assess_multi(
-  years = 2019:2023,
+  years = 2019:2024,
   tidy = TRUE
 )
 
-# Calculate 5-year trend
+# Calculate multi-year trend
 library(dplyr)
 
 state_trend <- assess_multi %>%

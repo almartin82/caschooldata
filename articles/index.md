@@ -2,6 +2,8 @@
 
 ### All vignettes
 
+- [California CAASPP Assessment
+  Data](https://almartin82.github.io/caschooldata/articles/california-assessment.md):
 - [Data Quality QA
   Report](https://almartin82.github.io/caschooldata/articles/data-quality-qa.md):
 - [California Enrollment Deep Dive: District Trends & Demographic

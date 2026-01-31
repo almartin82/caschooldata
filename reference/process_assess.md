@@ -102,8 +102,8 @@ A tibble with processed assessment data including columns:
 ``` r
 if (FALSE) { # \dontrun{
 # Process raw assessment data
-raw <- get_raw_assess(2023)
-processed <- process_assess(raw$test_data, 2023)
+raw <- get_raw_assess(2024)
+processed <- process_assess(raw$test_data, 2024)
 
 # View processed data
 head(processed)

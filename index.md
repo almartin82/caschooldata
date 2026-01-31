@@ -3,11 +3,13 @@
 **[Documentation](https://almartin82.github.io/caschooldata/)** \|
 **[Getting
 Started](https://almartin82.github.io/caschooldata/articles/quickstart.html)**
-\| **[Full
+\| **[Enrollment
 Analysis](https://almartin82.github.io/caschooldata/articles/district-highlights.html)**
+\| **[Assessment
+Analysis](https://almartin82.github.io/caschooldata/articles/california-assessment.html)**
 
-Fetch and analyze California school enrollment data from the California
-Department of Education in R or Python.
+Fetch and analyze California school enrollment and assessment data from
+the California Department of Education in R or Python.
 
 Part of the [njschooldata](https://github.com/almartin82/njschooldata)
 family of state education data packages, providing programmatic access
@@ -15,8 +17,9 @@ to official state DOE data with a consistent API across all 50 states.
 
 ## What can you find with caschooldata?
 
-**44 years of enrollment data (1982-2025).** 5.8 million students today.
-Over 1,000 districts. Here are fifteen stories hiding in the numbers:
+**44 years of enrollment data (1982-2025) plus CAASPP assessment results
+(2015-2024).** 5.8 million students today. Over 1,000 districts. Here
+are twenty stories hiding in the numbers:
 
 ------------------------------------------------------------------------
 
@@ -468,6 +471,146 @@ Year-over-year changes
 
 ------------------------------------------------------------------------
 
+## Assessment Data: CAASPP Results
+
+California’s CAASPP (California Assessment of Student Performance and
+Progress) system includes the Smarter Balanced assessments for English
+Language Arts (ELA) and Mathematics. Data available from 2015-2024 (no
+2020 due to COVID-19).
+
+------------------------------------------------------------------------
+
+### 16. Statewide proficiency: 47% in ELA, 36% in Math
+
+California’s 11th graders showed a 20+ point gap between ELA and Math
+proficiency in 2024.
+
+``` r
+library(caschooldata)
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+
+# Set theme
+theme_set(theme_minimal(base_size = 12))
+
+# Fetch 2024 assessment data
+assess_2024 <- fetch_assess(2024, tidy = TRUE, use_cache = TRUE)
+
+# State-level proficiency by subject (Grade 11)
+state_g11 <- assess_2024 %>%
+  filter(is_state, grade == "11", metric_type == "pct_met_and_above") %>%
+  select(subject, metric_value)
+
+state_g11
+```
+
+![Grade 11
+Proficiency](https://almartin82.github.io/caschooldata/articles/california-assessment_files/figure-html/finding-1-plot-1.png)
+
+Grade 11 Proficiency
+
+------------------------------------------------------------------------
+
+### 17. Elementary students outperform high schoolers in ELA
+
+Third graders actually have higher ELA proficiency than 11th graders,
+suggesting early reading interventions may be working.
+
+``` r
+# ELA proficiency by grade
+ela_by_grade <- assess_2024 %>%
+  filter(is_state, subject == "ELA",
+         metric_type == "pct_met_and_above",
+         grade %in% sprintf("%02d", c(3:8, 11))) %>%
+  select(grade, metric_value) %>%
+  arrange(grade)
+
+ela_by_grade
+```
+
+![ELA by
+Grade](https://almartin82.github.io/caschooldata/articles/california-assessment_files/figure-html/finding-2-plot-1.png)
+
+ELA by Grade
+
+------------------------------------------------------------------------
+
+### 18. Math proficiency drops dramatically by middle school
+
+Math proficiency peaks in Grade 3-4 at around 45% and falls to under 32%
+by Grade 8.
+
+``` r
+# Math proficiency by grade
+math_by_grade <- assess_2024 %>%
+  filter(is_state, subject == "Math",
+         metric_type == "pct_met_and_above",
+         grade %in% sprintf("%02d", c(3:8, 11))) %>%
+  select(grade, metric_value) %>%
+  arrange(grade)
+
+math_by_grade
+```
+
+![Math by
+Grade](https://almartin82.github.io/caschooldata/articles/california-assessment_files/figure-html/finding-3-plot-1.png)
+
+Math by Grade
+
+------------------------------------------------------------------------
+
+### 19. Multi-year trends: Recovery from COVID
+
+Proficiency rates are recovering from the 2021 pandemic lows but remain
+below 2019 levels.
+
+``` r
+# Fetch multiple years
+assess_multi <- fetch_assess_multi(c(2019, 2021, 2022, 2023, 2024),
+                                    tidy = TRUE, use_cache = TRUE)
+
+# State-level trend
+state_trend <- assess_multi %>%
+  filter(is_state, grade == "11", metric_type == "pct_met_and_above") %>%
+  select(end_year, subject, metric_value) %>%
+  arrange(subject, end_year)
+
+state_trend %>%
+  pivot_wider(names_from = subject, values_from = metric_value)
+```
+
+![COVID
+Recovery](https://almartin82.github.io/caschooldata/articles/california-assessment_files/figure-html/finding-5-plot-1.png)
+
+COVID Recovery
+
+------------------------------------------------------------------------
+
+### 20. ELA-Math gap is consistent across grades
+
+The ELA advantage over Math proficiency is remarkably consistent (10-20
+points) across all tested grades.
+
+``` r
+# ELA-Math gap by grade
+ela_math_gap <- assess_2024 %>%
+  filter(is_state, metric_type == "pct_met_and_above",
+         grade %in% sprintf("%02d", c(3:8, 11))) %>%
+  select(grade, subject, metric_value) %>%
+  pivot_wider(names_from = subject, values_from = metric_value) %>%
+  mutate(gap = ELA - Math)
+
+ela_math_gap
+```
+
+![ELA-Math
+Gap](https://almartin82.github.io/caschooldata/articles/california-assessment_files/figure-html/finding-14-plot-1.png)
+
+ELA-Math Gap
+
+------------------------------------------------------------------------
+
 ## Installation
 
 ``` r
@@ -540,12 +683,20 @@ district_totals = enr_2025[
 
 ## Data availability
 
+### Enrollment Data
+
 | Years         | Source           | Aggregation Levels              | Demographics                                       | Notes                            |
 |---------------|------------------|---------------------------------|----------------------------------------------------|----------------------------------|
 | **2024-2025** | Census Day files | State, County, District, School | Race, Gender, Student Groups (EL, FRPM, SWD, etc.) | Full detail, TK included         |
 | **2008-2023** | Historical files | School (aggregates computed)    | Race, Gender                                       | Entity names included            |
 | **1994-2007** | Historical files | School (aggregates computed)    | Race, Gender                                       | No entity names (CDS codes only) |
 | **1982-1993** | Historical files | School (aggregates computed)    | Race, Gender                                       | Letter-based race codes (mapped) |
+
+### Assessment Data (CAASPP)
+
+| Years                    | Source                | Subjects  | Grades  | Notes                   |
+|--------------------------|-----------------------|-----------|---------|-------------------------|
+| **2015-2019, 2021-2024** | CAASPP Research Files | ELA, Math | 3-8, 11 | No 2020 due to COVID-19 |
 
 ### What’s available by year range
 
@@ -562,6 +713,8 @@ district_totals = enr_2025[
 
 ## Data Notes
 
+### Enrollment Data
+
 - **Source**: California Department of Education
   [DataQuest](https://dq.cde.ca.gov/dataquest/) and [Data
   Files](https://www.cde.ca.gov/ds/)
@@ -571,6 +724,16 @@ district_totals = enr_2025[
   privacy
 - **Charter Status**: Modern files (2024+) report charter and
   non-charter separately; historical files aggregate all schools
+
+### Assessment Data (CAASPP)
+
+- **Source**: [CAASPP Research Files
+  Portal](https://caaspp-elpac.ets.org/caaspp/ResearchFileListSB)
+- **Years Available**: 2015-2019, 2021-2024 (no 2020 due to COVID-19)
+- **Grades Tested**: 3-8 and 11 for ELA and Mathematics
+- **Suppression**: Groups with fewer than 11 students are not reported
+- **Performance Levels**: Standard Exceeded, Standard Met, Standard
+  Nearly Met, Standard Not Met
 
 ## Part of the State Schooldata Project
 
