@@ -132,7 +132,7 @@ map_reporting_category <- function(code) {
 
   category_map <- c(
     # Total
-    "TA" = "total",
+    "TA" = "total_enrollment",
 
     # Race/Ethnicity
     "RE_A" = "asian",
@@ -152,9 +152,9 @@ map_reporting_category <- function(code) {
     "GN_Z" = "gender_missing",
 
     # Student Groups
-    "SG_EL" = "english_learner",
-    "SG_DS" = "students_with_disabilities",
-    "SG_SD" = "socioeconomically_disadvantaged",
+    "SG_EL" = "lep",
+    "SG_DS" = "special_ed",
+    "SG_SD" = "econ_disadv",
     "SG_MG" = "migrant",
     "SG_FS" = "foster_youth",
     "SG_HM" = "homeless",
@@ -250,7 +250,7 @@ enr_grade_aggs <- function(df) {
 
   # Filter to total subgroup only for aggregation
   df_totals <- df |>
-    dplyr::filter(reporting_category == "TA" | subgroup == "total")
+    dplyr::filter(reporting_category == "TA" | subgroup == "total_enrollment")
 
   # K-8 aggregate (includes TK and K)
   k8_agg <- df_totals |>
