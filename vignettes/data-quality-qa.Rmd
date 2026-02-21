@@ -79,10 +79,13 @@ state_totals <- enr %>%
   filter(
     is_state,
     grade_level == "TOTAL",
-    reporting_category == "TA"  # Total All
+    reporting_category == "TA",  # Total All
+    charter_status == "All"     # Overall total (not charter-specific)
   ) %>%
   select(end_year, n_students) %>%
   arrange(end_year)
+
+stopifnot(nrow(state_totals) > 0)
 
 state_totals
 ```
@@ -267,10 +270,19 @@ enr %>%
 Verify that grade-level data sums to reported totals:
 
 ```{r grade-check}
-# Get state-level data by grade
+# Get state-level data by grade (charter_status == "All" for overall total)
 state_by_grade <- enr %>%
-  filter(is_state, reporting_category == "TA") %>%
+  filter(is_state, reporting_category == "TA", charter_status == "All") %>%
   select(end_year, grade_level, n_students)
+
+# Verify exactly 1 TOTAL row per year (no duplicates from charter breakdowns)
+stopifnot(
+  state_by_grade %>%
+    filter(grade_level == "TOTAL") %>%
+    count(end_year) %>%
+    filter(n != 1) %>%
+    nrow() == 0
+)
 
 # Compare sum of grades to reported total
 grade_validation <- state_by_grade %>%
@@ -298,7 +310,7 @@ if (any(abs(grade_validation$pct_diff) > 0.1)) {
 
 ```{r subgroups}
 enr %>%
-  filter(is_state, grade_level == "TOTAL") %>%
+  filter(is_state, grade_level == "TOTAL", charter_status == "All") %>%
   select(reporting_category, subgroup) %>%
   distinct() %>%
   arrange(reporting_category)
@@ -314,6 +326,7 @@ state_race <- enr %>%
   filter(
     is_state,
     grade_level == "TOTAL",
+    charter_status == "All",
     grepl("^RE_", reporting_category)
   ) %>%
   group_by(end_year) %>%
@@ -323,7 +336,8 @@ state_race <- enr %>%
   )
 
 state_total <- enr %>%
-  filter(is_state, grade_level == "TOTAL", reporting_category == "TA") %>%
+  filter(is_state, grade_level == "TOTAL", reporting_category == "TA",
+         charter_status == "All") %>%
   select(end_year, total = n_students)
 
 race_validation <- state_race %>%
@@ -410,7 +424,8 @@ cat("=== Data Quality Summary ===\n\n")
 cat("Years analyzed:", paste(sort(unique(enr$end_year)), collapse = ", "), "\n")
 
 state_summary <- enr %>%
-  filter(is_state, grade_level == "TOTAL", reporting_category == "TA") %>%
+  filter(is_state, grade_level == "TOTAL", reporting_category == "TA",
+         charter_status == "All") %>%
   arrange(end_year)
 
 cat("\nStatewide enrollment by year:\n")
