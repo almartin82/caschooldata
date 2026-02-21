@@ -48,11 +48,11 @@ test_that("map_reporting_category maps codes correctly", {
   expect_equal(map_reporting_category("GN_M"), "male")
 
   # Test student group codes
-  expect_equal(map_reporting_category("SG_EL"), "english_learner")
-  expect_equal(map_reporting_category("SG_SD"), "socioeconomically_disadvantaged")
+  expect_equal(map_reporting_category("SG_EL"), "lep")
+  expect_equal(map_reporting_category("SG_SD"), "econ_disadv")
 
   # Test total
-  expect_equal(map_reporting_category("TA"), "total")
+  expect_equal(map_reporting_category("TA"), "total_enrollment")
 
   # Test unknown code returns original
   expect_equal(map_reporting_category("UNKNOWN"), "UNKNOWN")

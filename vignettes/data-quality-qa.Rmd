@@ -56,7 +56,7 @@ library(ggplot2)
 # Modern years (2024-2025) use Census Day files with all aggregation levels
 # NOTE: Limited to 2023-2024 to reduce memory usage for vignette building
 years <- c(2023, 2024)
-enr <- fetch_enr_multi(years)
+enr <- fetch_enr_multi(years, use_cache = TRUE)
 
 # Check what we got
 enr %>%
