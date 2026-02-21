@@ -71,21 +71,21 @@ state_totals <- enr %>%
   filter(
     is_state,
     grade_level == "TOTAL",
-    reporting_category == "TA"  # Total All
+    reporting_category == "TA",  # Total All
+    charter_status == "All"     # Overall total (not charter-specific)
   ) %>%
   select(end_year, n_students) %>%
   arrange(end_year)
 
+stopifnot(nrow(state_totals) > 0)
+
 state_totals
 ```
 
-    ## # A tibble: 4 × 2
+    ## # A tibble: 1 × 2
     ##   end_year n_students
     ##      <int>      <dbl>
     ## 1     2023    5852544
-    ## 2     2024    5837690
-    ## 3     2024    5128055
-    ## 4     2024     709635
 
 ### Year-over-Year Changes
 
@@ -103,13 +103,10 @@ state_yoy <- state_totals %>%
 state_yoy
 ```
 
-    ## # A tibble: 4 × 5
-    ##   end_year n_students prev_year   change pct_change
-    ##      <int>      <dbl>     <dbl>    <dbl>      <dbl>
-    ## 1     2023    5852544        NA       NA     NA    
-    ## 2     2024    5837690   5852544   -14854     -0.254
-    ## 3     2024    5128055   5837690  -709635    -12.2  
-    ## 4     2024     709635   5128055 -4418420    -86.2
+    ## # A tibble: 1 × 5
+    ##   end_year n_students prev_year change pct_change
+    ##      <int>      <dbl>     <dbl>  <dbl>      <dbl>
+    ## 1     2023    5852544        NA     NA         NA
 
 ``` r
 # Flag any large changes (>5%)
@@ -124,12 +121,7 @@ if (nrow(large_changes) > 0) {
 }
 ```
 
-    ## WARNING: Year-over-year changes exceeding 5%:
-    ## # A tibble: 2 × 5
-    ##   end_year n_students prev_year   change pct_change
-    ##      <int>      <dbl>     <dbl>    <dbl>      <dbl>
-    ## 1     2024    5128055   5837690  -709635      -12.2
-    ## 2     2024     709635   5128055 -4418420      -86.2
+    ## No year-over-year changes exceeding 5% threshold.
 
 ### Statewide Enrollment Visualization
 
@@ -329,10 +321,19 @@ enr %>%
 Verify that grade-level data sums to reported totals:
 
 ``` r
-# Get state-level data by grade
+# Get state-level data by grade (charter_status == "All" for overall total)
 state_by_grade <- enr %>%
-  filter(is_state, reporting_category == "TA") %>%
+  filter(is_state, reporting_category == "TA", charter_status == "All") %>%
   select(end_year, grade_level, n_students)
+
+# Verify exactly 1 TOTAL row per year (no duplicates from charter breakdowns)
+stopifnot(
+  state_by_grade %>%
+    filter(grade_level == "TOTAL") %>%
+    count(end_year) %>%
+    filter(n != 1) %>%
+    nrow() == 0
+)
 
 # Compare sum of grades to reported total
 grade_validation <- state_by_grade %>%
@@ -348,13 +349,10 @@ grade_validation <- state_by_grade %>%
 grade_validation
 ```
 
-    ## # A tibble: 4 × 5
+    ## # A tibble: 1 × 5
     ##   end_year reported_total sum_of_grades difference pct_diff
     ##      <int>          <dbl>         <dbl>      <dbl>    <dbl>
-    ## 1     2023        5852544       5852544          0       0 
-    ## 2     2024        5837690      11675380   -5837690    -100 
-    ## 3     2024        5128055      11675380   -6547325    -128.
-    ## 4     2024         709635      11675380  -10965745   -1545.
+    ## 1     2023        5852544       5852544          0        0
 
 ``` r
 if (any(abs(grade_validation$pct_diff) > 0.1)) {
@@ -364,7 +362,7 @@ if (any(abs(grade_validation$pct_diff) > 0.1)) {
 }
 ```
 
-    ## WARNING: Grade totals do not match reported totals
+    ## Grade-level data sums correctly to reported totals.
 
 ## Demographic Subgroup Analysis
 
@@ -372,26 +370,27 @@ if (any(abs(grade_validation$pct_diff) > 0.1)) {
 
 ``` r
 enr %>%
-  filter(is_state, grade_level == "TOTAL") %>%
+  filter(is_state, grade_level == "TOTAL", charter_status == "All") %>%
   select(reporting_category, subgroup) %>%
   distinct() %>%
   arrange(reporting_category)
 ```
 
-    ## # A tibble: 33 × 2
-    ##    reporting_category subgroup       
-    ##    <chr>              <chr>          
-    ##  1 AR_03              age_0_3        
-    ##  2 AR_0418            age_4_18       
-    ##  3 AR_1922            age_19_22      
-    ##  4 AR_2329            age_23_29      
-    ##  5 AR_3039            age_30_39      
-    ##  6 AR_4049            age_40_49      
-    ##  7 AR_50P             age_50_plus    
-    ##  8 ELAS_ADEL          adult_el       
-    ##  9 ELAS_EL            english_learner
-    ## 10 ELAS_EO            english_only   
-    ## # ℹ 23 more rows
+    ## # A tibble: 12 × 2
+    ##    reporting_category subgroup        
+    ##    <chr>              <chr>           
+    ##  1 GN_F               female          
+    ##  2 GN_M               male            
+    ##  3 GN_X               nonbinary       
+    ##  4 RE_A               asian           
+    ##  5 RE_B               black           
+    ##  6 RE_D               not_reported    
+    ##  7 RE_F               filipino        
+    ##  8 RE_H               hispanic        
+    ##  9 RE_I               native_american 
+    ## 10 RE_P               pacific_islander
+    ## 11 RE_W               white           
+    ## 12 TA                 total
 
 ### Subgroup Enrollment Consistency
 
@@ -403,6 +402,7 @@ state_race <- enr %>%
   filter(
     is_state,
     grade_level == "TOTAL",
+    charter_status == "All",
     grepl("^RE_", reporting_category)
   ) %>%
   group_by(end_year) %>%
@@ -412,7 +412,8 @@ state_race <- enr %>%
   )
 
 state_total <- enr %>%
-  filter(is_state, grade_level == "TOTAL", reporting_category == "TA") %>%
+  filter(is_state, grade_level == "TOTAL", reporting_category == "TA",
+         charter_status == "All") %>%
   select(end_year, total = n_students)
 
 race_validation <- state_race %>%
@@ -425,21 +426,16 @@ race_validation <- state_race %>%
 race_validation
 ```
 
-    ## # A tibble: 4 × 5
+    ## # A tibble: 1 × 5
     ##   end_year sum_race   total difference pct_diff
     ##      <int>    <dbl>   <dbl>      <dbl>    <dbl>
-    ## 1     2023  5852544 5852544          0       0 
-    ## 2     2024 11675380 5837690   -5837690    -100 
-    ## 3     2024 11675380 5128055   -6547325    -128.
-    ## 4     2024 11675380  709635  -10965745   -1545.
+    ## 1     2023  5852544 5852544          0        0
 
 ``` r
 if (any(abs(race_validation$pct_diff) > 1)) {
   cat("Note: Race/ethnicity categories may not sum to 100% due to 'not reported' students.\n")
 }
 ```
-
-    ## Note: Race/ethnicity categories may not sum to 100% due to 'not reported' students.
 
 ## Charter School Analysis
 
@@ -530,7 +526,8 @@ cat("Years analyzed:", paste(sort(unique(enr$end_year)), collapse = ", "), "\n")
 
 ``` r
 state_summary <- enr %>%
-  filter(is_state, grade_level == "TOTAL", reporting_category == "TA") %>%
+  filter(is_state, grade_level == "TOTAL", reporting_category == "TA",
+         charter_status == "All") %>%
   arrange(end_year)
 
 cat("\nStatewide enrollment by year:\n")
@@ -550,9 +547,6 @@ for (i in 1:nrow(state_summary)) {
 ```
 
     ##   2023 (historical): 5,852,544 students
-    ##   2024 (modern): 5,837,690 students
-    ##   2024 (modern): 5,128,055 students
-    ##   2024 (modern): 709,635 students
 
 ``` r
 cat("\nYear-over-year changes:\n")
@@ -573,9 +567,7 @@ for (i in 2:nrow(state_summary)) {
 }
 ```
 
-    ##   2023 to 2024: -14,854 (-0.3%)
-    ##   2024 to 2024: -709,635 (-12.2%)
-    ##   2024 to 2024: -4,418,420 (-86.2%)
+    ##   2023 to NA: NA (NA%)
 
 ``` r
 cat("\nMajor findings:\n")
@@ -641,14 +633,14 @@ sessionInfo()
     ## [1] stats     graphics  grDevices utils     datasets  methods   base     
     ## 
     ## other attached packages:
-    ## [1] rmarkdown_2.30     ggplot2_4.0.1      tidyr_1.3.2        dplyr_1.1.4       
+    ## [1] rmarkdown_2.30     ggplot2_4.0.2      tidyr_1.3.2        dplyr_1.2.0       
     ## [5] caschooldata_0.1.0
     ## 
     ## loaded via a namespace (and not attached):
     ##  [1] utf8_1.2.6         rappdirs_0.3.4     sass_0.4.10        generics_0.1.4    
     ##  [5] hms_1.1.4          digest_0.6.39      magrittr_2.0.4     evaluate_1.0.5    
     ##  [9] grid_4.5.2         RColorBrewer_1.1-3 fastmap_1.2.0      jsonlite_2.0.0    
-    ## [13] httr_1.4.7         purrr_1.2.1        scales_1.4.0       codetools_0.2-20  
+    ## [13] httr_1.4.8         purrr_1.2.1        scales_1.4.0       codetools_0.2-20  
     ## [17] textshaping_1.0.4  jquerylib_0.1.4    cli_3.6.5          rlang_1.1.7       
     ## [21] crayon_1.5.3       bit64_4.6.0-1      withr_3.0.2        cachem_1.1.0      
     ## [25] yaml_2.3.12        tools_4.5.2        parallel_4.5.2     tzdb_0.5.0        
@@ -657,5 +649,5 @@ sessionInfo()
     ## [37] pkgconfig_2.0.3    desc_1.4.3         pkgdown_2.2.0      pillar_1.11.1     
     ## [41] bslib_0.10.0       gtable_0.3.6       glue_1.8.0         systemfonts_1.3.1 
     ## [45] xfun_0.56          tibble_3.3.1       tidyselect_1.2.1   knitr_1.51        
-    ## [49] farver_2.1.2       htmltools_0.5.9    labeling_0.4.3     readr_2.1.6       
+    ## [49] farver_2.1.2       htmltools_0.5.9    labeling_0.4.3     readr_2.2.0       
     ## [53] compiler_4.5.2     S7_0.2.1
