@@ -11,6 +11,72 @@ federal data.
 
 ------------------------------------------------------------------------
 
+## Valid Filter Values (tidy enrollment via `fetch_enr(tidy = TRUE)`)
+
+### subgroup
+
+California uses CDE `reporting_category` codes mapped to human-readable
+subgroup names via
+[`map_reporting_category()`](https://almartin82.github.io/caschooldata/reference/map_reporting_category.md):
+
+**Total:** `total` (code: `TA`)
+
+**Race/Ethnicity:** `asian` (`RE_A`), `black` (`RE_B`), `not_reported`
+(`RE_D`), `filipino` (`RE_F`), `hispanic` (`RE_H`), `native_american`
+(`RE_I`), `pacific_islander` (`RE_P`), `multiracial` (`RE_T`), `white`
+(`RE_W`)
+
+**Gender:** `female` (`GN_F`), `male` (`GN_M`), `nonbinary` (`GN_X`),
+`gender_missing` (`GN_Z`)
+
+**Student Groups:** `english_learner` (`SG_EL`),
+`students_with_disabilities` (`SG_DS`),
+`socioeconomically_disadvantaged` (`SG_SD`), `migrant` (`SG_MG`),
+`foster_youth` (`SG_FS`), `homeless` (`SG_HM`)
+
+**English Language Acquisition Status:** `adult_el` (`ELAS_ADEL`),
+`english_learner` (`ELAS_EL`), `english_only` (`ELAS_EO`),
+`initial_fluent_english` (`ELAS_IFEP`), `elas_missing` (`ELAS_MISS`),
+`reclassified_fluent_english` (`ELAS_RFEP`), `elas_to_be_determined`
+(`ELAS_TBD`)
+
+**Age Ranges:** `age_0_3` (`AR_03`), `age_4_18` (`AR_0418`), `age_19_22`
+(`AR_1922`), `age_23_29` (`AR_2329`), `age_30_39` (`AR_3039`),
+`age_40_49` (`AR_4049`), `age_50_plus` (`AR_50P`)
+
+**Common trap:** California has both `subgroup` (human-readable) and
+`reporting_category` (raw code) columns. Filter on `subgroup`, not
+`reporting_category`. Also, `filipino` is a separate category from
+`asian`.
+
+### grade_level
+
+`TK`, `K`, `01`, `02`, `03`, `04`, `05`, `06`, `07`, `08`, `09`, `10`,
+`11`, `12`, `TOTAL`
+
+Grade aggregates from
+[`enr_grade_aggs()`](https://almartin82.github.io/caschooldata/reference/enr_grade_aggs.md):
+`K8` (includes TK), `HS`, `K12` (includes TK)
+
+**Common trap:** California has Transitional Kindergarten (`TK`) as a
+separate grade level. This is NOT the same as `K`. `K8` and `K12`
+aggregates include `TK`.
+
+### entity flags
+
+`is_state`, `is_county`, `is_district`, `is_school`, `is_charter`
+
+- `is_state`: `agg_level == "T"`
+- `is_county`: `agg_level == "C"`
+- `is_district`: `agg_level == "D"`
+- `is_school`: `agg_level == "S"`
+- `is_charter`: `charter_status == "Y"`
+
+**Common trap:** California has a `is_county` level that most other
+states do not. Also uses `is_school` (not `is_campus`).
+
+------------------------------------------------------------------------
+
 ## GIT COMMIT POLICY
 
 - Commits are allowed

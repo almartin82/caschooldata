@@ -43,6 +43,46 @@
 <h2 id="critical-data-source-rules">CRITICAL DATA SOURCE RULES<a class="anchor" aria-label="anchor" href="#critical-data-source-rules"></a></h2>
 <p><strong>NEVER use Urban Institute API, NCES CCD, or ANY federal data source</strong> — the entire point of these packages is to provide STATE-LEVEL data directly from state DOEs. Federal sources aggregate/transform data differently and lose state-specific details. If a state DOE source is broken, FIX IT or find an alternative STATE source — do not fall back to federal data.</p>
 <hr></div>
+<div class="section level2">
+<h2 id="valid-filter-values-tidy-enrollment-via-fetch_enrtidy--true">Valid Filter Values (tidy enrollment via <code>fetch_enr(tidy = TRUE)</code>)<a class="anchor" aria-label="anchor" href="#valid-filter-values-tidy-enrollment-via-fetch_enrtidy--true"></a></h2>
+<div class="section level3">
+<h3 id="subgroup">subgroup<a class="anchor" aria-label="anchor" href="#subgroup"></a></h3>
+<p>California uses CDE <code>reporting_category</code> codes mapped to human-readable subgroup names via <code><a href="reference/map_reporting_category.html">map_reporting_category()</a></code>:</p>
+<p><strong>Total:</strong> <code>total</code> (code: <code>TA</code>)</p>
+<p><strong>Race/Ethnicity:</strong> <code>asian</code> (<code>RE_A</code>), <code>black</code> (<code>RE_B</code>), <code>not_reported</code> (<code>RE_D</code>), <code>filipino</code> (<code>RE_F</code>), <code>hispanic</code> (<code>RE_H</code>), <code>native_american</code> (<code>RE_I</code>), <code>pacific_islander</code> (<code>RE_P</code>), <code>multiracial</code> (<code>RE_T</code>), <code>white</code> (<code>RE_W</code>)</p>
+<p><strong>Gender:</strong> <code>female</code> (<code>GN_F</code>), <code>male</code> (<code>GN_M</code>), <code>nonbinary</code> (<code>GN_X</code>), <code>gender_missing</code> (<code>GN_Z</code>)</p>
+<p><strong>Student Groups:</strong> <code>english_learner</code> (<code>SG_EL</code>), <code>students_with_disabilities</code> (<code>SG_DS</code>), <code>socioeconomically_disadvantaged</code> (<code>SG_SD</code>), <code>migrant</code> (<code>SG_MG</code>), <code>foster_youth</code> (<code>SG_FS</code>), <code>homeless</code> (<code>SG_HM</code>)</p>
+<p><strong>English Language Acquisition Status:</strong> <code>adult_el</code> (<code>ELAS_ADEL</code>), <code>english_learner</code> (<code>ELAS_EL</code>), <code>english_only</code> (<code>ELAS_EO</code>), <code>initial_fluent_english</code> (<code>ELAS_IFEP</code>), <code>elas_missing</code> (<code>ELAS_MISS</code>), <code>reclassified_fluent_english</code> (<code>ELAS_RFEP</code>), <code>elas_to_be_determined</code> (<code>ELAS_TBD</code>)</p>
+<p><strong>Age Ranges:</strong> <code>age_0_3</code> (<code>AR_03</code>), <code>age_4_18</code> (<code>AR_0418</code>), <code>age_19_22</code> (<code>AR_1922</code>), <code>age_23_29</code> (<code>AR_2329</code>), <code>age_30_39</code> (<code>AR_3039</code>), <code>age_40_49</code> (<code>AR_4049</code>), <code>age_50_plus</code> (<code>AR_50P</code>)</p>
+<p><strong>Common trap:</strong> California has both <code>subgroup</code> (human-readable) and <code>reporting_category</code> (raw code) columns. Filter on <code>subgroup</code>, not <code>reporting_category</code>. Also, <code>filipino</code> is a separate category from <code>asian</code>.</p>
+</div>
+<div class="section level3">
+<h3 id="grade_level">grade_level<a class="anchor" aria-label="anchor" href="#grade_level"></a></h3>
+<p><code>TK</code>, <code>K</code>, <code>01</code>, <code>02</code>, <code>03</code>, <code>04</code>, <code>05</code>, <code>06</code>, <code>07</code>, <code>08</code>, <code>09</code>, <code>10</code>, <code>11</code>, <code>12</code>, <code>TOTAL</code></p>
+<p>Grade aggregates from <code><a href="reference/enr_grade_aggs.html">enr_grade_aggs()</a></code>: <code>K8</code> (includes TK), <code>HS</code>, <code>K12</code> (includes TK)</p>
+<p><strong>Common trap:</strong> California has Transitional Kindergarten (<code>TK</code>) as a separate grade level. This is NOT the same as <code>K</code>. <code>K8</code> and <code>K12</code> aggregates include <code>TK</code>.</p>
+</div>
+<div class="section level3">
+<h3 id="entity-flags">entity flags<a class="anchor" aria-label="anchor" href="#entity-flags"></a></h3>
+<p><code>is_state</code>, <code>is_county</code>, <code>is_district</code>, <code>is_school</code>, <code>is_charter</code></p>
+<ul><li>
+<code>is_state</code>: <code>agg_level == "T"</code>
+</li>
+<li>
+<code>is_county</code>: <code>agg_level == "C"</code>
+</li>
+<li>
+<code>is_district</code>: <code>agg_level == "D"</code>
+</li>
+<li>
+<code>is_school</code>: <code>agg_level == "S"</code>
+</li>
+<li>
+<code>is_charter</code>: <code>charter_status == "Y"</code>
+</li>
+</ul><p><strong>Common trap:</strong> California has a <code>is_county</code> level that most other states do not. Also uses <code>is_school</code> (not <code>is_campus</code>).</p>
+<hr></div>
+</div>
 <div id="claude-code-instructions" class="section level1">
 
 <div class="section level2">
