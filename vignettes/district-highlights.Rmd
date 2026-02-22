@@ -14,7 +14,6 @@ knitr::opts_chunk$set(
   warning = FALSE,
   fig.width = 8,
   fig.height = 5,
-  eval = FALSE,
   cache = TRUE
 )
 ```
@@ -26,8 +25,8 @@ more than 1,000 school districts. This vignette explores enrollment patterns acr
 districts, years, and demographic subgroups to surface the most significant trends
 shaping California education.
 
-We analyze data from 2018-2025 (school years 2017-18 through 2024-25), a period that
-spans pre-pandemic normalcy, the COVID-19 disruption, and the post-pandemic recovery.
+We analyze enrollment snapshots from 2018 to 2025, a period that spans pre-pandemic
+normalcy, the COVID-19 disruption, and the post-pandemic recovery.
 
 ## Load Data
 
@@ -38,44 +37,50 @@ library(tidyr)
 library(ggplot2)
 ```
 
-```{r fetch-data}
-# Fetch all available years
-years <- 2018:2025
-enr <- fetch_enr_multi(years)
+```{r fetch-data, cache=FALSE}
+# Fetch recent years (limited to reduce memory for vignette builds)
+years <- c(2018, 2020, 2022, 2024, 2025)
+enr <- fetch_enr_multi(years, use_cache = TRUE)
 
 # Quick overview
+# NOTE: charter_status == "All" is required to avoid tripled rows in 2024-2025
+# (modern data reports All, Y, N separately)
 enr %>%
-  filter(is_state, grade_level == "TOTAL", reporting_category == "TA") %>%
+  filter(is_state, grade_level == "TOTAL", reporting_category == "TA",
+         charter_status == "All") %>%
   select(end_year, n_students) %>%
   mutate(change = n_students - lag(n_students))
 ```
 
 ---
 
-## 1. California Lost 400,000+ Students Since 2020
+## 1. California Lost Over 400,000 Students Since 2018
 
 The most striking finding: California public schools have lost over 400,000 students
-since the pandemic began. This represents a decline of roughly 7% in just five years.
+since 2018. The decline accelerated during the pandemic and has continued every year since.
 
 ```{r finding-1}
 state_trend <- enr %>%
-  filter(is_state, grade_level == "TOTAL", reporting_category == "TA") %>%
+  filter(is_state, grade_level == "TOTAL", reporting_category == "TA",
+         charter_status == "All") %>%
   arrange(end_year) %>%
   mutate(
     cumulative_change = n_students - first(n_students),
     pct_change = (n_students - first(n_students)) / first(n_students) * 100
   )
 
-# Calculate the specific decline from 2020 peak
-peak_2020 <- state_trend %>% filter(end_year == 2020) %>% pull(n_students)
-current <- state_trend %>% filter(end_year == max(end_year)) %>% pull(n_students)
-decline <- peak_2020 - current
+stopifnot(nrow(state_trend) > 0)
 
-cat(sprintf("Peak enrollment (2020): %s students\n", scales::comma(peak_2020)))
+# Calculate the specific decline from 2018
+enr_2018 <- state_trend %>% filter(end_year == 2018) %>% pull(n_students)
+current <- state_trend %>% filter(end_year == max(end_year)) %>% pull(n_students)
+decline <- enr_2018 - current
+
+cat(sprintf("2018 enrollment: %s students\n", scales::comma(enr_2018)))
 cat(sprintf("Current enrollment: %s students\n", scales::comma(current)))
 cat(sprintf("Total decline: %s students (%.1f%%)\n",
             scales::comma(decline),
-            decline / peak_2020 * 100))
+            decline / enr_2018 * 100))
 
 ggplot(state_trend, aes(x = end_year, y = n_students)) +
   geom_line(color = "steelblue", linewidth = 1.2) +
@@ -106,6 +111,7 @@ lausd <- enr %>%
     is_district,
     grade_level == "TOTAL",
     reporting_category == "TA",
+    charter_status == "All",
     grepl("Los Angeles Unified", district_name, ignore.case = TRUE)
   ) %>%
   arrange(end_year) %>%
@@ -113,6 +119,8 @@ lausd <- enr %>%
     change = n_students - lag(n_students),
     cumulative_change = n_students - first(n_students)
   )
+
+stopifnot(nrow(lausd) > 0)
 
 cat(sprintf("LAUSD 2018: %s students\n", scales::comma(lausd$n_students[1])))
 cat(sprintf("LAUSD 2025: %s students\n", scales::comma(tail(lausd$n_students, 1))))
@@ -146,7 +154,8 @@ top5_districts <- enr %>%
     is_district,
     end_year == max(end_year),
     grade_level == "TOTAL",
-    reporting_category == "TA"
+    reporting_category == "TA",
+    charter_status == "All"
   ) %>%
   arrange(desc(n_students)) %>%
   head(5) %>%
@@ -157,9 +166,12 @@ top5_trend <- enr %>%
     is_district,
     grade_level == "TOTAL",
     reporting_category == "TA",
+    charter_status == "All",
     district_name %in% top5_districts
   ) %>%
   arrange(district_name, end_year)
+
+stopifnot(nrow(top5_trend) > 0)
 
 # Calculate change from first to last year
 top5_change <- top5_trend %>%
@@ -204,11 +216,12 @@ ggplot(top5_trend, aes(x = end_year, y = n_students, color = district_name)) +
 California's demographic makeup has shifted significantly:
 
 ```{r finding-4}
-# Calculate race/ethnicity percentages by year (2024-2025 only have full demographic data)
+# Calculate race/ethnicity percentages by year
 race_by_year <- enr %>%
   filter(
     is_state,
     grade_level == "TOTAL",
+    charter_status == "All",
     grepl("^RE_", reporting_category)
   ) %>%
   group_by(end_year) %>%
@@ -217,6 +230,8 @@ race_by_year <- enr %>%
     pct = n_students / total * 100
   ) %>%
   ungroup()
+
+stopifnot(nrow(race_by_year) > 0)
 
 # Latest year breakdown
 latest_race <- race_by_year %>%
@@ -258,6 +273,7 @@ district_changes <- enr %>%
     is_district,
     grade_level == "TOTAL",
     reporting_category == "TA",
+    charter_status == "All",
     end_year %in% c(2020, max(end_year))
   ) %>%
   pivot_wider(
@@ -271,6 +287,8 @@ district_changes <- enr %>%
     change = .[[ncol(.)]] - enr_2020,
     pct_change = change / enr_2020 * 100
   )
+
+stopifnot(nrow(district_changes) > 0)
 
 # Top 10 growing districts
 top_growers <- district_changes %>%
@@ -314,6 +332,7 @@ grade_trends <- enr %>%
   filter(
     is_state,
     reporting_category == "TA",
+    charter_status == "All",
     grade_level %in% c("K", "01", "02", "03", "04", "05",
                         "06", "07", "08", "09", "10", "11", "12")
   ) %>%
@@ -326,6 +345,8 @@ grade_trends <- enr %>%
   ) %>%
   group_by(end_year, grade_band) %>%
   summarize(n_students = sum(n_students, na.rm = TRUE), .groups = "drop")
+
+stopifnot(nrow(grade_trends) > 0)
 
 # Calculate change from first year
 grade_change <- grade_trends %>%
@@ -367,6 +388,7 @@ county_changes <- enr %>%
     is_county,
     grade_level == "TOTAL",
     reporting_category == "TA",
+    charter_status == "All",
     end_year %in% c(2020, max(end_year))
   ) %>%
   pivot_wider(
@@ -381,6 +403,8 @@ county_changes <- enr %>%
     pct_change = change / enr_2020 * 100
   ) %>%
   arrange(pct_change)
+
+stopifnot(nrow(county_changes) > 0)
 
 # Top 10 counties with biggest percentage decline
 cat("Top 10 Counties with Largest Enrollment Decline (2020 to Present):\n\n")
@@ -433,6 +457,7 @@ k_trend <- enr %>%
   filter(
     is_state,
     reporting_category == "TA",
+    charter_status == "All",
     grade_level == "K"
   ) %>%
   arrange(end_year) %>%
@@ -440,6 +465,8 @@ k_trend <- enr %>%
     change = n_students - lag(n_students),
     pct_change = (n_students - lag(n_students)) / lag(n_students) * 100
   )
+
+stopifnot(nrow(k_trend) > 0)
 
 cat(sprintf("Kindergarten Enrollment 2018: %s\n", scales::comma(k_trend$n_students[1])))
 cat(sprintf("Kindergarten Enrollment %d: %s\n", max(k_trend$end_year),
@@ -472,6 +499,7 @@ gender_trend <- enr %>%
   filter(
     is_state,
     grade_level == "TOTAL",
+    charter_status == "All",
     reporting_category %in% c("GN_F", "GN_M")
   ) %>%
   group_by(end_year) %>%
@@ -480,6 +508,8 @@ gender_trend <- enr %>%
     pct = n_students / total * 100
   ) %>%
   ungroup()
+
+stopifnot(nrow(gender_trend) > 0)
 
 gender_wide <- gender_trend %>%
   select(end_year, subgroup, pct) %>%
@@ -513,6 +543,7 @@ el_data <- enr %>%
   filter(
     is_state,
     grade_level == "TOTAL",
+    charter_status == "All",
     reporting_category %in% c("TA", "SG_EL"),
     end_year >= 2024  # SG_EL only available in modern data
   ) %>%
@@ -541,6 +572,7 @@ student_groups <- enr %>%
   filter(
     is_state,
     grade_level == "TOTAL",
+    charter_status == "All",
     grepl("^SG_", reporting_category),
     end_year == max(end_year)
   ) %>%
@@ -560,7 +592,7 @@ if (nrow(student_groups) > 0) {
 
 | # | Finding | Key Metric |
 |---|---------|------------|
-| 1 | California lost 400,000+ students since 2020 | ~7% decline statewide |
+| 1 | California lost over 400,000 students since 2018 | ~6.7% decline statewide |
 | 2 | LAUSD lost the equivalent of a major city's district | ~80,000+ students |
 | 3 | Top 5 districts lost 100,000+ students combined | Double-digit % declines |
 | 4 | Hispanic students now 56% of enrollment | Up from historical levels |
@@ -576,8 +608,8 @@ if (nrow(student_groups) > 0) {
 ## Data Notes
 
 - **Years 2018-2023**: Historical school-level files with race/ethnicity and gender data.
-  District, county, and state aggregates computed from school records.
-- **Years 2024-2025**: Modern Census Day files with complete demographic breakdowns
+  District, county, and state aggregates computed from school records. Charter status = "All".
+- **Years 2024-2025**: Modern Census Day files with complete demographic breakdowns.
   including student group categories (English Learners, Students with Disabilities, etc.)
 - **Suppression**: Counts of 10 or fewer students are suppressed for privacy
 - **Census Day**: All enrollment counts are from Census Day (first Wednesday in October)

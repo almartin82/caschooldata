@@ -137,9 +137,17 @@ process_enr_modern <- function(raw_data, end_year) {
   }
 
   # Charter Status (All/Y/N)
+  # Normalize to consistent case: "All", "Y", "N"
+  # Raw CDE modern data uses "ALL" but historical uses "All"
   charter_col <- find_col(c("^Charter", "^CHARTER$"))
   if (!is.null(charter_col)) {
-    result$charter_status <- raw_data[[charter_col]]
+    raw_charter <- as.character(raw_data[[charter_col]])
+    result$charter_status <- dplyr::case_when(
+      toupper(raw_charter) == "ALL" ~ "All",
+      toupper(raw_charter) == "Y"   ~ "Y",
+      toupper(raw_charter) == "N"   ~ "N",
+      TRUE ~ raw_charter
+    )
   }
 
   # Reporting Category (demographic subgroup)
