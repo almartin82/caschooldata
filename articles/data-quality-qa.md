@@ -42,7 +42,7 @@ library(ggplot2)
 # Modern years (2024-2025) use Census Day files with all aggregation levels
 # NOTE: Limited to 2023-2024 to reduce memory usage for vignette building
 years <- c(2023, 2024)
-enr <- fetch_enr_multi(years)
+enr <- fetch_enr_multi(years, use_cache = TRUE)
 
 # Check what we got
 enr %>%
@@ -82,10 +82,11 @@ stopifnot(nrow(state_totals) > 0)
 state_totals
 ```
 
-    ## # A tibble: 1 × 2
+    ## # A tibble: 2 × 2
     ##   end_year n_students
     ##      <int>      <dbl>
     ## 1     2023    5852544
+    ## 2     2024    5837690
 
 ### Year-over-Year Changes
 
@@ -103,10 +104,11 @@ state_yoy <- state_totals %>%
 state_yoy
 ```
 
-    ## # A tibble: 1 × 5
+    ## # A tibble: 2 × 5
     ##   end_year n_students prev_year change pct_change
     ##      <int>      <dbl>     <dbl>  <dbl>      <dbl>
-    ## 1     2023    5852544        NA     NA         NA
+    ## 1     2023    5852544        NA     NA     NA    
+    ## 2     2024    5837690   5852544 -14854     -0.254
 
 ``` r
 # Flag any large changes (>5%)
@@ -349,10 +351,11 @@ grade_validation <- state_by_grade %>%
 grade_validation
 ```
 
-    ## # A tibble: 1 × 5
+    ## # A tibble: 2 × 5
     ##   end_year reported_total sum_of_grades difference pct_diff
     ##      <int>          <dbl>         <dbl>      <dbl>    <dbl>
     ## 1     2023        5852544       5852544          0        0
+    ## 2     2024        5837690       5837690          0        0
 
 ``` r
 if (any(abs(grade_validation$pct_diff) > 0.1)) {
@@ -376,21 +379,20 @@ enr %>%
   arrange(reporting_category)
 ```
 
-    ## # A tibble: 12 × 2
-    ##    reporting_category subgroup        
-    ##    <chr>              <chr>           
-    ##  1 GN_F               female          
-    ##  2 GN_M               male            
-    ##  3 GN_X               nonbinary       
-    ##  4 RE_A               asian           
-    ##  5 RE_B               black           
-    ##  6 RE_D               not_reported    
-    ##  7 RE_F               filipino        
-    ##  8 RE_H               hispanic        
-    ##  9 RE_I               native_american 
-    ## 10 RE_P               pacific_islander
-    ## 11 RE_W               white           
-    ## 12 TA                 total
+    ## # A tibble: 33 × 2
+    ##    reporting_category subgroup       
+    ##    <chr>              <chr>          
+    ##  1 AR_03              age_0_3        
+    ##  2 AR_0418            age_4_18       
+    ##  3 AR_1922            age_19_22      
+    ##  4 AR_2329            age_23_29      
+    ##  5 AR_3039            age_30_39      
+    ##  6 AR_4049            age_40_49      
+    ##  7 AR_50P             age_50_plus    
+    ##  8 ELAS_ADEL          adult_el       
+    ##  9 ELAS_EL            english_learner
+    ## 10 ELAS_EO            english_only   
+    ## # ℹ 23 more rows
 
 ### Subgroup Enrollment Consistency
 
@@ -426,10 +428,11 @@ race_validation <- state_race %>%
 race_validation
 ```
 
-    ## # A tibble: 1 × 5
+    ## # A tibble: 2 × 5
     ##   end_year sum_race   total difference pct_diff
     ##      <int>    <dbl>   <dbl>      <dbl>    <dbl>
     ## 1     2023  5852544 5852544          0        0
+    ## 2     2024  5837690 5837690          0        0
 
 ``` r
 if (any(abs(race_validation$pct_diff) > 1)) {
@@ -547,6 +550,7 @@ for (i in 1:nrow(state_summary)) {
 ```
 
     ##   2023 (historical): 5,852,544 students
+    ##   2024 (modern): 5,837,690 students
 
 ``` r
 cat("\nYear-over-year changes:\n")
@@ -567,7 +571,7 @@ for (i in 2:nrow(state_summary)) {
 }
 ```
 
-    ##   2023 to NA: NA (NA%)
+    ##   2023 to 2024: -14,854 (-0.3%)
 
 ``` r
 cat("\nMajor findings:\n")
@@ -633,21 +637,21 @@ sessionInfo()
     ## [1] stats     graphics  grDevices utils     datasets  methods   base     
     ## 
     ## other attached packages:
-    ## [1] rmarkdown_2.30     ggplot2_4.0.2      tidyr_1.3.2        dplyr_1.2.0       
-    ## [5] caschooldata_0.1.0
+    ## [1] testthat_3.3.2     rmarkdown_2.30     ggplot2_4.0.2      tidyr_1.3.2       
+    ## [5] dplyr_1.2.0        caschooldata_0.1.0
     ## 
     ## loaded via a namespace (and not attached):
     ##  [1] utf8_1.2.6         rappdirs_0.3.4     sass_0.4.10        generics_0.1.4    
     ##  [5] hms_1.1.4          digest_0.6.39      magrittr_2.0.4     evaluate_1.0.5    
     ##  [9] grid_4.5.2         RColorBrewer_1.1-3 fastmap_1.2.0      jsonlite_2.0.0    
-    ## [13] httr_1.4.8         purrr_1.2.1        scales_1.4.0       codetools_0.2-20  
-    ## [17] textshaping_1.0.4  jquerylib_0.1.4    cli_3.6.5          rlang_1.1.7       
-    ## [21] crayon_1.5.3       bit64_4.6.0-1      withr_3.0.2        cachem_1.1.0      
-    ## [25] yaml_2.3.12        tools_4.5.2        parallel_4.5.2     tzdb_0.5.0        
-    ## [29] curl_7.0.0         vctrs_0.7.1        R6_2.6.1           lifecycle_1.0.5   
-    ## [33] fs_1.6.6           bit_4.6.0          vroom_1.7.0        ragg_1.5.0        
-    ## [37] pkgconfig_2.0.3    desc_1.4.3         pkgdown_2.2.0      pillar_1.11.1     
-    ## [41] bslib_0.10.0       gtable_0.3.6       glue_1.8.0         systemfonts_1.3.1 
-    ## [45] xfun_0.56          tibble_3.3.1       tidyselect_1.2.1   knitr_1.51        
-    ## [49] farver_2.1.2       htmltools_0.5.9    labeling_0.4.3     readr_2.2.0       
-    ## [53] compiler_4.5.2     S7_0.2.1
+    ## [13] brio_1.1.5         httr_1.4.8         purrr_1.2.1        scales_1.4.0      
+    ## [17] codetools_0.2-20   textshaping_1.0.4  jquerylib_0.1.4    cli_3.6.5         
+    ## [21] rlang_1.1.7        crayon_1.5.3       bit64_4.6.0-1      withr_3.0.2       
+    ## [25] cachem_1.1.0       yaml_2.3.12        parallel_4.5.2     tools_4.5.2       
+    ## [29] tzdb_0.5.0         curl_7.0.0         vctrs_0.7.1        R6_2.6.1          
+    ## [33] lifecycle_1.0.5    fs_1.6.6           bit_4.6.0          vroom_1.7.0       
+    ## [37] ragg_1.5.0         pkgconfig_2.0.3    desc_1.4.3         pkgdown_2.2.0     
+    ## [41] pillar_1.11.1      bslib_0.10.0       gtable_0.3.6       glue_1.8.0        
+    ## [45] systemfonts_1.3.1  xfun_0.56          tibble_3.3.1       tidyselect_1.2.1  
+    ## [49] knitr_1.51         farver_2.1.2       htmltools_0.5.9    labeling_0.4.3    
+    ## [53] readr_2.2.0        compiler_4.5.2     S7_0.2.1

@@ -19,7 +19,7 @@ California uses CDE `reporting_category` codes mapped to human-readable
 subgroup names via
 [`map_reporting_category()`](https://almartin82.github.io/caschooldata/reference/map_reporting_category.md):
 
-**Total:** `total` (code: `TA`)
+**Total:** `total_enrollment` (code: `TA`)
 
 **Race/Ethnicity:** `asian` (`RE_A`), `black` (`RE_B`), `not_reported`
 (`RE_D`), `filipino` (`RE_F`), `hispanic` (`RE_H`), `native_american`
@@ -29,10 +29,9 @@ subgroup names via
 **Gender:** `female` (`GN_F`), `male` (`GN_M`), `nonbinary` (`GN_X`),
 `gender_missing` (`GN_Z`)
 
-**Student Groups:** `english_learner` (`SG_EL`),
-`students_with_disabilities` (`SG_DS`),
-`socioeconomically_disadvantaged` (`SG_SD`), `migrant` (`SG_MG`),
-`foster_youth` (`SG_FS`), `homeless` (`SG_HM`)
+**Student Groups:** `lep` (`SG_EL`), `special_ed` (`SG_DS`),
+`econ_disadv` (`SG_SD`), `migrant` (`SG_MG`), `foster_youth` (`SG_FS`),
+`homeless` (`SG_HM`)
 
 **English Language Acquisition Status:** `adult_el` (`ELAS_ADEL`),
 `english_learner` (`ELAS_EL`), `english_only` (`ELAS_EO`),

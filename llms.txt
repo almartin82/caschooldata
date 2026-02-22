@@ -23,11 +23,11 @@ are twenty stories hiding in the numbers:
 
 ------------------------------------------------------------------------
 
-### 1. California lost 400,000+ students since 2020
+### 1. California lost over 400,000 students since 2018
 
 The most striking trend: California public schools have lost over
-400,000 students since the pandemic began. This represents a decline of
-roughly 7% in just five years.
+400,000 students since 2018. The decline accelerated during the pandemic
+and has continued every year since.
 
 ``` r
 library(caschooldata)
@@ -36,7 +36,8 @@ library(dplyr)
 enr <- fetch_enr_multi(2018:2025)
 
 state_trend <- enr %>%
-  filter(is_state, grade_level == "TOTAL", reporting_category == "TA") %>%
+  filter(is_state, grade_level == "TOTAL", reporting_category == "TA",
+         charter_status == "All") %>%
   arrange(end_year) %>%
   mutate(
     cumulative_change = n_students - first(n_students),
@@ -65,6 +66,7 @@ lausd <- enr %>%
     is_district,
     grade_level == "TOTAL",
     reporting_category == "TA",
+    charter_status == "All",
     grepl("Los Angeles Unified", district_name, ignore.case = TRUE)
   ) %>%
   arrange(end_year) %>%
@@ -96,7 +98,8 @@ top5_districts <- enr %>%
     is_district,
     end_year == max(end_year),
     grade_level == "TOTAL",
-    reporting_category == "TA"
+    reporting_category == "TA",
+    charter_status == "All"
   ) %>%
   arrange(desc(n_students)) %>%
   head(5) %>%
@@ -107,6 +110,7 @@ top5_trend <- enr %>%
     is_district,
     grade_level == "TOTAL",
     reporting_category == "TA",
+    charter_status == "All",
     district_name %in% top5_districts
   ) %>%
   arrange(district_name, end_year)
@@ -138,6 +142,7 @@ race_by_year <- enr %>%
   filter(
     is_state,
     grade_level == "TOTAL",
+    charter_status == "All",
     grepl("^RE_", reporting_category)
   ) %>%
   group_by(end_year) %>%
@@ -170,6 +175,7 @@ district_changes <- enr %>%
     is_district,
     grade_level == "TOTAL",
     reporting_category == "TA",
+    charter_status == "All",
     end_year %in% c(2020, max(end_year))
   ) %>%
   tidyr::pivot_wider(
@@ -203,6 +209,7 @@ grade_trends <- enr %>%
   filter(
     is_state,
     reporting_category == "TA",
+    charter_status == "All",
     grade_level %in% c("K", "01", "02", "03", "04", "05",
                         "06", "07", "08", "09", "10", "11", "12")
   ) %>%
@@ -239,6 +246,7 @@ county_changes <- enr %>%
     is_county,
     grade_level == "TOTAL",
     reporting_category == "TA",
+    charter_status == "All",
     end_year %in% c(2020, max(end_year))
   ) %>%
   tidyr::pivot_wider(
@@ -278,6 +286,7 @@ k_trend <- enr %>%
   filter(
     is_state,
     reporting_category == "TA",
+    charter_status == "All",
     grade_level == "K"
   ) %>%
   arrange(end_year) %>%
@@ -307,6 +316,7 @@ gender_trend <- enr %>%
   filter(
     is_state,
     grade_level == "TOTAL",
+    charter_status == "All",
     reporting_category %in% c("GN_F", "GN_M")
   ) %>%
   group_by(end_year) %>%
@@ -338,6 +348,7 @@ el_data <- enr %>%
   filter(
     is_state,
     grade_level == "TOTAL",
+    charter_status == "All",
     reporting_category %in% c("TA", "SG_EL"),
     end_year >= 2024
   ) %>%
@@ -363,7 +374,8 @@ million students from the peak.
 enr_historical <- fetch_enr_multi(c(1985, 1995, 2005, 2015, 2025))
 
 enr_historical %>%
-  filter(is_state, grade_level == "TOTAL", reporting_category == "TA") %>%
+  filter(is_state, grade_level == "TOTAL", reporting_category == "TA",
+         charter_status == "All") %>%
   select(end_year, n_students)
 ```
 
@@ -384,7 +396,8 @@ lausd_long <- fetch_enr_multi(c(1990, 2000, 2010, 2020, 2025))
 
 lausd_long %>%
   filter(is_district, grepl("Los Angeles Unified", district_name),
-         grade_level == "TOTAL", reporting_category == "TA") %>%
+         grade_level == "TOTAL", reporting_category == "TA",
+         charter_status == "All") %>%
   select(end_year, district_name, n_students)
 ```
 
@@ -405,7 +418,8 @@ many states.
 enr_2025 <- fetch_enr(2025)
 
 enr_2025 %>%
-  filter(is_district, grade_level == "TOTAL", reporting_category == "TA") %>%
+  filter(is_district, grade_level == "TOTAL", reporting_category == "TA",
+         charter_status == "All") %>%
   arrange(desc(n_students)) %>%
   head(10) %>%
   select(district_name, county_name, n_students)
@@ -426,7 +440,8 @@ Fresno, highly diverse in SF and San Diego.
 
 ``` r
 enr_2025 %>%
-  filter(is_district, grade_level == "TOTAL", grepl("^RE_", reporting_category)) %>%
+  filter(is_district, grade_level == "TOTAL", charter_status == "All",
+         grepl("^RE_", reporting_category)) %>%
   filter(district_name %in% c("San Francisco Unified", "Los Angeles Unified",
                                "Fresno Unified", "San Diego Unified")) %>%
   group_by(district_name, subgroup) %>%
@@ -452,7 +467,8 @@ California has seen consistent year-over-year enrollment declines since
 enr_recent <- fetch_enr_multi(2018:2025)
 
 state_yoy <- enr_recent %>%
-  filter(is_state, grade_level == "TOTAL", reporting_category == "TA") %>%
+  filter(is_state, grade_level == "TOTAL", reporting_category == "TA",
+         charter_status == "All") %>%
   arrange(end_year) %>%
   mutate(
     prev_year = lag(n_students),
@@ -480,10 +496,10 @@ Language Arts (ELA) and Mathematics. Data available from 2015-2024 (no
 
 ------------------------------------------------------------------------
 
-### 16. Statewide proficiency: 47% in ELA, 36% in Math
+### 16. Statewide proficiency: 56% in ELA, 28% in Math for 11th graders
 
-California’s 11th graders showed a 20+ point gap between ELA and Math
-proficiency in 2024.
+California’s 11th graders showed a dramatic 28-point gap between ELA and
+Math proficiency in 2024.
 
 ``` r
 library(caschooldata)
@@ -512,10 +528,11 @@ Grade 11 Proficiency
 
 ------------------------------------------------------------------------
 
-### 17. Elementary students outperform high schoolers in ELA
+### 17. ELA proficiency climbs from 43% in Grade 3 to 56% in Grade 11
 
-Third graders actually have higher ELA proficiency than 11th graders,
-suggesting early reading interventions may be working.
+ELA proficiency actually increases across grade levels, with 11th
+graders significantly outperforming 3rd graders – a 13-point gap
+suggesting cumulative literacy growth.
 
 ``` r
 # ELA proficiency by grade
@@ -587,10 +604,10 @@ COVID Recovery
 
 ------------------------------------------------------------------------
 
-### 20. ELA-Math gap is consistent across grades
+### 20. ELA-Math gap widens dramatically from Grade 3 to Grade 11
 
-The ELA advantage over Math proficiency is remarkably consistent (10-20
-points) across all tested grades.
+The ELA advantage over Math proficiency starts near zero in Grade 3
+(where Math slightly leads) and balloons to 28 points by Grade 11.
 
 ``` r
 # ELA-Math gap by grade
@@ -637,16 +654,19 @@ enr_all <- fetch_enr_multi(1982:2025)
 
 # State totals
 enr_2025 %>%
-  filter(is_state, subgroup == "total", grade_level == "TOTAL")
+  filter(is_state, reporting_category == "TA",
+         grade_level == "TOTAL", charter_status == "All")
 
 # District breakdown
 enr_2025 %>%
-  filter(is_district, subgroup == "total", grade_level == "TOTAL") %>%
+  filter(is_district, reporting_category == "TA",
+         grade_level == "TOTAL", charter_status == "All") %>%
   arrange(desc(n_students))
 
 # Demographics by district
 enr_2025 %>%
-  filter(is_district, grade_level == "TOTAL", grepl("^RE_", reporting_category)) %>%
+  filter(is_district, grade_level == "TOTAL", charter_status == "All",
+         grepl("^RE_", reporting_category)) %>%
   group_by(district_name, subgroup) %>%
   summarize(n = sum(n_students))
 ```
@@ -670,14 +690,16 @@ enr_recent = ca.fetch_enr_multi([2023, 2024, 2025])
 state_total = enr_2025[
     (enr_2025['is_state'] == True) &
     (enr_2025['grade_level'] == 'TOTAL') &
-    (enr_2025['subgroup'] == 'total')
+    (enr_2025['reporting_category'] == 'TA') &
+    (enr_2025['charter_status'] == 'All')
 ]
 
 # District breakdown
 district_totals = enr_2025[
     (enr_2025['is_district'] == True) &
     (enr_2025['grade_level'] == 'TOTAL') &
-    (enr_2025['subgroup'] == 'total')
+    (enr_2025['reporting_category'] == 'TA') &
+    (enr_2025['charter_status'] == 'All')
 ].sort_values('n_students', ascending=False)
 ```
 

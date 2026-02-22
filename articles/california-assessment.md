@@ -54,12 +54,13 @@ glimpse(assess_2024)
     ## $ is_school     <lgl> FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, …
 
 ``` r
-# State-level summary
+# State-level summary (grade 13 = all grades combined)
 state_2024 <- assess_2024 %>%
   filter(is_state, grade == "13", metric_type == "pct_met_and_above") %>%
   select(subject, metric_value) %>%
   arrange(subject)
 
+stopifnot(nrow(state_2024) > 0)
 state_2024
 ```
 
@@ -78,10 +79,10 @@ state_2024
 
 ------------------------------------------------------------------------
 
-## 2. Statewide proficiency: 47% in ELA, 36% in Math
+## 2. Statewide proficiency: 56% in ELA, 28% in Math for 11th graders
 
-California’s 11th graders showed a 20+ point gap between ELA and Math
-proficiency in 2024.
+California’s 11th graders showed a dramatic 28-point gap between ELA and
+Math proficiency in 2024.
 
 ``` r
 # State-level proficiency by subject (Grade 11)
@@ -89,6 +90,7 @@ state_g11 <- assess_2024 %>%
   filter(is_state, grade == "11", metric_type == "pct_met_and_above") %>%
   select(subject, metric_value)
 
+stopifnot(nrow(state_g11) > 0)
 state_g11
 ```
 
@@ -125,10 +127,11 @@ ggplot(state_g11, aes(x = subject, y = metric_value, fill = subject)) +
 
 ------------------------------------------------------------------------
 
-## 3. Elementary students outperform high schoolers in ELA
+## 3. ELA proficiency climbs from 43% in Grade 3 to 56% in Grade 11
 
-Third graders actually have higher ELA proficiency than 11th graders,
-suggesting early reading interventions may be working.
+ELA proficiency actually increases across grade levels, with 11th
+graders significantly outperforming 3rd graders – a 13-point gap
+suggesting cumulative literacy growth.
 
 ``` r
 # ELA proficiency by grade
@@ -139,6 +142,7 @@ ela_by_grade <- assess_2024 %>%
   select(grade, metric_value) %>%
   arrange(grade)
 
+stopifnot(nrow(ela_by_grade) > 0)
 ela_by_grade
 ```
 
@@ -638,10 +642,10 @@ major_district_data
 
 ------------------------------------------------------------------------
 
-## 15. ELA-Math gap is consistent across grades
+## 15. ELA-Math gap widens dramatically from Grade 3 to Grade 11
 
-The ELA advantage over Math proficiency is remarkably consistent (10-20
-points) across all tested grades.
+The ELA advantage over Math proficiency starts near zero in Grade 3
+(where Math slightly leads) and balloons to 28 points by Grade 11.
 
 ``` r
 # ELA-Math gap by grade
@@ -652,6 +656,7 @@ ela_math_gap <- assess_2024 %>%
   pivot_wider(names_from = subject, values_from = metric_value) %>%
   mutate(gap = ELA - Math)
 
+stopifnot(nrow(ela_math_gap) > 0)
 ela_math_gap
 ```
 
@@ -669,14 +674,16 @@ ela_math_gap
 ``` r
 ggplot(ela_math_gap, aes(x = grade, y = gap)) +
   geom_col(fill = "#7B68EE") +
+  geom_text(aes(label = round(gap, 1)),
+            vjust = ifelse(ela_math_gap$gap >= 0, -0.5, 1.5), size = 3.5) +
   geom_hline(yintercept = 0, linetype = "dashed") +
   labs(
     title = "ELA vs Math Proficiency Gap by Grade (2024)",
-    subtitle = "Positive values = ELA higher than Math",
+    subtitle = "Positive values = ELA higher than Math; gap widens dramatically in upper grades",
     x = "Grade",
     y = "ELA - Math (percentage points)"
   ) +
-  scale_y_continuous(limits = c(0, 30))
+  scale_y_continuous(limits = c(-5, 32))
 ```
 
 ![](california-assessment_files/figure-html/finding-14-plot-1.png)
@@ -721,11 +728,11 @@ sessionInfo()
     ## [1] stats     graphics  grDevices utils     datasets  methods   base     
     ## 
     ## other attached packages:
-    ## [1] testthat_3.3.2     ggplot2_4.0.2      tidyr_1.3.2        dplyr_1.2.0       
-    ## [5] caschooldata_0.1.0
+    ## [1] ggplot2_4.0.2      tidyr_1.3.2        dplyr_1.2.0        caschooldata_0.1.0
+    ## [5] testthat_3.3.2    
     ## 
     ## loaded via a namespace (and not attached):
-    ##  [1] rappdirs_0.3.4     sass_0.4.10        utf8_1.2.6         generics_0.1.4    
+    ##  [1] utf8_1.2.6         rappdirs_0.3.4     sass_0.4.10        generics_0.1.4    
     ##  [5] hms_1.1.4          digest_0.6.39      magrittr_2.0.4     evaluate_1.0.5    
     ##  [9] grid_4.5.2         RColorBrewer_1.1-3 fastmap_1.2.0      jsonlite_2.0.0    
     ## [13] brio_1.1.5         purrr_1.2.1        scales_1.4.0       codetools_0.2-20  
