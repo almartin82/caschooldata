@@ -1,5 +1,4 @@
-rmarkdown
+testthat
 caschooldata
 dplyr
-tidyr
 ggplot2

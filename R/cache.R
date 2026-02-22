@@ -148,12 +148,13 @@ clear_enr_cache <- function(end_year = NULL, data_type = NULL) {
     }
   } else {
     if (is.null(data_type)) {
-      patterns <- paste0(c("enr", "grad"), "_", end_year)
+      # Match files like enr_tidy_2024.rds, enr_wide_2024.rds, grad_grad_tidy_2024.rds
+      patterns <- paste0(c("enr_", "grad_"), ".*_", end_year, "\\.rds$")
       files <- unlist(lapply(patterns, function(p) {
         list.files(cache_dir, pattern = p, full.names = TRUE)
       }))
     } else {
-      files <- list.files(cache_dir, pattern = paste0(data_type, "_", end_year), full.names = TRUE)
+      files <- list.files(cache_dir, pattern = paste0(data_type, "_.*_", end_year, "\\.rds$"), full.names = TRUE)
     }
   }
 

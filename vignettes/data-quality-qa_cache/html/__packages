@@ -3,3 +3,4 @@ dplyr
 tidyr
 ggplot2
 rmarkdown
+testthat
