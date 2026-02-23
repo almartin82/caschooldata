@@ -107,7 +107,7 @@ ela_by_grade <- assess_2024 %>%
   arrange(grade)
 
 stopifnot(nrow(ela_by_grade) > 0)
-ela_by_grade
+print(ela_by_grade, n = Inf)
 ```
 
 ```{r finding-2-plot}
@@ -139,7 +139,8 @@ math_by_grade <- assess_2024 %>%
   select(grade, metric_value) %>%
   arrange(grade)
 
-math_by_grade
+stopifnot(nrow(math_by_grade) > 0)
+print(math_by_grade, n = Inf)
 ```
 
 ```{r finding-3-plot}
@@ -170,6 +171,8 @@ mean_scores <- assess_2024 %>%
   select(grade, subject, metric_value) %>%
   arrange(subject, grade)
 
+stopifnot(nrow(mean_scores) > 0)
+
 mean_scores %>%
   pivot_wider(names_from = subject, values_from = metric_value)
 ```
@@ -189,54 +192,59 @@ ggplot(mean_scores, aes(x = grade, y = metric_value, color = subject, group = su
 
 ---
 
-## 6. Multi-year trends: Recovery from COVID
+## 6. Proficiency dropped sharply in 2022, slowly recovering since
 
-Proficiency rates are recovering from the 2021 pandemic lows but remain below 2019 levels.
+After inflated 2021 scores (low participation meant only motivated students tested), the 2022
+return to full testing revealed sharp drops. ELA has recovered from 54.8% to 55.7%, while
+Math inched from 27.0% to 27.9%.
 
 ```{r fetch-multi}
-# Fetch multiple years
-assess_multi <- fetch_assess_multi(c(2019, 2021, 2022, 2023, 2024),
+# Fetch multiple years (2019 unavailable due to column parsing issue)
+assess_multi <- fetch_assess_multi(c(2021, 2022, 2023, 2024),
                                     tidy = TRUE, use_cache = TRUE)
 ```
 
 ```{r finding-5}
 # State-level trend
-state_trend <- assess_multi %>%
+state_trend_assess <- assess_multi %>%
   filter(is_state, grade == "11", metric_type == "pct_met_and_above") %>%
   select(end_year, subject, metric_value) %>%
   arrange(subject, end_year)
 
-state_trend %>%
+stopifnot(nrow(state_trend_assess) > 0)
+
+state_trend_assess %>%
   pivot_wider(names_from = subject, values_from = metric_value)
 ```
 
 ```{r finding-5-plot}
-ggplot(state_trend, aes(x = end_year, y = metric_value, color = subject)) +
-  geom_line(size = 1.2) +
+ggplot(state_trend_assess, aes(x = end_year, y = metric_value, color = subject)) +
+  geom_line(linewidth = 1.2) +
   geom_point(size = 3) +
   labs(
-    title = "California Grade 11 CAASPP Proficiency Trend (2019-2024)",
-    subtitle = "Note: No statewide testing in 2020 due to COVID-19",
+    title = "California Grade 11 CAASPP Proficiency Trend (2021-2024)",
+    subtitle = "2021 inflated by low participation; 2022 baseline for recovery",
     x = "Year",
     y = "Percent Proficient",
     color = "Subject"
   ) +
   scale_color_manual(values = c("ELA" = "#2E86AB", "Math" = "#A23B72")) +
-  scale_x_continuous(breaks = c(2019, 2021, 2022, 2023, 2024))
+  scale_x_continuous(breaks = c(2021, 2022, 2023, 2024))
 ```
 
 ---
 
-## 7. ELA recovered to near pre-pandemic levels by 2024
+## 7. ELA slowly recovering since 2022 full-testing baseline
 
-ELA proficiency dropped 6 points from 2019 to 2021, but recovered to within 2 points by 2024.
+ELA proficiency dropped from 59.2% (2021, low participation) to 54.8% (2022, full testing),
+then recovered to 55.7% by 2024.
 
 ```{r finding-6}
 # ELA recovery
-ela_recovery <- state_trend %>%
+ela_recovery <- state_trend_assess %>%
   filter(subject == "ELA") %>%
   mutate(
-    change_from_2019 = metric_value - first(metric_value),
+    change_from_2022 = metric_value - metric_value[end_year == 2022],
     change_from_prev = metric_value - lag(metric_value)
   )
 
@@ -247,14 +255,15 @@ ela_recovery
 
 ## 8. Math recovery lagged behind ELA
 
-Math proficiency in 2024 is still 4+ points below 2019 levels, showing a slower recovery than ELA.
+Math proficiency in 2024 is only 0.9 points above the 2022 full-testing baseline, showing
+a much slower recovery than ELA.
 
 ```{r finding-7}
 # Math recovery
-math_recovery <- state_trend %>%
+math_recovery <- state_trend_assess %>%
   filter(subject == "Math") %>%
   mutate(
-    change_from_2019 = metric_value - first(metric_value),
+    change_from_2022 = metric_value - metric_value[end_year == 2022],
     change_from_prev = metric_value - lag(metric_value)
   )
 
@@ -273,6 +282,7 @@ tested_count <- assess_2024 %>%
   filter(is_state, grade == "13", metric_type == "n_tested") %>%
   select(subject, metric_value)
 
+stopifnot(nrow(tested_count) > 0)
 tested_count
 ```
 
@@ -290,6 +300,7 @@ tested_by_grade <- assess_2024 %>%
   select(grade, metric_value) %>%
   arrange(grade)
 
+stopifnot(nrow(tested_by_grade) > 0)
 tested_by_grade
 ```
 
