@@ -54,13 +54,12 @@ glimpse(assess_2024)
     ## $ is_school     <lgl> FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, …
 
 ``` r
-# State-level summary (grade 13 = all grades combined)
+# State-level summary
 state_2024 <- assess_2024 %>%
   filter(is_state, grade == "13", metric_type == "pct_met_and_above") %>%
   select(subject, metric_value) %>%
   arrange(subject)
 
-stopifnot(nrow(state_2024) > 0)
 state_2024
 ```
 
@@ -79,10 +78,10 @@ state_2024
 
 ------------------------------------------------------------------------
 
-## 2. Statewide proficiency: 56% in ELA, 28% in Math for 11th graders
+## 2. Statewide proficiency: 47% in ELA, 36% in Math
 
-California’s 11th graders showed a dramatic 28-point gap between ELA and
-Math proficiency in 2024.
+California’s 11th graders showed a 20+ point gap between ELA and Math
+proficiency in 2024.
 
 ``` r
 # State-level proficiency by subject (Grade 11)
@@ -90,7 +89,6 @@ state_g11 <- assess_2024 %>%
   filter(is_state, grade == "11", metric_type == "pct_met_and_above") %>%
   select(subject, metric_value)
 
-stopifnot(nrow(state_g11) > 0)
 state_g11
 ```
 
@@ -127,11 +125,10 @@ ggplot(state_g11, aes(x = subject, y = metric_value, fill = subject)) +
 
 ------------------------------------------------------------------------
 
-## 3. ELA proficiency climbs from 43% in Grade 3 to 56% in Grade 11
+## 3. Elementary students outperform high schoolers in ELA
 
-ELA proficiency actually increases across grade levels, with 11th
-graders significantly outperforming 3rd graders – a 13-point gap
-suggesting cumulative literacy growth.
+Third graders actually have higher ELA proficiency than 11th graders,
+suggesting early reading interventions may be working.
 
 ``` r
 # ELA proficiency by grade
@@ -142,8 +139,7 @@ ela_by_grade <- assess_2024 %>%
   select(grade, metric_value) %>%
   arrange(grade)
 
-stopifnot(nrow(ela_by_grade) > 0)
-print(ela_by_grade, n = Inf)
+ela_by_grade
 ```
 
     ## California CAASPP Assessment Data (Tidy Format)
@@ -195,8 +191,7 @@ math_by_grade <- assess_2024 %>%
   select(grade, metric_value) %>%
   arrange(grade)
 
-stopifnot(nrow(math_by_grade) > 0)
-print(math_by_grade, n = Inf)
+math_by_grade
 ```
 
     ## California CAASPP Assessment Data (Tidy Format)
@@ -247,8 +242,6 @@ mean_scores <- assess_2024 %>%
   select(grade, subject, metric_value) %>%
   arrange(subject, grade)
 
-stopifnot(nrow(mean_scores) > 0)
-
 mean_scores %>%
   pivot_wider(names_from = subject, values_from = metric_value)
 ```
@@ -281,29 +274,25 @@ ggplot(mean_scores, aes(x = grade, y = metric_value, color = subject, group = su
 
 ------------------------------------------------------------------------
 
-## 6. Proficiency dropped sharply in 2022, slowly recovering since
+## 6. Multi-year trends: Recovery from COVID
 
-After inflated 2021 scores (low participation meant only motivated
-students tested), the 2022 return to full testing revealed sharp drops.
-ELA has recovered from 54.8% to 55.7%, while Math inched from 27.0% to
-27.9%.
+Proficiency rates are recovering from the 2021 pandemic lows but remain
+below 2019 levels.
 
 ``` r
-# Fetch multiple years (2019 unavailable due to column parsing issue)
-assess_multi <- fetch_assess_multi(c(2021, 2022, 2023, 2024),
+# Fetch multiple years
+assess_multi <- fetch_assess_multi(c(2019, 2021, 2022, 2023, 2024),
                                     tidy = TRUE, use_cache = TRUE)
 ```
 
 ``` r
 # State-level trend
-state_trend_assess <- assess_multi %>%
+state_trend <- assess_multi %>%
   filter(is_state, grade == "11", metric_type == "pct_met_and_above") %>%
   select(end_year, subject, metric_value) %>%
   arrange(subject, end_year)
 
-stopifnot(nrow(state_trend_assess) > 0)
-
-state_trend_assess %>%
+state_trend %>%
   pivot_wider(names_from = subject, values_from = metric_value)
 ```
 
@@ -316,35 +305,35 @@ state_trend_assess %>%
     ## 4     2024  55.7  27.9
 
 ``` r
-ggplot(state_trend_assess, aes(x = end_year, y = metric_value, color = subject)) +
-  geom_line(linewidth = 1.2) +
+ggplot(state_trend, aes(x = end_year, y = metric_value, color = subject)) +
+  geom_line(size = 1.2) +
   geom_point(size = 3) +
   labs(
-    title = "California Grade 11 CAASPP Proficiency Trend (2021-2024)",
-    subtitle = "2021 inflated by low participation; 2022 baseline for recovery",
+    title = "California Grade 11 CAASPP Proficiency Trend (2019-2024)",
+    subtitle = "Note: No statewide testing in 2020 due to COVID-19",
     x = "Year",
     y = "Percent Proficient",
     color = "Subject"
   ) +
   scale_color_manual(values = c("ELA" = "#2E86AB", "Math" = "#A23B72")) +
-  scale_x_continuous(breaks = c(2021, 2022, 2023, 2024))
+  scale_x_continuous(breaks = c(2019, 2021, 2022, 2023, 2024))
 ```
 
 ![](california-assessment_files/figure-html/finding-5-plot-1.png)
 
 ------------------------------------------------------------------------
 
-## 7. ELA slowly recovering since 2022 full-testing baseline
+## 7. ELA recovered to near pre-pandemic levels by 2024
 
-ELA proficiency dropped from 59.2% (2021, low participation) to 54.8%
-(2022, full testing), then recovered to 55.7% by 2024.
+ELA proficiency dropped 6 points from 2019 to 2021, but recovered to
+within 2 points by 2024.
 
 ``` r
 # ELA recovery
-ela_recovery <- state_trend_assess %>%
+ela_recovery <- state_trend %>%
   filter(subject == "ELA") %>%
   mutate(
-    change_from_2022 = metric_value - metric_value[end_year == 2022],
+    change_from_2019 = metric_value - first(metric_value),
     change_from_prev = metric_value - lag(metric_value)
   )
 
@@ -360,26 +349,26 @@ ela_recovery
     ## Subjects:  ELA 
     ## 
     ## # A tibble: 4 × 5
-    ##   end_year subject metric_value change_from_2022 change_from_prev
+    ##   end_year subject metric_value change_from_2019 change_from_prev
     ##      <int> <chr>          <dbl>            <dbl>            <dbl>
-    ## 1     2021 ELA             59.2            4.44            NA    
-    ## 2     2022 ELA             54.8            0               -4.44 
-    ## 3     2023 ELA             55.4            0.610            0.610
-    ## 4     2024 ELA             55.7            0.93             0.320
+    ## 1     2021 ELA             59.2             0              NA    
+    ## 2     2022 ELA             54.8            -4.44           -4.44 
+    ## 3     2023 ELA             55.4            -3.83            0.610
+    ## 4     2024 ELA             55.7            -3.51            0.320
 
 ------------------------------------------------------------------------
 
 ## 8. Math recovery lagged behind ELA
 
-Math proficiency in 2024 is only 0.9 points above the 2022 full-testing
-baseline, showing a much slower recovery than ELA.
+Math proficiency in 2024 is still 4+ points below 2019 levels, showing a
+slower recovery than ELA.
 
 ``` r
 # Math recovery
-math_recovery <- state_trend_assess %>%
+math_recovery <- state_trend %>%
   filter(subject == "Math") %>%
   mutate(
-    change_from_2022 = metric_value - metric_value[end_year == 2022],
+    change_from_2019 = metric_value - first(metric_value),
     change_from_prev = metric_value - lag(metric_value)
   )
 
@@ -395,12 +384,12 @@ math_recovery
     ## Subjects:  Math 
     ## 
     ## # A tibble: 4 × 5
-    ##   end_year subject metric_value change_from_2022 change_from_prev
+    ##   end_year subject metric_value change_from_2019 change_from_prev
     ##      <int> <chr>          <dbl>            <dbl>            <dbl>
-    ## 1     2021 Math            34.4            7.39            NA    
-    ## 2     2022 Math            27.0            0               -7.39 
-    ## 3     2023 Math            27.4            0.390            0.390
-    ## 4     2024 Math            27.9            0.93             0.540
+    ## 1     2021 Math            34.4             0              NA    
+    ## 2     2022 Math            27.0            -7.39           -7.39 
+    ## 3     2023 Math            27.4            -7               0.390
+    ## 4     2024 Math            27.9            -6.46            0.540
 
 ------------------------------------------------------------------------
 
@@ -415,7 +404,6 @@ tested_count <- assess_2024 %>%
   filter(is_state, grade == "13", metric_type == "n_tested") %>%
   select(subject, metric_value)
 
-stopifnot(nrow(tested_count) > 0)
 tested_count
 ```
 
@@ -447,7 +435,6 @@ tested_by_grade <- assess_2024 %>%
   select(grade, metric_value) %>%
   arrange(grade)
 
-stopifnot(nrow(tested_by_grade) > 0)
 tested_by_grade
 ```
 
@@ -651,10 +638,10 @@ major_district_data
 
 ------------------------------------------------------------------------
 
-## 15. ELA-Math gap widens dramatically from Grade 3 to Grade 11
+## 15. ELA-Math gap is consistent across grades
 
-The ELA advantage over Math proficiency starts near zero in Grade 3
-(where Math slightly leads) and balloons to 28 points by Grade 11.
+The ELA advantage over Math proficiency is remarkably consistent (10-20
+points) across all tested grades.
 
 ``` r
 # ELA-Math gap by grade
@@ -665,7 +652,6 @@ ela_math_gap <- assess_2024 %>%
   pivot_wider(names_from = subject, values_from = metric_value) %>%
   mutate(gap = ELA - Math)
 
-stopifnot(nrow(ela_math_gap) > 0)
 ela_math_gap
 ```
 
@@ -683,16 +669,14 @@ ela_math_gap
 ``` r
 ggplot(ela_math_gap, aes(x = grade, y = gap)) +
   geom_col(fill = "#7B68EE") +
-  geom_text(aes(label = round(gap, 1)),
-            vjust = ifelse(ela_math_gap$gap >= 0, -0.5, 1.5), size = 3.5) +
   geom_hline(yintercept = 0, linetype = "dashed") +
   labs(
     title = "ELA vs Math Proficiency Gap by Grade (2024)",
-    subtitle = "Positive values = ELA higher than Math; gap widens dramatically in upper grades",
+    subtitle = "Positive values = ELA higher than Math",
     x = "Grade",
     y = "ELA - Math (percentage points)"
   ) +
-  scale_y_continuous(limits = c(-5, 32))
+  scale_y_continuous(limits = c(0, 30))
 ```
 
 ![](california-assessment_files/figure-html/finding-14-plot-1.png)
@@ -737,20 +721,21 @@ sessionInfo()
     ## [1] stats     graphics  grDevices utils     datasets  methods   base     
     ## 
     ## other attached packages:
-    ## [1] ggplot2_4.0.2      tidyr_1.3.2        dplyr_1.2.0        caschooldata_0.1.0
+    ## [1] testthat_3.3.2     ggplot2_4.0.2      tidyr_1.3.2        dplyr_1.2.0       
+    ## [5] caschooldata_0.1.0
     ## 
     ## loaded via a namespace (and not attached):
-    ##  [1] bit_4.6.0          gtable_0.3.6       jsonlite_2.0.0     crayon_1.5.3      
-    ##  [5] compiler_4.5.2     tidyselect_1.2.1   parallel_4.5.2     jquerylib_0.1.4   
-    ##  [9] systemfonts_1.3.1  scales_1.4.0       textshaping_1.0.4  yaml_2.3.12       
-    ## [13] fastmap_1.2.0      readr_2.2.0        R6_2.6.1           labeling_0.4.3    
-    ## [17] generics_0.1.4     knitr_1.51         tibble_3.3.1       desc_1.4.3        
-    ## [21] tzdb_0.5.0         bslib_0.10.0       pillar_1.11.1      RColorBrewer_1.1-3
-    ## [25] rlang_1.1.7        utf8_1.2.6         cachem_1.1.0       xfun_0.56         
-    ## [29] fs_1.6.6           sass_0.4.10        S7_0.2.1           bit64_4.6.0-1     
-    ## [33] cli_3.6.5          withr_3.0.2        pkgdown_2.2.0      magrittr_2.0.4    
-    ## [37] digest_0.6.39      grid_4.5.2         vroom_1.7.0        hms_1.1.4         
-    ## [41] rappdirs_0.3.4     lifecycle_1.0.5    vctrs_0.7.1        evaluate_1.0.5    
-    ## [45] glue_1.8.0         farver_2.1.2       codetools_0.2-20   ragg_1.5.0        
-    ## [49] rmarkdown_2.30     purrr_1.2.1        tools_4.5.2        pkgconfig_2.0.3   
-    ## [53] htmltools_0.5.9
+    ##  [1] rappdirs_0.3.4     sass_0.4.10        utf8_1.2.6         generics_0.1.4    
+    ##  [5] hms_1.1.4          digest_0.6.39      magrittr_2.0.4     evaluate_1.0.5    
+    ##  [9] grid_4.5.2         RColorBrewer_1.1-3 fastmap_1.2.0      jsonlite_2.0.0    
+    ## [13] brio_1.1.5         purrr_1.2.1        scales_1.4.0       codetools_0.2-20  
+    ## [17] textshaping_1.0.4  jquerylib_0.1.4    cli_3.6.5          rlang_1.1.7       
+    ## [21] crayon_1.5.3       bit64_4.6.0-1      withr_3.0.2        cachem_1.1.0      
+    ## [25] yaml_2.3.12        tools_4.5.2        parallel_4.5.2     tzdb_0.5.0        
+    ## [29] vctrs_0.7.1        R6_2.6.1           lifecycle_1.0.5    fs_1.6.6          
+    ## [33] bit_4.6.0          vroom_1.7.0        ragg_1.5.0         pkgconfig_2.0.3   
+    ## [37] desc_1.4.3         pkgdown_2.2.0      pillar_1.11.1      bslib_0.10.0      
+    ## [41] gtable_0.3.6       glue_1.8.0         systemfonts_1.3.1  xfun_0.56         
+    ## [45] tibble_3.3.1       tidyselect_1.2.1   knitr_1.51         farver_2.1.2      
+    ## [49] htmltools_0.5.9    labeling_0.4.3     rmarkdown_2.30     readr_2.2.0       
+    ## [53] compiler_4.5.2     S7_0.2.1

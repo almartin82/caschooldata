@@ -154,11 +154,10 @@ time series consistency.</p>
 <span><span class="fu"><a href="https://rdrr.io/r/base/stopifnot.html" class="external-link">stopifnot</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">state_totals</span><span class="op">)</span> <span class="op">&gt;</span> <span class="fl">0</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">state_totals</span></span></code></pre></div>
-<pre><code><span><span class="co">## <span style="color: #949494;"># A tibble: 2 × 2</span></span></span>
+<pre><code><span><span class="co">## <span style="color: #949494;"># A tibble: 1 × 2</span></span></span>
 <span><span class="co">##   end_year n_students</span></span>
 <span><span class="co">##      <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">1</span>     <span style="text-decoration: underline;">2</span>023    5<span style="text-decoration: underline;">852</span>544</span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">2</span>     <span style="text-decoration: underline;">2</span>024    5<span style="text-decoration: underline;">837</span>690</span></span></code></pre>
+<span><span class="co">## <span style="color: #BCBCBC;">1</span>     <span style="text-decoration: underline;">2</span>023    5<span style="text-decoration: underline;">852</span>544</span></span></code></pre>
 </div>
 <div class="section level3">
 <h3 id="year-over-year-changes">Year-over-Year Changes<a class="anchor" aria-label="anchor" href="#year-over-year-changes"></a>
@@ -174,11 +173,10 @@ time series consistency.</p>
 <span>  <span class="op">)</span></span>
 <span></span>
 <span><span class="va">state_yoy</span></span></code></pre></div>
-<pre><code><span><span class="co">## <span style="color: #949494;"># A tibble: 2 × 5</span></span></span>
+<pre><code><span><span class="co">## <span style="color: #949494;"># A tibble: 1 × 5</span></span></span>
 <span><span class="co">##   end_year n_students prev_year change pct_change</span></span>
 <span><span class="co">##      <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">1</span>     <span style="text-decoration: underline;">2</span>023    5<span style="text-decoration: underline;">852</span>544        <span style="color: #BB0000;">NA</span>     <span style="color: #BB0000;">NA</span>     <span style="color: #BB0000;">NA</span>    </span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">2</span>     <span style="text-decoration: underline;">2</span>024    5<span style="text-decoration: underline;">837</span>690   5<span style="text-decoration: underline;">852</span>544 -<span style="color: #BB0000; text-decoration: underline;">14</span><span style="color: #BB0000;">854</span>     -<span style="color: #BB0000;">0.254</span></span></span></code></pre>
+<span><span class="co">## <span style="color: #BCBCBC;">1</span>     <span style="text-decoration: underline;">2</span>023    5<span style="text-decoration: underline;">852</span>544        <span style="color: #BB0000;">NA</span>     <span style="color: #BB0000;">NA</span>         <span style="color: #BB0000;">NA</span></span></span></code></pre>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Flag any large changes (&gt;5%)</span></span>
 <span><span class="va">large_changes</span> <span class="op">&lt;-</span> <span class="va">state_yoy</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
@@ -412,11 +410,10 @@ time series consistency.</p>
 <span>  <span class="op">)</span></span>
 <span></span>
 <span><span class="va">grade_validation</span></span></code></pre></div>
-<pre><code><span><span class="co">## <span style="color: #949494;"># A tibble: 2 × 5</span></span></span>
+<pre><code><span><span class="co">## <span style="color: #949494;"># A tibble: 1 × 5</span></span></span>
 <span><span class="co">##   end_year reported_total sum_of_grades difference pct_diff</span></span>
 <span><span class="co">##      <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>          <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">1</span>     <span style="text-decoration: underline;">2</span>023        5<span style="text-decoration: underline;">852</span>544       5<span style="text-decoration: underline;">852</span>544          0        0</span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">2</span>     <span style="text-decoration: underline;">2</span>024        5<span style="text-decoration: underline;">837</span>690       5<span style="text-decoration: underline;">837</span>690          0        0</span></span></code></pre>
+<span><span class="co">## <span style="color: #BCBCBC;">1</span>     <span style="text-decoration: underline;">2</span>023        5<span style="text-decoration: underline;">852</span>544       5<span style="text-decoration: underline;">852</span>544          0        0</span></span></code></pre>
 <div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/any.html" class="external-link">any</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/MathFun.html" class="external-link">abs</a></span><span class="op">(</span><span class="va">grade_validation</span><span class="op">$</span><span class="va">pct_diff</span><span class="op">)</span> <span class="op">&gt;</span> <span class="fl">0.1</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"WARNING: Grade totals do not match reported totals\n"</span><span class="op">)</span></span>
@@ -438,20 +435,21 @@ time series consistency.</p>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">reporting_category</span>, <span class="va">subgroup</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/distinct.html" class="external-link">distinct</a></span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/arrange.html" class="external-link">arrange</a></span><span class="op">(</span><span class="va">reporting_category</span><span class="op">)</span></span></code></pre></div>
-<pre><code><span><span class="co">## <span style="color: #949494;"># A tibble: 33 × 2</span></span></span>
-<span><span class="co">##    reporting_category subgroup       </span></span>
-<span><span class="co">##    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>              <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>          </span></span>
-<span><span class="co">## <span style="color: #BCBCBC;"> 1</span> AR_03              age_0_3        </span></span>
-<span><span class="co">## <span style="color: #BCBCBC;"> 2</span> AR_0418            age_4_18       </span></span>
-<span><span class="co">## <span style="color: #BCBCBC;"> 3</span> AR_1922            age_19_22      </span></span>
-<span><span class="co">## <span style="color: #BCBCBC;"> 4</span> AR_2329            age_23_29      </span></span>
-<span><span class="co">## <span style="color: #BCBCBC;"> 5</span> AR_3039            age_30_39      </span></span>
-<span><span class="co">## <span style="color: #BCBCBC;"> 6</span> AR_4049            age_40_49      </span></span>
-<span><span class="co">## <span style="color: #BCBCBC;"> 7</span> AR_50P             age_50_plus    </span></span>
-<span><span class="co">## <span style="color: #BCBCBC;"> 8</span> ELAS_ADEL          adult_el       </span></span>
-<span><span class="co">## <span style="color: #BCBCBC;"> 9</span> ELAS_EL            english_learner</span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">10</span> ELAS_EO            english_only   </span></span>
-<span><span class="co">## <span style="color: #949494;"># ℹ 23 more rows</span></span></span></code></pre>
+<pre><code><span><span class="co">## <span style="color: #949494;"># A tibble: 12 × 2</span></span></span>
+<span><span class="co">##    reporting_category subgroup        </span></span>
+<span><span class="co">##    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>              <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>           </span></span>
+<span><span class="co">## <span style="color: #BCBCBC;"> 1</span> GN_F               female          </span></span>
+<span><span class="co">## <span style="color: #BCBCBC;"> 2</span> GN_M               male            </span></span>
+<span><span class="co">## <span style="color: #BCBCBC;"> 3</span> GN_X               nonbinary       </span></span>
+<span><span class="co">## <span style="color: #BCBCBC;"> 4</span> RE_A               asian           </span></span>
+<span><span class="co">## <span style="color: #BCBCBC;"> 5</span> RE_B               black           </span></span>
+<span><span class="co">## <span style="color: #BCBCBC;"> 6</span> RE_D               not_reported    </span></span>
+<span><span class="co">## <span style="color: #BCBCBC;"> 7</span> RE_F               filipino        </span></span>
+<span><span class="co">## <span style="color: #BCBCBC;"> 8</span> RE_H               hispanic        </span></span>
+<span><span class="co">## <span style="color: #BCBCBC;"> 9</span> RE_I               native_american </span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">10</span> RE_P               pacific_islander</span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">11</span> RE_W               white           </span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">12</span> TA                 total_enrollment</span></span></code></pre>
 </div>
 <div class="section level3">
 <h3 id="subgroup-enrollment-consistency">Subgroup Enrollment Consistency<a class="anchor" aria-label="anchor" href="#subgroup-enrollment-consistency"></a>
@@ -485,11 +483,10 @@ time series consistency.</p>
 <span>  <span class="op">)</span></span>
 <span></span>
 <span><span class="va">race_validation</span></span></code></pre></div>
-<pre><code><span><span class="co">## <span style="color: #949494;"># A tibble: 2 × 5</span></span></span>
+<pre><code><span><span class="co">## <span style="color: #949494;"># A tibble: 1 × 5</span></span></span>
 <span><span class="co">##   end_year sum_race   total difference pct_diff</span></span>
 <span><span class="co">##      <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">1</span>     <span style="text-decoration: underline;">2</span>023  5<span style="text-decoration: underline;">852</span>544 5<span style="text-decoration: underline;">852</span>544          0        0</span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">2</span>     <span style="text-decoration: underline;">2</span>024  5<span style="text-decoration: underline;">837</span>690 5<span style="text-decoration: underline;">837</span>690          0        0</span></span></code></pre>
+<span><span class="co">## <span style="color: #BCBCBC;">1</span>     <span style="text-decoration: underline;">2</span>023  5<span style="text-decoration: underline;">852</span>544 5<span style="text-decoration: underline;">852</span>544          0        0</span></span></code></pre>
 <div class="sourceCode" id="cb28"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/any.html" class="external-link">any</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/MathFun.html" class="external-link">abs</a></span><span class="op">(</span><span class="va">race_validation</span><span class="op">$</span><span class="va">pct_diff</span><span class="op">)</span> <span class="op">&gt;</span> <span class="fl">1</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"Note: Race/ethnicity categories may not sum to 100% due to 'not reported' students.\n"</span><span class="op">)</span></span>
@@ -618,8 +615,7 @@ secondary (UNGR_SEC) counts</li>
 <span>              <span class="va">format_type</span>,</span>
 <span>              <span class="fu">scales</span><span class="fu">::</span><span class="fu"><a href="https://scales.r-lib.org/reference/comma.html" class="external-link">comma</a></span><span class="op">(</span><span class="va">state_summary</span><span class="op">$</span><span class="va">n_students</span><span class="op">[</span><span class="va">i</span><span class="op">]</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="op">}</span></span></code></pre></div>
-<pre><code><span><span class="co">##   2023 (historical): 5,852,544 students</span></span>
-<span><span class="co">##   2024 (modern): 5,837,690 students</span></span></code></pre>
+<pre><code><span><span class="co">##   2023 (historical): 5,852,544 students</span></span></code></pre>
 <div class="sourceCode" id="cb39"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"\nYear-over-year changes:\n"</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## </span></span>
@@ -634,7 +630,7 @@ secondary (UNGR_SEC) counts</li>
 <span>              <span class="fu">scales</span><span class="fu">::</span><span class="fu"><a href="https://scales.r-lib.org/reference/comma.html" class="external-link">comma</a></span><span class="op">(</span><span class="va">change</span><span class="op">)</span>,</span>
 <span>              <span class="va">pct</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="op">}</span></span></code></pre></div>
-<pre><code><span><span class="co">##   2023 to 2024: -14,854 (-0.3%)</span></span></code></pre>
+<pre><code><span><span class="co">##   2023 to NA: NA (NA%)</span></span></code></pre>
 <div class="sourceCode" id="cb43"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"\nMajor findings:\n"</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## </span></span>
@@ -681,24 +677,24 @@ secondary (UNGR_SEC) counts</li>
 <span><span class="co">## [1] stats     graphics  grDevices utils     datasets  methods   base     </span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## other attached packages:</span></span>
-<span><span class="co">## [1] testthat_3.3.2     rmarkdown_2.30     ggplot2_4.0.2      tidyr_1.3.2       </span></span>
-<span><span class="co">## [5] dplyr_1.2.0        caschooldata_0.1.0</span></span>
+<span><span class="co">## [1] rmarkdown_2.30     ggplot2_4.0.2      tidyr_1.3.2        dplyr_1.2.0       </span></span>
+<span><span class="co">## [5] caschooldata_0.1.0</span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## loaded via a namespace (and not attached):</span></span>
 <span><span class="co">##  [1] utf8_1.2.6         rappdirs_0.3.4     sass_0.4.10        generics_0.1.4    </span></span>
 <span><span class="co">##  [5] hms_1.1.4          digest_0.6.39      magrittr_2.0.4     evaluate_1.0.5    </span></span>
 <span><span class="co">##  [9] grid_4.5.2         RColorBrewer_1.1-3 fastmap_1.2.0      jsonlite_2.0.0    </span></span>
-<span><span class="co">## [13] brio_1.1.5         httr_1.4.8         purrr_1.2.1        scales_1.4.0      </span></span>
-<span><span class="co">## [17] codetools_0.2-20   textshaping_1.0.4  jquerylib_0.1.4    cli_3.6.5         </span></span>
-<span><span class="co">## [21] rlang_1.1.7        crayon_1.5.3       bit64_4.6.0-1      withr_3.0.2       </span></span>
-<span><span class="co">## [25] cachem_1.1.0       yaml_2.3.12        parallel_4.5.2     tools_4.5.2       </span></span>
-<span><span class="co">## [29] tzdb_0.5.0         curl_7.0.0         vctrs_0.7.1        R6_2.6.1          </span></span>
-<span><span class="co">## [33] lifecycle_1.0.5    fs_1.6.6           bit_4.6.0          vroom_1.7.0       </span></span>
-<span><span class="co">## [37] ragg_1.5.0         pkgconfig_2.0.3    desc_1.4.3         pkgdown_2.2.0     </span></span>
-<span><span class="co">## [41] pillar_1.11.1      bslib_0.10.0       gtable_0.3.6       glue_1.8.0        </span></span>
-<span><span class="co">## [45] systemfonts_1.3.1  xfun_0.56          tibble_3.3.1       tidyselect_1.2.1  </span></span>
-<span><span class="co">## [49] knitr_1.51         farver_2.1.2       htmltools_0.5.9    labeling_0.4.3    </span></span>
-<span><span class="co">## [53] readr_2.2.0        compiler_4.5.2     S7_0.2.1</span></span></code></pre>
+<span><span class="co">## [13] httr_1.4.8         purrr_1.2.1        scales_1.4.0       codetools_0.2-20  </span></span>
+<span><span class="co">## [17] textshaping_1.0.4  jquerylib_0.1.4    cli_3.6.5          rlang_1.1.7       </span></span>
+<span><span class="co">## [21] crayon_1.5.3       bit64_4.6.0-1      withr_3.0.2        cachem_1.1.0      </span></span>
+<span><span class="co">## [25] yaml_2.3.12        tools_4.5.2        parallel_4.5.2     tzdb_0.5.0        </span></span>
+<span><span class="co">## [29] curl_7.0.0         vctrs_0.7.1        R6_2.6.1           lifecycle_1.0.5   </span></span>
+<span><span class="co">## [33] fs_1.6.6           bit_4.6.0          vroom_1.7.0        ragg_1.5.0        </span></span>
+<span><span class="co">## [37] pkgconfig_2.0.3    desc_1.4.3         pkgdown_2.2.0      pillar_1.11.1     </span></span>
+<span><span class="co">## [41] bslib_0.10.0       gtable_0.3.6       glue_1.8.0         systemfonts_1.3.1 </span></span>
+<span><span class="co">## [45] xfun_0.56          tibble_3.3.1       tidyselect_1.2.1   knitr_1.51        </span></span>
+<span><span class="co">## [49] farver_2.1.2       htmltools_0.5.9    labeling_0.4.3     readr_2.2.0       </span></span>
+<span><span class="co">## [53] compiler_4.5.2     S7_0.2.1</span></span></code></pre>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>
