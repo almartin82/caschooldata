@@ -9,7 +9,7 @@ template:
 
 home:
   links:
-  - text: "10 Insights from California Enrollment Data"
+  - text: "20 Stories from California School Data"
     href: articles/district-highlights.html
   - text: CDE DataQuest
     href: https://dq.cde.ca.gov/dataquest/
@@ -30,6 +30,8 @@ navbar:
         href: articles/quickstart.html
       - text: "District Trends & Demographics"
         href: articles/district-highlights.html
+      - text: "CAASPP Assessment Analysis"
+        href: articles/california-assessment.html
       - text: "Graduation Rate Analysis"
         href: articles/graduation-rates.html
       - text: Data Quality QA
