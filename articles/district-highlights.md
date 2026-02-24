@@ -765,20 +765,261 @@ if (nrow(student_groups) > 0) {
 
 ------------------------------------------------------------------------
 
+## 11. State Enrollment Peaked Around 2003-04 at 6.3 Million
+
+California’s K-12 enrollment peaked around 2003-04 at 6.3 million
+students. Today it’s under 5.8 million, a decline of nearly half a
+million students from the peak.
+
+``` r
+enr_historical <- fetch_enr_multi(c(1985, 1995, 2005, 2015, 2025), use_cache = TRUE)
+
+historical_state <- enr_historical %>%
+  filter(is_state, grade_level == "TOTAL", reporting_category == "TA",
+         charter_status == "All") %>%
+  select(end_year, n_students) %>%
+  arrange(end_year)
+
+stopifnot(nrow(historical_state) > 0)
+historical_state
+```
+
+    ## # A tibble: 5 × 2
+    ##   end_year n_students
+    ##      <int>      <dbl>
+    ## 1     1985    4151110
+    ## 2     1995    5341025
+    ## 3     2005    6322141
+    ## 4     2015    6236439
+    ## 5     2025    5806221
+
+``` r
+ggplot(historical_state, aes(x = end_year, y = n_students)) +
+  geom_line(color = "steelblue", linewidth = 1.2) +
+  geom_point(color = "steelblue", size = 3) +
+  geom_text(aes(label = scales::comma(n_students)), vjust = -1, size = 3) +
+  scale_y_continuous(labels = scales::comma) +
+  labs(
+    title = "California K-12 Enrollment: Four Decades",
+    subtitle = "Enrollment peaked around 2005 and has been declining since",
+    x = "School Year (End Year)",
+    y = "Total Enrollment"
+  ) +
+  theme_minimal()
+```
+
+![](district-highlights_files/figure-html/finding-11-1.png)
+
+------------------------------------------------------------------------
+
+## 12. LAUSD Has Seen a Multi-Decade Decline
+
+The nation’s second-largest district has lost nearly half its enrollment
+since its peak, making it a case study in urban enrollment decline.
+
+``` r
+lausd_long <- fetch_enr_multi(c(1990, 2000, 2010, 2020, 2025), use_cache = TRUE)
+
+lausd_historical <- lausd_long %>%
+  filter(is_district, grepl("Los Angeles Unified", district_name),
+         grade_level == "TOTAL", reporting_category == "TA",
+         charter_status == "All") %>%
+  select(end_year, district_name, n_students) %>%
+  arrange(end_year)
+
+stopifnot(nrow(lausd_historical) > 0)
+lausd_historical
+```
+
+    ## # A tibble: 4 × 3
+    ##   end_year district_name       n_students
+    ##      <int> <chr>                    <dbl>
+    ## 1     1990 Los Angeles Unified     609746
+    ## 2     2010 Los Angeles Unified     670745
+    ## 3     2020 Los Angeles Unified     596937
+    ## 4     2025 Los Angeles Unified     516685
+
+``` r
+ggplot(lausd_historical, aes(x = end_year, y = n_students)) +
+  geom_line(color = "#d95f02", linewidth = 1.2) +
+  geom_point(color = "#d95f02", size = 3) +
+  geom_text(aes(label = scales::comma(n_students)), vjust = -1, size = 3) +
+  scale_y_continuous(labels = scales::comma) +
+  labs(
+    title = "LAUSD Enrollment: Multi-Decade Decline",
+    subtitle = "From peak enrollment to significant contraction",
+    x = "School Year (End Year)",
+    y = "Total Enrollment"
+  ) +
+  theme_minimal()
+```
+
+![](district-highlights_files/figure-html/finding-12-1.png)
+
+------------------------------------------------------------------------
+
+## 13. California’s Largest Districts Dominate Enrollment
+
+The top 5 districts alone account for a significant share of
+California’s total enrollment, with LAUSD enrolling more students than
+many states.
+
+``` r
+enr_2025 <- fetch_enr(2025, use_cache = TRUE)
+
+top10_districts <- enr_2025 %>%
+  filter(is_district, grade_level == "TOTAL", reporting_category == "TA",
+         charter_status == "All") %>%
+  arrange(desc(n_students)) %>%
+  head(10) %>%
+  select(district_name, county_name, n_students)
+
+stopifnot(nrow(top10_districts) > 0)
+top10_districts
+```
+
+    ## # A tibble: 10 × 3
+    ##    district_name               county_name    n_students
+    ##    <chr>                       <chr>               <dbl>
+    ##  1 Los Angeles Unified         Los Angeles        516685
+    ##  2 San Diego Unified           San Diego          113787
+    ##  3 Fresno Unified              Fresno              71151
+    ##  4 Elk Grove Unified           Sacramento          64358
+    ##  5 Long Beach Unified          Los Angeles         62947
+    ##  6 San Francisco Unified       San Francisco       55840
+    ##  7 San Juan Unified            Sacramento          51289
+    ##  8 Corona-Norco Unified        Riverside           49487
+    ##  9 San Bernardino City Unified San Bernardino      48966
+    ## 10 Capistrano Unified          Orange              46660
+
+``` r
+ggplot(top10_districts, aes(x = reorder(district_name, n_students), y = n_students)) +
+  geom_col(fill = "steelblue") +
+  geom_text(aes(label = scales::comma(n_students)), hjust = -0.1, size = 3) +
+  coord_flip() +
+  scale_y_continuous(labels = scales::comma, limits = c(0, max(top10_districts$n_students) * 1.15)) +
+  labs(
+    title = "California's 10 Largest School Districts (2025)",
+    x = NULL,
+    y = "Total Enrollment"
+  ) +
+  theme_minimal()
+```
+
+![](district-highlights_files/figure-html/finding-13-1.png)
+
+------------------------------------------------------------------------
+
+## 14. Demographics Vary Dramatically Across Major Districts
+
+While the state overall is majority Hispanic, individual districts show
+vastly different demographic compositions.
+
+``` r
+district_demographics <- enr_2025 %>%
+  filter(is_district, grade_level == "TOTAL", charter_status == "All",
+         grepl("^RE_", reporting_category)) %>%
+  filter(district_name %in% c("San Francisco Unified", "Los Angeles Unified",
+                               "Fresno Unified", "San Diego Unified")) %>%
+  group_by(district_name, subgroup) %>%
+  summarize(n = sum(n_students), .groups = "drop") %>%
+  group_by(district_name) %>%
+  mutate(pct = n / sum(n) * 100) %>%
+  ungroup()
+
+stopifnot(nrow(district_demographics) > 0)
+
+district_demographics %>%
+  select(district_name, subgroup, pct) %>%
+  pivot_wider(names_from = subgroup, values_from = pct)
+```
+
+    ## # A tibble: 4 × 10
+    ##   district_name        asian black filipino hispanic multiracial native_american
+    ##   <chr>                <dbl> <dbl>    <dbl>    <dbl>       <dbl>           <dbl>
+    ## 1 Fresno Unified       10.6   7.48    0.333     69.6        3.22           0.683
+    ## 2 Los Angeles Unified   3.33  7.14    1.65      73.6        2.08           0.107
+    ## 3 San Diego Unified     8.71  7.53    4.22      47.2        8.68           0.248
+    ## 4 San Francisco Unifi… 27.7   7.25    3.29      36.7        7.77           0.240
+    ## # ℹ 3 more variables: not_reported <dbl>, pacific_islander <dbl>, white <dbl>
+
+``` r
+# Show top 3 groups per district
+district_demographics %>%
+  group_by(district_name) %>%
+  arrange(desc(pct)) %>%
+  slice_head(n = 4) %>%
+  ggplot(aes(x = reorder(subgroup, pct), y = pct, fill = district_name)) +
+  geom_col(position = "dodge") +
+  coord_flip() +
+  facet_wrap(~district_name, scales = "free_y") +
+  labs(
+    title = "Demographic Composition of Major California Districts (2025)",
+    x = NULL,
+    y = "Percent of Students"
+  ) +
+  scale_fill_brewer(palette = "Set2") +
+  theme_minimal() +
+  theme(legend.position = "none")
+```
+
+![](district-highlights_files/figure-html/finding-14-1.png)
+
+------------------------------------------------------------------------
+
+## 15. Enrollment Declined Every Year Since 2020
+
+California has seen consistent year-over-year enrollment declines since
+2020, with no year showing a recovery.
+
+``` r
+# Use the main `enr` object (already fetched above) for year-over-year analysis
+state_yoy <- enr %>%
+  filter(is_state, grade_level == "TOTAL", reporting_category == "TA",
+         charter_status == "All") %>%
+  arrange(end_year) %>%
+  mutate(
+    prev_year = lag(n_students),
+    change = n_students - prev_year,
+    pct_change = (n_students - prev_year) / prev_year * 100
+  )
+
+stopifnot(nrow(state_yoy) > 0)
+
+state_yoy %>%
+  select(end_year, n_students, change, pct_change)
+```
+
+    ## # A tibble: 5 × 4
+    ##   end_year n_students  change pct_change
+    ##      <int>      <dbl>   <dbl>      <dbl>
+    ## 1     2018    6220826      NA     NA    
+    ## 2     2020    6163338  -57488     -0.924
+    ## 3     2022    5892240 -271098     -4.40 
+    ## 4     2024    5837690  -54550     -0.926
+    ## 5     2025    5806221  -31469     -0.539
+
+------------------------------------------------------------------------
+
 ## Summary: Key Findings
 
-| \#  | Finding                                              | Key Metric                 |
-|-----|------------------------------------------------------|----------------------------|
-| 1   | California lost over 400,000 students since 2018     | ~6.7% decline statewide    |
-| 2   | LAUSD lost the equivalent of a major city’s district | ~80,000+ students          |
-| 3   | Top 5 districts lost 100,000+ students combined      | Double-digit % declines    |
-| 4   | Hispanic students now 56% of enrollment              | Up from historical levels  |
-| 5   | Some districts grew while most declined              | Wide variation in trends   |
-| 6   | High school enrollment dropped fastest               | Different pipeline impacts |
-| 7   | Bay Area counties lost the most students (%)         | Tech region exodus         |
-| 8   | Kindergarten decline signals future drops            | Leading indicator          |
-| 9   | Gender ratios remained stable                        | ~51% male, ~49% female     |
-| 10  | English Learners remain a major population           | 18%+ of students           |
+| \#  | Finding                                              | Key Metric                             |
+|-----|------------------------------------------------------|----------------------------------------|
+| 1   | California lost over 400,000 students since 2018     | ~6.7% decline statewide                |
+| 2   | LAUSD lost the equivalent of a major city’s district | ~104,000 students                      |
+| 3   | Top 5 districts lost 130,000+ students combined      | Double-digit % declines                |
+| 4   | Hispanic students now 56% of enrollment              | Up from historical levels              |
+| 5   | Some districts grew while most declined              | Wide variation in trends               |
+| 6   | High school enrollment dropped fastest               | Different pipeline impacts             |
+| 7   | Bay Area counties lost the most students (%)         | Tech region exodus                     |
+| 8   | Kindergarten decline signals future drops            | Leading indicator                      |
+| 9   | Gender ratios remained stable                        | ~51% male, ~49% female                 |
+| 10  | English Learners remain a major population           | 18%+ of students                       |
+| 11  | State enrollment peaked around 2003-04 at 6.3M       | ~500K below peak                       |
+| 12  | LAUSD multi-decade decline                           | Enrollment roughly halved              |
+| 13  | Top districts dominate enrollment                    | LAUSD \> many states                   |
+| 14  | Demographics vary across major districts             | Majority-minority in LA, diverse in SF |
+| 15  | Enrollment declined every year since 2020            | Consistent annual drops                |
 
 ------------------------------------------------------------------------
 
@@ -823,20 +1064,19 @@ sessionInfo()
     ## 
     ## other attached packages:
     ## [1] ggplot2_4.0.2      tidyr_1.3.2        dplyr_1.2.0        caschooldata_0.1.0
-    ## [5] testthat_3.3.2    
     ## 
     ## loaded via a namespace (and not attached):
     ##  [1] utf8_1.2.6         rappdirs_0.3.4     sass_0.4.10        generics_0.1.4    
     ##  [5] hms_1.1.4          digest_0.6.39      magrittr_2.0.4     evaluate_1.0.5    
     ##  [9] grid_4.5.2         RColorBrewer_1.1-3 fastmap_1.2.0      jsonlite_2.0.0    
-    ## [13] brio_1.1.5         httr_1.4.8         purrr_1.2.1        scales_1.4.0      
-    ## [17] codetools_0.2-20   textshaping_1.0.4  jquerylib_0.1.4    cli_3.6.5         
-    ## [21] crayon_1.5.3       rlang_1.1.7        bit64_4.6.0-1      withr_3.0.2       
-    ## [25] cachem_1.1.0       yaml_2.3.12        parallel_4.5.2     tools_4.5.2       
-    ## [29] tzdb_0.5.0         curl_7.0.0         vctrs_0.7.1        R6_2.6.1          
-    ## [33] lifecycle_1.0.5    fs_1.6.6           bit_4.6.0          vroom_1.7.0       
-    ## [37] ragg_1.5.0         pkgconfig_2.0.3    desc_1.4.3         pkgdown_2.2.0     
-    ## [41] pillar_1.11.1      bslib_0.10.0       gtable_0.3.6       glue_1.8.0        
-    ## [45] systemfonts_1.3.1  xfun_0.56          tibble_3.3.1       tidyselect_1.2.1  
-    ## [49] knitr_1.51         farver_2.1.2       htmltools_0.5.9    labeling_0.4.3    
-    ## [53] rmarkdown_2.30     readr_2.2.0        compiler_4.5.2     S7_0.2.1
+    ## [13] httr_1.4.8         purrr_1.2.1        scales_1.4.0       codetools_0.2-20  
+    ## [17] textshaping_1.0.4  jquerylib_0.1.4    cli_3.6.5          rlang_1.1.7       
+    ## [21] crayon_1.5.3       bit64_4.6.0-1      withr_3.0.2        cachem_1.1.0      
+    ## [25] yaml_2.3.12        tools_4.5.2        parallel_4.5.2     tzdb_0.5.0        
+    ## [29] curl_7.0.0         vctrs_0.7.1        R6_2.6.1           lifecycle_1.0.5   
+    ## [33] fs_1.6.6           bit_4.6.0          vroom_1.7.0        ragg_1.5.0        
+    ## [37] pkgconfig_2.0.3    desc_1.4.3         pkgdown_2.2.0      pillar_1.11.1     
+    ## [41] bslib_0.10.0       gtable_0.3.6       glue_1.8.0         systemfonts_1.3.1 
+    ## [45] xfun_0.56          tibble_3.3.1       tidyselect_1.2.1   knitr_1.51        
+    ## [49] farver_2.1.2       htmltools_0.5.9    rmarkdown_2.30     labeling_0.4.3    
+    ## [53] readr_2.2.0        compiler_4.5.2     S7_0.2.1

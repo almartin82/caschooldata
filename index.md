@@ -32,8 +32,11 @@ and has continued every year since.
 ``` r
 library(caschooldata)
 library(dplyr)
+library(tidyr)
+library(ggplot2)
 
-enr <- fetch_enr_multi(2018:2025)
+years <- c(2018, 2020, 2022, 2024, 2025)
+enr <- fetch_enr_multi(years, use_cache = TRUE)
 
 state_trend <- enr %>%
   filter(is_state, grade_level == "TOTAL", reporting_category == "TA",
@@ -43,6 +46,8 @@ state_trend <- enr %>%
     cumulative_change = n_students - first(n_students),
     pct_change = (n_students - first(n_students)) / first(n_students) * 100
   )
+
+stopifnot(nrow(state_trend) > 0)
 
 state_trend %>%
   select(end_year, n_students, cumulative_change, pct_change)
@@ -74,6 +79,8 @@ lausd <- enr %>%
     change = n_students - lag(n_students),
     cumulative_change = n_students - first(n_students)
   )
+
+stopifnot(nrow(lausd) > 0)
 
 lausd %>%
   select(end_year, n_students, change, cumulative_change)
@@ -115,6 +122,8 @@ top5_trend <- enr %>%
   ) %>%
   arrange(district_name, end_year)
 
+stopifnot(nrow(top5_trend) > 0)
+
 top5_trend %>%
   group_by(district_name) %>%
   summarize(
@@ -152,6 +161,8 @@ race_by_year <- enr %>%
   ) %>%
   ungroup()
 
+stopifnot(nrow(race_by_year) > 0)
+
 race_by_year %>%
   filter(end_year == max(end_year)) %>%
   arrange(desc(pct)) %>%
@@ -186,9 +197,11 @@ district_changes <- enr %>%
   ) %>%
   filter(!is.na(enr_2020) & enr_2020 > 1000) %>%
   mutate(
-    change = enr_2025 - enr_2020,
+    change = .[[ncol(.)]] - enr_2020,
     pct_change = change / enr_2020 * 100
   )
+
+stopifnot(nrow(district_changes) > 0)
 
 # Top 10 growing districts
 district_changes %>%
@@ -223,13 +236,15 @@ grade_trends <- enr %>%
   group_by(end_year, grade_band) %>%
   summarize(n_students = sum(n_students, na.rm = TRUE), .groups = "drop")
 
+stopifnot(nrow(grade_trends) > 0)
+
 grade_trends %>%
   group_by(grade_band) %>%
   mutate(index = n_students / first(n_students) * 100)
 ```
 
 ![Grade
-bands](https://almartin82.github.io/caschooldata/articles/district-highlights_files/figure-html/grade-bands-1.png)
+bands](https://almartin82.github.io/caschooldata/articles/district-highlights_files/figure-html/finding-6-1.png)
 
 Grade bands
 
@@ -257,10 +272,12 @@ county_changes <- enr %>%
   ) %>%
   filter(!is.na(enr_2020)) %>%
   mutate(
-    change = enr_2025 - enr_2020,
+    change = .[[ncol(.)]] - enr_2020,
     pct_change = change / enr_2020 * 100
   ) %>%
   arrange(pct_change)
+
+stopifnot(nrow(county_changes) > 0)
 
 # Top 10 counties with biggest percentage decline
 county_changes %>%
@@ -269,7 +286,7 @@ county_changes %>%
 ```
 
 ![County
-analysis](https://almartin82.github.io/caschooldata/articles/district-highlights_files/figure-html/county-analysis-1.png)
+analysis](https://almartin82.github.io/caschooldata/articles/district-highlights_files/figure-html/finding-7-1.png)
 
 County analysis
 
@@ -295,12 +312,14 @@ k_trend <- enr %>%
     pct_change = (n_students - lag(n_students)) / lag(n_students) * 100
   )
 
+stopifnot(nrow(k_trend) > 0)
+
 k_trend %>%
   select(end_year, n_students, change, pct_change)
 ```
 
 ![Kindergarten
-trend](https://almartin82.github.io/caschooldata/articles/district-highlights_files/figure-html/kindergarten-1.png)
+trend](https://almartin82.github.io/caschooldata/articles/district-highlights_files/figure-html/finding-8-1.png)
 
 Kindergarten trend
 
@@ -326,13 +345,15 @@ gender_trend <- enr %>%
   ) %>%
   ungroup()
 
+stopifnot(nrow(gender_trend) > 0)
+
 gender_trend %>%
-  select(end_year, subgroup, n_students, pct) %>%
-  tidyr::pivot_wider(names_from = subgroup, values_from = c(n_students, pct))
+  select(end_year, subgroup, pct) %>%
+  tidyr::pivot_wider(names_from = subgroup, values_from = pct)
 ```
 
 ![Gender
-distribution](https://almartin82.github.io/caschooldata/articles/district-highlights_files/figure-html/gender-1.png)
+distribution](https://almartin82.github.io/caschooldata/articles/district-highlights_files/figure-html/finding-9-1.png)
 
 Gender distribution
 
@@ -359,7 +380,16 @@ el_data <- enr %>%
   ) %>%
   mutate(el_pct = SG_EL / TA * 100)
 
-el_data
+if (nrow(el_data) > 0) {
+  cat("English Learner Enrollment:\n")
+  el_data %>%
+    mutate(
+      total = scales::comma(TA),
+      el = scales::comma(SG_EL),
+      el_pct = sprintf("%.1f%%", el_pct)
+    ) %>%
+    select(end_year, total, el, el_pct)
+}
 ```
 
 ------------------------------------------------------------------------
@@ -371,16 +401,20 @@ students. Today it’s under 5.8 million, a decline of nearly half a
 million students from the peak.
 
 ``` r
-enr_historical <- fetch_enr_multi(c(1985, 1995, 2005, 2015, 2025))
+enr_historical <- fetch_enr_multi(c(1985, 1995, 2005, 2015, 2025), use_cache = TRUE)
 
-enr_historical %>%
+historical_state <- enr_historical %>%
   filter(is_state, grade_level == "TOTAL", reporting_category == "TA",
          charter_status == "All") %>%
-  select(end_year, n_students)
+  select(end_year, n_students) %>%
+  arrange(end_year)
+
+stopifnot(nrow(historical_state) > 0)
+historical_state
 ```
 
 ![State trend
-long-term](https://almartin82.github.io/caschooldata/articles/district-highlights_files/figure-html/state-trend-1.png)
+long-term](https://almartin82.github.io/caschooldata/articles/district-highlights_files/figure-html/finding-11-1.png)
 
 State trend long-term
 
@@ -392,17 +426,21 @@ The nation’s second-largest district has lost nearly half its enrollment
 since its peak, making it a case study in urban enrollment decline.
 
 ``` r
-lausd_long <- fetch_enr_multi(c(1990, 2000, 2010, 2020, 2025))
+lausd_long <- fetch_enr_multi(c(1990, 2000, 2010, 2020, 2025), use_cache = TRUE)
 
-lausd_long %>%
+lausd_historical <- lausd_long %>%
   filter(is_district, grepl("Los Angeles Unified", district_name),
          grade_level == "TOTAL", reporting_category == "TA",
          charter_status == "All") %>%
-  select(end_year, district_name, n_students)
+  select(end_year, district_name, n_students) %>%
+  arrange(end_year)
+
+stopifnot(nrow(lausd_historical) > 0)
+lausd_historical
 ```
 
 ![LAUSD
-long-term](https://almartin82.github.io/caschooldata/articles/district-highlights_files/figure-html/lausd-1.png)
+long-term](https://almartin82.github.io/caschooldata/articles/district-highlights_files/figure-html/finding-12-1.png)
 
 LAUSD long-term
 
@@ -415,18 +453,21 @@ California’s total enrollment, with LAUSD enrolling more students than
 many states.
 
 ``` r
-enr_2025 <- fetch_enr(2025)
+enr_2025 <- fetch_enr(2025, use_cache = TRUE)
 
-enr_2025 %>%
+top10_districts <- enr_2025 %>%
   filter(is_district, grade_level == "TOTAL", reporting_category == "TA",
          charter_status == "All") %>%
   arrange(desc(n_students)) %>%
   head(10) %>%
   select(district_name, county_name, n_students)
+
+stopifnot(nrow(top10_districts) > 0)
+top10_districts
 ```
 
 ![Top
-districts](https://almartin82.github.io/caschooldata/articles/district-highlights_files/figure-html/top5-1.png)
+districts](https://almartin82.github.io/caschooldata/articles/district-highlights_files/figure-html/finding-13-1.png)
 
 Top districts
 
@@ -439,7 +480,7 @@ vastly different demographic compositions: majority Hispanic in LA and
 Fresno, highly diverse in SF and San Diego.
 
 ``` r
-enr_2025 %>%
+district_demographics <- enr_2025 %>%
   filter(is_district, grade_level == "TOTAL", charter_status == "All",
          grepl("^RE_", reporting_category)) %>%
   filter(district_name %in% c("San Francisco Unified", "Los Angeles Unified",
@@ -448,11 +489,17 @@ enr_2025 %>%
   summarize(n = sum(n_students), .groups = "drop") %>%
   group_by(district_name) %>%
   mutate(pct = n / sum(n) * 100) %>%
-  tidyr::pivot_wider(id_cols = district_name, names_from = subgroup, values_from = pct)
+  ungroup()
+
+stopifnot(nrow(district_demographics) > 0)
+
+district_demographics %>%
+  select(district_name, subgroup, pct) %>%
+  tidyr::pivot_wider(names_from = subgroup, values_from = pct)
 ```
 
 ![Demographics by
-district](https://almartin82.github.io/caschooldata/articles/district-highlights_files/figure-html/demographics-1.png)
+district](https://almartin82.github.io/caschooldata/articles/district-highlights_files/figure-html/finding-14-1.png)
 
 Demographics by district
 
@@ -464,7 +511,7 @@ California has seen consistent year-over-year enrollment declines since
 2020, with no year showing a recovery.
 
 ``` r
-enr_recent <- fetch_enr_multi(2018:2025)
+enr_recent <- fetch_enr_multi(2018:2025, use_cache = TRUE)
 
 state_yoy <- enr_recent %>%
   filter(is_state, grade_level == "TOTAL", reporting_category == "TA",
@@ -476,14 +523,11 @@ state_yoy <- enr_recent %>%
     pct_change = (n_students - prev_year) / prev_year * 100
   )
 
+stopifnot(nrow(state_yoy) > 0)
+
 state_yoy %>%
   select(end_year, n_students, change, pct_change)
 ```
-
-![Year-over-year
-changes](https://almartin82.github.io/caschooldata/articles/data-quality-qa_files/figure-html/state-plot-1.png)
-
-Year-over-year changes
 
 ------------------------------------------------------------------------
 
@@ -502,14 +546,6 @@ California’s 11th graders showed a dramatic 28-point gap between ELA and
 Math proficiency in 2024.
 
 ``` r
-library(caschooldata)
-library(dplyr)
-library(tidyr)
-library(ggplot2)
-
-# Set theme
-theme_set(theme_minimal(base_size = 12))
-
 # Fetch 2024 assessment data
 assess_2024 <- fetch_assess(2024, tidy = TRUE, use_cache = TRUE)
 
@@ -518,6 +554,7 @@ state_g11 <- assess_2024 %>%
   filter(is_state, grade == "11", metric_type == "pct_met_and_above") %>%
   select(subject, metric_value)
 
+stopifnot(nrow(state_g11) > 0)
 state_g11
 ```
 
@@ -543,7 +580,8 @@ ela_by_grade <- assess_2024 %>%
   select(grade, metric_value) %>%
   arrange(grade)
 
-ela_by_grade
+stopifnot(nrow(ela_by_grade) > 0)
+print(ela_by_grade, n = Inf)
 ```
 
 ![ELA by
@@ -567,7 +605,8 @@ math_by_grade <- assess_2024 %>%
   select(grade, metric_value) %>%
   arrange(grade)
 
-math_by_grade
+stopifnot(nrow(math_by_grade) > 0)
+print(math_by_grade, n = Inf)
 ```
 
 ![Math by
@@ -577,30 +616,33 @@ Math by Grade
 
 ------------------------------------------------------------------------
 
-### 19. Multi-year trends: Recovery from COVID
+### 19. Proficiency dropped sharply in 2022, slowly recovering since
 
-Proficiency rates are recovering from the 2021 pandemic lows but remain
-below 2019 levels.
+After inflated 2021 scores (low participation), the 2022 return to full
+testing revealed sharp drops. ELA has recovered from 54.8% to 55.7%,
+while Math inched from 27.0% to 27.9%.
 
 ``` r
-# Fetch multiple years
-assess_multi <- fetch_assess_multi(c(2019, 2021, 2022, 2023, 2024),
+# Fetch multiple years (2019 unavailable due to parsing issue)
+assess_multi <- fetch_assess_multi(c(2021, 2022, 2023, 2024),
                                     tidy = TRUE, use_cache = TRUE)
 
 # State-level trend
-state_trend <- assess_multi %>%
+state_trend_assess <- assess_multi %>%
   filter(is_state, grade == "11", metric_type == "pct_met_and_above") %>%
   select(end_year, subject, metric_value) %>%
   arrange(subject, end_year)
 
-state_trend %>%
+stopifnot(nrow(state_trend_assess) > 0)
+
+state_trend_assess %>%
   pivot_wider(names_from = subject, values_from = metric_value)
 ```
 
-![COVID
-Recovery](https://almartin82.github.io/caschooldata/articles/california-assessment_files/figure-html/finding-5-plot-1.png)
+![Proficiency
+Trend](https://almartin82.github.io/caschooldata/articles/california-assessment_files/figure-html/finding-5-plot-1.png)
 
-COVID Recovery
+Proficiency Trend
 
 ------------------------------------------------------------------------
 
@@ -618,6 +660,7 @@ ela_math_gap <- assess_2024 %>%
   pivot_wider(names_from = subject, values_from = metric_value) %>%
   mutate(gap = ELA - Math)
 
+stopifnot(nrow(ela_math_gap) > 0)
 ela_math_gap
 ```
 
@@ -644,13 +687,10 @@ library(caschooldata)
 library(dplyr)
 
 # Fetch one year
-enr_2025 <- fetch_enr(2025)
+enr_2025 <- fetch_enr(2025, use_cache = TRUE)
 
 # Fetch recent years (2018-2025)
-enr_recent <- fetch_enr_multi(2018:2025)
-
-# Fetch ALL 44 years of data (1982-2025)
-enr_all <- fetch_enr_multi(1982:2025)
+enr_recent <- fetch_enr_multi(2018:2025, use_cache = TRUE)
 
 # State totals
 enr_2025 %>%
@@ -668,7 +708,7 @@ enr_2025 %>%
   filter(is_district, grade_level == "TOTAL", charter_status == "All",
          grepl("^RE_", reporting_category)) %>%
   group_by(district_name, subgroup) %>%
-  summarize(n = sum(n_students))
+  summarize(n = sum(n_students), .groups = "drop")
 ```
 
 ### Python

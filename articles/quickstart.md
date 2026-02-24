@@ -103,7 +103,7 @@ all_years <- fetch_enr_multi(c(2024, 2025))
 
 # Analyze enrollment trends
 all_years %>%
-  filter(is_state, subgroup == "total", grade_level == "TOTAL") %>%
+  filter(is_state, subgroup == "total_enrollment", grade_level == "TOTAL") %>%
   select(end_year, n_students)
 ```
 
@@ -163,26 +163,26 @@ schools <- enr %>%
 The `reporting_category` column contains CDE codes, while `subgroup`
 provides human-readable names:
 
-| Category       | Code  | Subgroup Name                   |
-|----------------|-------|---------------------------------|
-| Total          | TA    | total                           |
-| Race/Ethnicity | RE_H  | hispanic                        |
-| Race/Ethnicity | RE_W  | white                           |
-| Race/Ethnicity | RE_A  | asian                           |
-| Race/Ethnicity | RE_B  | black                           |
-| Race/Ethnicity | RE_F  | filipino                        |
-| Race/Ethnicity | RE_P  | pacific_islander                |
-| Race/Ethnicity | RE_I  | native_american                 |
-| Race/Ethnicity | RE_T  | multiracial                     |
-| Gender         | GN_F  | female                          |
-| Gender         | GN_M  | male                            |
-| Gender         | GN_X  | nonbinary                       |
-| Student Groups | SG_EL | english_learner                 |
-| Student Groups | SG_DS | students_with_disabilities      |
-| Student Groups | SG_SD | socioeconomically_disadvantaged |
-| Student Groups | SG_FS | foster_youth                    |
-| Student Groups | SG_HM | homeless                        |
-| Student Groups | SG_MG | migrant                         |
+| Category       | Code  | Subgroup Name    |
+|----------------|-------|------------------|
+| Total          | TA    | total_enrollment |
+| Race/Ethnicity | RE_H  | hispanic         |
+| Race/Ethnicity | RE_W  | white            |
+| Race/Ethnicity | RE_A  | asian            |
+| Race/Ethnicity | RE_B  | black            |
+| Race/Ethnicity | RE_F  | filipino         |
+| Race/Ethnicity | RE_P  | pacific_islander |
+| Race/Ethnicity | RE_I  | native_american  |
+| Race/Ethnicity | RE_T  | multiracial      |
+| Gender         | GN_F  | female           |
+| Gender         | GN_M  | male             |
+| Gender         | GN_X  | nonbinary        |
+| Student Groups | SG_EL | lep              |
+| Student Groups | SG_DS | special_ed       |
+| Student Groups | SG_SD | econ_disadv      |
+| Student Groups | SG_FS | foster_youth     |
+| Student Groups | SG_HM | homeless         |
+| Student Groups | SG_MG | migrant          |
 
 ``` r
 # View all available subgroups
@@ -224,7 +224,7 @@ library(dplyr)
 enr <- fetch_enr(2024)
 
 enr %>%
-  filter(is_district, subgroup == "total", grade_level == "TOTAL") %>%
+  filter(is_district, subgroup == "total_enrollment", grade_level == "TOTAL") %>%
   arrange(desc(n_students)) %>%
   select(district_name, county_name, n_students) %>%
   head(10)
@@ -235,7 +235,7 @@ enr %>%
 ``` r
 # Enrollment by county
 county_enrollment <- enr %>%
-  filter(is_county, subgroup == "total", grade_level == "TOTAL") %>%
+  filter(is_county, subgroup == "total_enrollment", grade_level == "TOTAL") %>%
   arrange(desc(n_students)) %>%
   select(county_name, n_students)
 
@@ -263,7 +263,7 @@ enr %>%
 ``` r
 # State-level charter enrollment
 charter_comparison <- enr %>%
-  filter(is_state, subgroup == "total", grade_level == "TOTAL") %>%
+  filter(is_state, subgroup == "total_enrollment", grade_level == "TOTAL") %>%
   group_by(charter_status) %>%
   summarize(total_enrollment = sum(n_students, na.rm = TRUE))
 
@@ -315,7 +315,7 @@ enr <- fetch_enr(2024)
 
 # Top 10 counties by enrollment
 top_counties <- enr %>%
-  filter(is_county, subgroup == "total", grade_level == "TOTAL") %>%
+  filter(is_county, subgroup == "total_enrollment", grade_level == "TOTAL") %>%
   arrange(desc(n_students)) %>%
   head(10)
 
@@ -365,7 +365,7 @@ all_years <- fetch_enr_multi(c(2024, 2025))
 
 # State enrollment over time
 state_trend <- all_years %>%
-  filter(is_state, subgroup == "total", grade_level == "TOTAL")
+  filter(is_state, subgroup == "total_enrollment", grade_level == "TOTAL")
 
 ggplot(state_trend, aes(x = end_year, y = n_students)) +
   geom_line(color = "steelblue", size = 1.5) +
