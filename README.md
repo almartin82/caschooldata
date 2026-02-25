@@ -15,22 +15,23 @@ Part of the [njschooldata](https://github.com/almartin82/njschooldata) family of
 
 ## What can you find with caschooldata?
 
-**44 years of enrollment data (1982-2025) plus CAASPP assessment results (2015-2024).** 5.8 million students today. Over 1,000 districts. Here are twenty stories hiding in the numbers:
+**44 years of enrollment data (1982-2025) plus CAASPP assessment results (2021-2025).** 5.8 million students today. Over 1,000 districts. Here are twenty stories hiding in the numbers:
 
 ---
 
-### 1. California lost 400,000+ students since 2020
+### 1. California lost 400,000+ students since 2018
 
-The most striking trend: California public schools have lost over 400,000 students since the pandemic began. This represents a decline of roughly 7% in just five years.
+California public schools have lost over 400,000 students since 2018 when enrollment peaked at 6.22 million. By 2025, enrollment had fallen to 5.81 million — a decline of 6.7%.
 
 ```r
 library(caschooldata)
 library(dplyr)
 
-enr <- fetch_enr_multi(2018:2025)
+enr <- fetch_enr_multi(2018:2025, use_cache = TRUE)
 
 state_trend <- enr %>%
-  filter(is_state, grade_level == "TOTAL", reporting_category == "TA") %>%
+  filter(is_state, grade_level == "TOTAL", reporting_category == "TA",
+         charter_status %in% c("All", NA)) %>%
   arrange(end_year) %>%
   mutate(
     cumulative_change = n_students - first(n_students),
@@ -47,7 +48,7 @@ state_trend %>%
 
 ### 2. LAUSD has lost the equivalent of a major city's school district
 
-Los Angeles Unified, the nation's second-largest school district, has experienced dramatic enrollment losses.
+Los Angeles Unified, the nation's second-largest school district, has lost over 100,000 students since 2018 — more than the entire enrollment of Fresno Unified.
 
 ```r
 lausd <- enr %>%
@@ -55,6 +56,7 @@ lausd <- enr %>%
     is_district,
     grade_level == "TOTAL",
     reporting_category == "TA",
+    charter_status %in% c("All", NA),
     grepl("Los Angeles Unified", district_name, ignore.case = TRUE)
   ) %>%
   arrange(end_year) %>%
@@ -63,8 +65,7 @@ lausd <- enr %>%
     cumulative_change = n_students - first(n_students)
   )
 
-lausd %>%
-  select(end_year, n_students, change, cumulative_change)
+lausd %>% select(end_year, n_students, change, cumulative_change)
 ```
 
 ![LAUSD decline](https://almartin82.github.io/caschooldata/articles/district-highlights_files/figure-html/finding-2-1.png)
@@ -82,7 +83,8 @@ top5_districts <- enr %>%
     is_district,
     end_year == max(end_year),
     grade_level == "TOTAL",
-    reporting_category == "TA"
+    reporting_category == "TA",
+    charter_status %in% c("All", NA)
   ) %>%
   arrange(desc(n_students)) %>%
   head(5) %>%
@@ -93,6 +95,7 @@ top5_trend <- enr %>%
     is_district,
     grade_level == "TOTAL",
     reporting_category == "TA",
+    charter_status %in% c("All", NA),
     district_name %in% top5_districts
   ) %>%
   arrange(district_name, end_year)
@@ -113,13 +116,14 @@ top5_trend %>%
 
 ### 4. Hispanic students now comprise 56% of California's enrollment
 
-California's demographic makeup has shifted significantly over the past few decades.
+California's demographic makeup continues to shift. Hispanic students account for 56.1% of enrollment, white students 20%, and Asian students 10.1%.
 
 ```r
 race_by_year <- enr %>%
   filter(
     is_state,
     grade_level == "TOTAL",
+    charter_status %in% c("All", NA),
     grepl("^RE_", reporting_category)
   ) %>%
   group_by(end_year) %>%
@@ -149,6 +153,7 @@ district_changes <- enr %>%
     is_district,
     grade_level == "TOTAL",
     reporting_category == "TA",
+    charter_status %in% c("All", NA),
     end_year %in% c(2020, max(end_year))
   ) %>%
   tidyr::pivot_wider(
@@ -157,11 +162,7 @@ district_changes <- enr %>%
     values_from = n_students,
     names_prefix = "enr_"
   ) %>%
-  filter(!is.na(enr_2020) & enr_2020 > 1000) %>%
-  mutate(
-    change = enr_2025 - enr_2020,
-    pct_change = change / enr_2020 * 100
-  )
+  filter(!is.na(enr_2020) & enr_2020 > 1000)
 
 # Top 10 growing districts
 district_changes %>%
@@ -172,15 +173,16 @@ district_changes %>%
 
 ---
 
-### 6. High school enrollment dropped faster than elementary
+### 6. Elementary enrollment dropped fastest — down 14%
 
-Enrollment loss varied significantly by grade level, with high schools seeing the earliest and steepest declines.
+Elementary (K-5) enrollment plummeted 14.3% from 2018 to 2025, while high school declined only 2.8%. Fewer births and kindergarten no-shows are hitting elementary hardest.
 
 ```r
 grade_trends <- enr %>%
   filter(
     is_state,
     reporting_category == "TA",
+    charter_status %in% c("All", NA),
     grade_level %in% c("K", "01", "02", "03", "04", "05",
                         "06", "07", "08", "09", "10", "11", "12")
   ) %>%
@@ -213,6 +215,7 @@ county_changes <- enr %>%
     is_county,
     grade_level == "TOTAL",
     reporting_category == "TA",
+    charter_status %in% c("All", NA),
     end_year %in% c(2020, max(end_year))
   ) %>%
   tidyr::pivot_wider(
@@ -222,10 +225,6 @@ county_changes <- enr %>%
     names_prefix = "enr_"
   ) %>%
   filter(!is.na(enr_2020)) %>%
-  mutate(
-    change = enr_2025 - enr_2020,
-    pct_change = change / enr_2020 * 100
-  ) %>%
   arrange(pct_change)
 
 # Top 10 counties with biggest percentage decline
@@ -240,13 +239,14 @@ county_changes %>%
 
 ### 8. Kindergarten enrollment signals future decline
 
-Kindergarten enrollment is a leading indicator for future enrollment. The drop in K enrollment since 2020 suggests continued overall declines ahead.
+Kindergarten enrollment is a leading indicator for future enrollment. K enrollment dropped sharply in 2021 (COVID effect), partially recovered, then fell again in 2024-2025.
 
 ```r
 k_trend <- enr %>%
   filter(
     is_state,
     reporting_category == "TA",
+    charter_status %in% c("All", NA),
     grade_level == "K"
   ) %>%
   arrange(end_year) %>%
@@ -255,8 +255,7 @@ k_trend <- enr %>%
     pct_change = (n_students - lag(n_students)) / lag(n_students) * 100
   )
 
-k_trend %>%
-  select(end_year, n_students, change, pct_change)
+k_trend %>% select(end_year, n_students, change, pct_change)
 ```
 
 ![Kindergarten trend](https://almartin82.github.io/caschooldata/articles/district-highlights_files/figure-html/kindergarten-1.png)
@@ -272,6 +271,7 @@ gender_trend <- enr %>%
   filter(
     is_state,
     grade_level == "TOTAL",
+    charter_status %in% c("All", NA),
     reporting_category %in% c("GN_F", "GN_M")
   ) %>%
   group_by(end_year) %>%
@@ -282,8 +282,8 @@ gender_trend <- enr %>%
   ungroup()
 
 gender_trend %>%
-  select(end_year, subgroup, n_students, pct) %>%
-  tidyr::pivot_wider(names_from = subgroup, values_from = c(n_students, pct))
+  select(end_year, subgroup, pct) %>%
+  tidyr::pivot_wider(names_from = subgroup, values_from = pct)
 ```
 
 ![Gender distribution](https://almartin82.github.io/caschooldata/articles/district-highlights_files/figure-html/gender-1.png)
@@ -299,6 +299,7 @@ el_data <- enr %>%
   filter(
     is_state,
     grade_level == "TOTAL",
+    charter_status %in% c("All", NA),
     reporting_category %in% c("TA", "SG_EL"),
     end_year >= 2024
   ) %>%
@@ -319,10 +320,11 @@ el_data
 California's K-12 enrollment peaked around 2003-04 at 6.3 million students. Today it's under 5.8 million, a decline of nearly half a million students from the peak.
 
 ```r
-enr_historical <- fetch_enr_multi(c(1985, 1995, 2005, 2015, 2025))
+enr_historical <- fetch_enr_multi(c(1985, 1995, 2005, 2015, 2025), use_cache = TRUE)
 
 enr_historical %>%
-  filter(is_state, grade_level == "TOTAL", reporting_category == "TA") %>%
+  filter(is_state, grade_level == "TOTAL", reporting_category == "TA",
+         charter_status %in% c("All", NA)) %>%
   select(end_year, n_students)
 ```
 
@@ -335,11 +337,12 @@ enr_historical %>%
 The nation's second-largest district has lost nearly half its enrollment since its peak, making it a case study in urban enrollment decline.
 
 ```r
-lausd_long <- fetch_enr_multi(c(1990, 2000, 2010, 2020, 2025))
+lausd_long <- fetch_enr_multi(c(1990, 2000, 2010, 2020, 2025), use_cache = TRUE)
 
 lausd_long %>%
   filter(is_district, grepl("Los Angeles Unified", district_name),
-         grade_level == "TOTAL", reporting_category == "TA") %>%
+         grade_level == "TOTAL", reporting_category == "TA",
+         charter_status %in% c("All", NA)) %>%
   select(end_year, district_name, n_students)
 ```
 
@@ -349,13 +352,14 @@ lausd_long %>%
 
 ### 13. California's largest districts dominate enrollment
 
-The top 5 districts alone account for a significant share of California's total enrollment, with LAUSD enrolling more students than many states.
+The top 10 districts alone account for a significant share of California's total enrollment, with LAUSD enrolling more students than many states.
 
 ```r
-enr_2025 <- fetch_enr(2025)
+enr_2025 <- fetch_enr(2025, use_cache = TRUE)
 
 enr_2025 %>%
-  filter(is_district, grade_level == "TOTAL", reporting_category == "TA") %>%
+  filter(is_district, grade_level == "TOTAL", reporting_category == "TA",
+         charter_status %in% c("All", NA)) %>%
   arrange(desc(n_students)) %>%
   head(10) %>%
   select(district_name, county_name, n_students)
@@ -371,7 +375,9 @@ While the state overall is majority Hispanic, individual districts show vastly d
 
 ```r
 enr_2025 %>%
-  filter(is_district, grade_level == "TOTAL", grepl("^RE_", reporting_category)) %>%
+  filter(is_district, grade_level == "TOTAL",
+         charter_status %in% c("All", NA),
+         grepl("^RE_", reporting_category)) %>%
   filter(district_name %in% c("San Francisco Unified", "Los Angeles Unified",
                                "Fresno Unified", "San Diego Unified")) %>%
   group_by(district_name, subgroup) %>%
@@ -385,15 +391,14 @@ enr_2025 %>%
 
 ---
 
-### 15. Enrollment declined every year since 2020
+### 15. Enrollment declined every year since 2018
 
-California has seen consistent year-over-year enrollment declines since 2020, with no year showing a recovery.
+California has seen consistent year-over-year enrollment declines since 2018, with no year showing a recovery.
 
 ```r
-enr_recent <- fetch_enr_multi(2018:2025)
-
-state_yoy <- enr_recent %>%
-  filter(is_state, grade_level == "TOTAL", reporting_category == "TA") %>%
+state_yoy <- enr %>%
+  filter(is_state, grade_level == "TOTAL", reporting_category == "TA",
+         charter_status %in% c("All", NA)) %>%
   arrange(end_year) %>%
   mutate(
     prev_year = lag(n_students),
@@ -405,19 +410,19 @@ state_yoy %>%
   select(end_year, n_students, change, pct_change)
 ```
 
-![Year-over-year changes](https://almartin82.github.io/caschooldata/articles/data-quality-qa_files/figure-html/state-plot-1.png)
+![Year-over-year changes](https://almartin82.github.io/caschooldata/articles/district-highlights_files/figure-html/yoy-changes-1.png)
 
 ---
 
 ## Assessment Data: CAASPP Results
 
-California's CAASPP (California Assessment of Student Performance and Progress) system includes the Smarter Balanced assessments for English Language Arts (ELA) and Mathematics. Data available from 2015-2024 (no 2020 due to COVID-19).
+California's CAASPP (California Assessment of Student Performance and Progress) system includes the Smarter Balanced assessments for English Language Arts (ELA) and Mathematics. Data available from 2021-2025 (no 2020 due to COVID-19).
 
 ---
 
-### 16. Statewide proficiency: 47% in ELA, 36% in Math
+### 16. Grade 11 proficiency: 55.7% in ELA, 27.9% in Math
 
-California's 11th graders showed a 20+ point gap between ELA and Math proficiency in 2024.
+California's 11th graders showed a nearly 28-point gap between ELA and Math proficiency in 2024. Less than a third of juniors met standards in Math.
 
 ```r
 library(caschooldata)
@@ -443,9 +448,9 @@ state_g11
 
 ---
 
-### 17. Elementary students outperform high schoolers in ELA
+### 17. High schoolers outperform elementary in ELA
 
-Third graders actually have higher ELA proficiency than 11th graders, suggesting early reading interventions may be working.
+Grade 11 students have the highest ELA proficiency (55.7%), significantly above Grade 3 (42.8%). Unlike most states, California's ELA proficiency rises with grade level.
 
 ```r
 # ELA proficiency by grade
@@ -465,7 +470,7 @@ ela_by_grade
 
 ### 18. Math proficiency drops dramatically by middle school
 
-Math proficiency peaks in Grade 3-4 at around 45% and falls to under 32% by Grade 8.
+Math proficiency peaks in Grade 3 at 45.6% and falls to under 32% by Grade 8. By Grade 11, only 27.9% meet standards.
 
 ```r
 # Math proficiency by grade
@@ -483,13 +488,13 @@ math_by_grade
 
 ---
 
-### 19. Multi-year trends: Recovery from COVID
+### 19. 2021 was the peak, not a pandemic trough
 
-Proficiency rates are recovering from the 2021 pandemic lows but remain below 2019 levels.
+Surprisingly, Grade 11 ELA proficiency peaked in 2021 at 59.2% — the first post-COVID test year — then fell to 54.8% in 2022 and has slowly recovered to 55.7% by 2024. This likely reflects selective participation in 2021.
 
 ```r
 # Fetch multiple years
-assess_multi <- fetch_assess_multi(c(2019, 2021, 2022, 2023, 2024),
+assess_multi <- fetch_assess_multi(c(2021, 2022, 2023, 2024),
                                     tidy = TRUE, use_cache = TRUE)
 
 # State-level trend
@@ -506,9 +511,9 @@ state_trend %>%
 
 ---
 
-### 20. ELA-Math gap is consistent across grades
+### 20. ELA-Math gap ranges from -2.8 to +27.8 points across grades
 
-The ELA advantage over Math proficiency is remarkably consistent (10-20 points) across all tested grades.
+The gap between ELA and Math proficiency is NOT consistent. In Grade 3, Math actually outperforms ELA by 2.8 points. By Grade 11, the gap balloons to 27.8 points in ELA's favor. This widening gap reflects the cumulative struggle with math as concepts become more abstract.
 
 ```r
 # ELA-Math gap by grade
@@ -542,26 +547,27 @@ library(caschooldata)
 library(dplyr)
 
 # Fetch one year
-enr_2025 <- fetch_enr(2025)
+enr_2025 <- fetch_enr(2025, use_cache = TRUE)
 
 # Fetch recent years (2018-2025)
-enr_recent <- fetch_enr_multi(2018:2025)
+enr_recent <- fetch_enr_multi(2018:2025, use_cache = TRUE)
 
-# Fetch ALL 44 years of data (1982-2025)
-enr_all <- fetch_enr_multi(1982:2025)
-
-# State totals
+# State totals (filter charter_status to avoid tripling in 2024+)
 enr_2025 %>%
-  filter(is_state, subgroup == "total", grade_level == "TOTAL")
+  filter(is_state, subgroup == "total_enrollment", grade_level == "TOTAL",
+         charter_status %in% c("All", NA))
 
 # District breakdown
 enr_2025 %>%
-  filter(is_district, subgroup == "total", grade_level == "TOTAL") %>%
+  filter(is_district, subgroup == "total_enrollment", grade_level == "TOTAL",
+         charter_status %in% c("All", NA)) %>%
   arrange(desc(n_students))
 
 # Demographics by district
 enr_2025 %>%
-  filter(is_district, grade_level == "TOTAL", grepl("^RE_", reporting_category)) %>%
+  filter(is_district, grade_level == "TOTAL",
+         charter_status %in% c("All", NA),
+         grepl("^RE_", reporting_category)) %>%
   group_by(district_name, subgroup) %>%
   summarize(n = sum(n_students))
 ```
@@ -581,18 +587,20 @@ enr_2025 = ca.fetch_enr(2025)
 # Fetch multiple years
 enr_recent = ca.fetch_enr_multi([2023, 2024, 2025])
 
-# State totals
+# State totals (filter charter_status to avoid tripling)
 state_total = enr_2025[
     (enr_2025['is_state'] == True) &
     (enr_2025['grade_level'] == 'TOTAL') &
-    (enr_2025['subgroup'] == 'total')
+    (enr_2025['subgroup'] == 'total_enrollment') &
+    (enr_2025['charter_status'].isin(['All']))
 ]
 
 # District breakdown
 district_totals = enr_2025[
     (enr_2025['is_district'] == True) &
     (enr_2025['grade_level'] == 'TOTAL') &
-    (enr_2025['subgroup'] == 'total')
+    (enr_2025['subgroup'] == 'total_enrollment') &
+    (enr_2025['charter_status'].isin(['All']))
 ].sort_values('n_students', ascending=False)
 ```
 
@@ -611,7 +619,7 @@ district_totals = enr_2025[
 
 | Years | Source | Subjects | Grades | Notes |
 |-------|--------|----------|--------|-------|
-| **2015-2019, 2021-2024** | CAASPP Research Files | ELA, Math | 3-8, 11 | No 2020 due to COVID-19 |
+| **2021-2025** | CAASPP Research Files | ELA, Math | 3-8, 11 | Pre-2021 data has column mapping issue; no 2020 due to COVID-19 |
 
 ### What's available by year range
 
@@ -619,6 +627,7 @@ district_totals = enr_2025[
 - **Grade levels**: K-12 available for all years. Transitional Kindergarten (TK) only available 2024+.
 - **Aggregation**: Modern files (2024+) include pre-computed state/county/district totals. Historical files only have school-level data; this package computes aggregates automatically.
 - **Entity names**: School/district names available 2008+ and 1982-1993. Not available for 1994-2007 (use CDS code lookups).
+- **Charter status**: Modern files (2024+) report "All", "N" (non-charter), and "Y" (charter) separately. Always filter to `charter_status %in% c("All", NA)` for deduplicated totals.
 
 ## Data Notes
 
@@ -627,12 +636,12 @@ district_totals = enr_2025[
 - **Source**: California Department of Education [DataQuest](https://dq.cde.ca.gov/dataquest/) and [Data Files](https://www.cde.ca.gov/ds/)
 - **Census Day**: All enrollment counts are from Census Day (first Wednesday in October)
 - **Suppression**: Counts of 10 or fewer students are suppressed for privacy
-- **Charter Status**: Modern files (2024+) report charter and non-charter separately; historical files aggregate all schools
+- **Charter Status**: Modern files (2024+) report charter and non-charter separately; always filter to `charter_status %in% c("All", NA)` to avoid tripling
 
 ### Assessment Data (CAASPP)
 
 - **Source**: [CAASPP Research Files Portal](https://caaspp-elpac.ets.org/caaspp/ResearchFileListSB)
-- **Years Available**: 2015-2019, 2021-2024 (no 2020 due to COVID-19)
+- **Years Available**: 2021-2025 (pre-2021 has a known column mapping issue; no 2020 due to COVID-19)
 - **Grades Tested**: 3-8 and 11 for ELA and Mathematics
 - **Suppression**: Groups with fewer than 11 students are not reported
 - **Performance Levels**: Standard Exceeded, Standard Met, Standard Nearly Met, Standard Not Met

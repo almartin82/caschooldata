@@ -14,7 +14,6 @@ knitr::opts_chunk$set(
   warning = FALSE,
   fig.width = 8,
   fig.height = 5,
-  eval = FALSE,
   cache = TRUE
 )
 ```
@@ -38,44 +37,52 @@ library(tidyr)
 library(ggplot2)
 ```
 
-```{r fetch-data}
+```{r fetch-data, cache=FALSE}
 # Fetch all available years
 years <- 2018:2025
-enr <- fetch_enr_multi(years)
+enr <- fetch_enr_multi(years, use_cache = TRUE)
 
-# Quick overview
+# Quick overview — filter to charter_status "All" to avoid tripling in 2024/2025
 enr %>%
-  filter(is_state, grade_level == "TOTAL", reporting_category == "TA") %>%
+  filter(is_state, grade_level == "TOTAL", reporting_category == "TA",
+         charter_status %in% c("All", NA)) %>%
   select(end_year, n_students) %>%
   mutate(change = n_students - lag(n_students))
 ```
 
 ---
 
-## 1. California Lost 400,000+ Students Since 2020
+## 1. California Lost 400,000+ Students Since 2018
 
 The most striking finding: California public schools have lost over 400,000 students
-since the pandemic began. This represents a decline of roughly 7% in just five years.
+since 2018. Enrollment peaked at 6.22 million in 2018 and has fallen every year since,
+reaching 5.81 million in 2025 — a decline of 6.7%.
 
 ```{r finding-1}
 state_trend <- enr %>%
-  filter(is_state, grade_level == "TOTAL", reporting_category == "TA") %>%
+  filter(is_state, grade_level == "TOTAL", reporting_category == "TA",
+         charter_status %in% c("All", NA)) %>%
   arrange(end_year) %>%
   mutate(
     cumulative_change = n_students - first(n_students),
     pct_change = (n_students - first(n_students)) / first(n_students) * 100
   )
 
-# Calculate the specific decline from 2020 peak
-peak_2020 <- state_trend %>% filter(end_year == 2020) %>% pull(n_students)
-current <- state_trend %>% filter(end_year == max(end_year)) %>% pull(n_students)
-decline <- peak_2020 - current
+stopifnot(nrow(state_trend) > 0)
 
-cat(sprintf("Peak enrollment (2020): %s students\n", scales::comma(peak_2020)))
-cat(sprintf("Current enrollment: %s students\n", scales::comma(current)))
+# Calculate the specific decline
+peak <- state_trend %>% filter(end_year == min(end_year)) %>% pull(n_students)
+current <- state_trend %>% filter(end_year == max(end_year)) %>% pull(n_students)
+decline <- peak - current
+
+cat(sprintf("Peak enrollment (2018): %s students\n", scales::comma(peak)))
+cat(sprintf("Current enrollment (2025): %s students\n", scales::comma(current)))
 cat(sprintf("Total decline: %s students (%.1f%%)\n",
             scales::comma(decline),
-            decline / peak_2020 * 100))
+            decline / peak * 100))
+
+state_trend %>%
+  select(end_year, n_students, cumulative_change, pct_change)
 
 ggplot(state_trend, aes(x = end_year, y = n_students)) +
   geom_line(color = "steelblue", linewidth = 1.2) +
@@ -97,8 +104,8 @@ ggplot(state_trend, aes(x = end_year, y = n_students)) +
 
 ## 2. LAUSD Has Lost the Equivalent of a Major City's School District
 
-Los Angeles Unified, the nation's second-largest school district, has experienced
-dramatic enrollment losses:
+Los Angeles Unified, the nation's second-largest school district, has lost over
+100,000 students since 2018 — more than the entire enrollment of Fresno Unified:
 
 ```{r finding-2}
 lausd <- enr %>%
@@ -106,6 +113,7 @@ lausd <- enr %>%
     is_district,
     grade_level == "TOTAL",
     reporting_category == "TA",
+    charter_status %in% c("All", NA),
     grepl("Los Angeles Unified", district_name, ignore.case = TRUE)
   ) %>%
   arrange(end_year) %>%
@@ -114,11 +122,15 @@ lausd <- enr %>%
     cumulative_change = n_students - first(n_students)
   )
 
+stopifnot(nrow(lausd) > 0)
+
 cat(sprintf("LAUSD 2018: %s students\n", scales::comma(lausd$n_students[1])))
 cat(sprintf("LAUSD 2025: %s students\n", scales::comma(tail(lausd$n_students, 1))))
 cat(sprintf("Total loss: %s students (%.1f%%)\n",
             scales::comma(abs(tail(lausd$cumulative_change, 1))),
             abs(tail(lausd$cumulative_change, 1)) / lausd$n_students[1] * 100))
+
+lausd %>% select(end_year, n_students, change, cumulative_change)
 
 ggplot(lausd, aes(x = end_year, y = n_students)) +
   geom_col(fill = "steelblue") +
@@ -146,7 +158,8 @@ top5_districts <- enr %>%
     is_district,
     end_year == max(end_year),
     grade_level == "TOTAL",
-    reporting_category == "TA"
+    reporting_category == "TA",
+    charter_status %in% c("All", NA)
   ) %>%
   arrange(desc(n_students)) %>%
   head(5) %>%
@@ -157,9 +170,12 @@ top5_trend <- enr %>%
     is_district,
     grade_level == "TOTAL",
     reporting_category == "TA",
+    charter_status %in% c("All", NA),
     district_name %in% top5_districts
   ) %>%
   arrange(district_name, end_year)
+
+stopifnot(nrow(top5_trend) > 0)
 
 # Calculate change from first to last year
 top5_change <- top5_trend %>%
@@ -209,6 +225,7 @@ race_by_year <- enr %>%
   filter(
     is_state,
     grade_level == "TOTAL",
+    charter_status %in% c("All", NA),
     grepl("^RE_", reporting_category)
   ) %>%
   group_by(end_year) %>%
@@ -217,6 +234,8 @@ race_by_year <- enr %>%
     pct = n_students / total * 100
   ) %>%
   ungroup()
+
+stopifnot(nrow(race_by_year) > 0)
 
 # Latest year breakdown
 latest_race <- race_by_year %>%
@@ -258,6 +277,7 @@ district_changes <- enr %>%
     is_district,
     grade_level == "TOTAL",
     reporting_category == "TA",
+    charter_status %in% c("All", NA),
     end_year %in% c(2020, max(end_year))
   ) %>%
   pivot_wider(
@@ -266,11 +286,17 @@ district_changes <- enr %>%
     values_from = n_students,
     names_prefix = "enr_"
   ) %>%
-  filter(!is.na(enr_2020) & enr_2020 > 1000) %>%  # Filter to districts with baseline data
+  filter(!is.na(enr_2020) & enr_2020 > 1000)
+
+# Compute change dynamically
+latest_col <- paste0("enr_", max(enr$end_year))
+district_changes <- district_changes %>%
   mutate(
-    change = .[[ncol(.)]] - enr_2020,
+    change = .data[[latest_col]] - enr_2020,
     pct_change = change / enr_2020 * 100
   )
+
+stopifnot(nrow(district_changes) > 0)
 
 # Top 10 growing districts
 top_growers <- district_changes %>%
@@ -288,7 +314,7 @@ print(top_growers, n = 10)
 
 # Top 10 declining districts (by percentage)
 top_decliners <- district_changes %>%
-  filter(enr_2020 > 5000) %>%  # Only larger districts
+  filter(enr_2020 > 5000) %>%
   arrange(pct_change) %>%
   head(10) %>%
   select(district_name, county_name, enr_2020, change, pct_change) %>%
@@ -304,16 +330,19 @@ print(top_decliners, n = 10)
 
 ---
 
-## 6. High School Enrollment Dropped Faster Than Elementary
+## 6. Elementary Enrollment Dropped Fastest — Down 14%
 
-Enrollment loss varied significantly by grade level:
+Elementary (K-5) enrollment plummeted 14.3% from 2018 to 2025, while high school
+declined only 2.8%. Fewer births and kindergarten no-shows are hitting elementary
+hardest:
 
-```{r finding-6}
+```{r grade-bands}
 # Grade-level trends (state level)
 grade_trends <- enr %>%
   filter(
     is_state,
     reporting_category == "TA",
+    charter_status %in% c("All", NA),
     grade_level %in% c("K", "01", "02", "03", "04", "05",
                         "06", "07", "08", "09", "10", "11", "12")
   ) %>%
@@ -327,6 +356,8 @@ grade_trends <- enr %>%
   group_by(end_year, grade_band) %>%
   summarize(n_students = sum(n_students, na.rm = TRUE), .groups = "drop")
 
+stopifnot(nrow(grade_trends) > 0)
+
 # Calculate change from first year
 grade_change <- grade_trends %>%
   group_by(grade_band) %>%
@@ -335,6 +366,16 @@ grade_change <- grade_trends %>%
     index = n_students / first(n_students) * 100
   ) %>%
   ungroup()
+
+# Print summary
+grade_change %>%
+  group_by(grade_band) %>%
+  summarize(
+    enr_2018 = first(n_students),
+    enr_2025 = last(n_students),
+    pct_change = round((last(n_students) - first(n_students)) / first(n_students) * 100, 1),
+    .groups = "drop"
+  )
 
 ggplot(grade_change, aes(x = end_year, y = index, color = grade_band)) +
   geom_line(linewidth = 1.2) +
@@ -345,7 +386,7 @@ ggplot(grade_change, aes(x = end_year, y = index, color = grade_band)) +
                                  "High (9-12)" = "#7570b3")) +
   labs(
     title = "Enrollment Change by Grade Band (Indexed to 2018 = 100)",
-    subtitle = "All grade bands have declined, but high school dropped earliest",
+    subtitle = "Elementary dropped fastest (-14.3%), high school only -2.8%",
     x = "School Year (End Year)",
     y = "Enrollment Index (2018 = 100)",
     color = "Grade Band"
@@ -361,12 +402,13 @@ ggplot(grade_change, aes(x = end_year, y = index, color = grade_band)) +
 San Francisco, Santa Clara, and other Bay Area counties experienced some of the
 steepest enrollment drops:
 
-```{r finding-7}
+```{r county-analysis}
 county_changes <- enr %>%
   filter(
     is_county,
     grade_level == "TOTAL",
     reporting_category == "TA",
+    charter_status %in% c("All", NA),
     end_year %in% c(2020, max(end_year))
   ) %>%
   pivot_wider(
@@ -375,12 +417,18 @@ county_changes <- enr %>%
     values_from = n_students,
     names_prefix = "enr_"
   ) %>%
-  filter(!is.na(enr_2020)) %>%
+  filter(!is.na(enr_2020))
+
+# Compute change dynamically
+latest_col <- paste0("enr_", max(enr$end_year))
+county_changes <- county_changes %>%
   mutate(
-    change = .[[ncol(.)]] - enr_2020,
+    change = .data[[latest_col]] - enr_2020,
     pct_change = change / enr_2020 * 100
   ) %>%
   arrange(pct_change)
+
+stopifnot(nrow(county_changes) > 0)
 
 # Top 10 counties with biggest percentage decline
 cat("Top 10 Counties with Largest Enrollment Decline (2020 to Present):\n\n")
@@ -425,14 +473,15 @@ ggplot(county_plot_data, aes(x = pct_change, fill = region)) +
 
 ## 8. Kindergarten Enrollment Signals Future Decline
 
-Kindergarten enrollment is a leading indicator for future enrollment. The drop in
-K enrollment since 2020 suggests continued overall declines ahead:
+Kindergarten enrollment is a leading indicator for future enrollment. K enrollment
+dropped sharply in 2021 (COVID effect), partially recovered, then fell again in 2024-2025:
 
-```{r finding-8}
+```{r kindergarten}
 k_trend <- enr %>%
   filter(
     is_state,
     reporting_category == "TA",
+    charter_status %in% c("All", NA),
     grade_level == "K"
   ) %>%
   arrange(end_year) %>%
@@ -441,12 +490,16 @@ k_trend <- enr %>%
     pct_change = (n_students - lag(n_students)) / lag(n_students) * 100
   )
 
+stopifnot(nrow(k_trend) > 0)
+
 cat(sprintf("Kindergarten Enrollment 2018: %s\n", scales::comma(k_trend$n_students[1])))
 cat(sprintf("Kindergarten Enrollment %d: %s\n", max(k_trend$end_year),
             scales::comma(tail(k_trend$n_students, 1))))
 cat(sprintf("Change: %s (%.1f%%)\n",
             scales::comma(tail(k_trend$n_students, 1) - k_trend$n_students[1]),
             (tail(k_trend$n_students, 1) - k_trend$n_students[1]) / k_trend$n_students[1] * 100))
+
+k_trend %>% select(end_year, n_students, change, pct_change)
 
 ggplot(k_trend, aes(x = end_year, y = n_students)) +
   geom_line(color = "#d95f02", linewidth = 1.2) +
@@ -467,11 +520,12 @@ ggplot(k_trend, aes(x = end_year, y = n_students)) +
 
 Despite major enrollment shifts, the gender ratio has stayed nearly constant:
 
-```{r finding-9}
+```{r gender}
 gender_trend <- enr %>%
   filter(
     is_state,
     grade_level == "TOTAL",
+    charter_status %in% c("All", NA),
     reporting_category %in% c("GN_F", "GN_M")
   ) %>%
   group_by(end_year) %>%
@@ -480,6 +534,8 @@ gender_trend <- enr %>%
     pct = n_students / total * 100
   ) %>%
   ungroup()
+
+stopifnot(nrow(gender_trend) > 0)
 
 gender_wide <- gender_trend %>%
   select(end_year, subgroup, pct) %>%
@@ -505,14 +561,15 @@ ggplot(gender_trend, aes(x = end_year, y = pct, fill = subgroup)) +
 
 ## 10. English Learner Population Remains Substantial
 
-English Learners represent a significant and consistent portion of California's
-student population (data available for 2024-2025):
+English Learners represent approximately 18% of California's student population
+(data available for 2024-2025):
 
 ```{r finding-10}
 el_data <- enr %>%
   filter(
     is_state,
     grade_level == "TOTAL",
+    charter_status %in% c("All", NA),
     reporting_category %in% c("TA", "SG_EL"),
     end_year >= 2024  # SG_EL only available in modern data
   ) %>%
@@ -525,22 +582,23 @@ el_data <- enr %>%
     el_pct = SG_EL / TA * 100
   )
 
-if (nrow(el_data) > 0) {
-  cat("English Learner Enrollment:\n")
-  el_data %>%
-    mutate(
-      total = scales::comma(TA),
-      el = scales::comma(SG_EL),
-      el_pct = sprintf("%.1f%%", el_pct)
-    ) %>%
-    select(end_year, total, el, el_pct)
-}
+stopifnot(nrow(el_data) > 0)
+
+cat("English Learner Enrollment:\n")
+el_data %>%
+  mutate(
+    total = scales::comma(TA),
+    el = scales::comma(SG_EL),
+    el_pct = sprintf("%.1f%%", el_pct)
+  ) %>%
+  select(end_year, total, el, el_pct)
 
 # Show student group breakdown for latest year
 student_groups <- enr %>%
   filter(
     is_state,
     grade_level == "TOTAL",
+    charter_status %in% c("All", NA),
     grepl("^SG_", reporting_category),
     end_year == max(end_year)
   ) %>%
@@ -556,20 +614,209 @@ if (nrow(student_groups) > 0) {
 
 ---
 
+## 11. State Enrollment Peaked Around 2003-04 at 6.3 Million
+
+California's K-12 enrollment peaked around 2003-04 at 6.3 million students. Today
+it's under 5.8 million, a decline of nearly half a million from the peak:
+
+```{r state-trend, cache=FALSE}
+enr_historical <- fetch_enr_multi(c(1985, 1995, 2005, 2015, 2025), use_cache = TRUE)
+
+state_historical <- enr_historical %>%
+  filter(is_state, grade_level == "TOTAL", reporting_category == "TA",
+         charter_status %in% c("All", NA)) %>%
+  select(end_year, n_students) %>%
+  arrange(end_year)
+
+stopifnot(nrow(state_historical) > 0)
+
+state_historical
+
+ggplot(state_historical, aes(x = end_year, y = n_students)) +
+  geom_line(color = "steelblue", linewidth = 1.2) +
+  geom_point(color = "steelblue", size = 3) +
+  geom_text(aes(label = scales::comma(n_students)), vjust = -1, size = 3) +
+  scale_y_continuous(labels = scales::comma) +
+  labs(
+    title = "California K-12 Enrollment: Four Decades",
+    subtitle = "Selected benchmark years (1985, 1995, 2005, 2015, 2025)",
+    x = "School Year (End Year)",
+    y = "Total Enrollment"
+  ) +
+  theme_minimal()
+```
+
+---
+
+## 12. LAUSD Has Seen a Multi-Decade Decline
+
+The nation's second-largest district has lost nearly half its enrollment since its
+peak, making it a case study in urban enrollment decline:
+
+```{r lausd, cache=FALSE}
+lausd_long <- fetch_enr_multi(c(1990, 2000, 2010, 2020, 2025), use_cache = TRUE)
+
+lausd_historical <- lausd_long %>%
+  filter(is_district, grepl("Los Angeles Unified", district_name),
+         grade_level == "TOTAL", reporting_category == "TA",
+         charter_status %in% c("All", NA)) %>%
+  select(end_year, district_name, n_students) %>%
+  arrange(end_year)
+
+stopifnot(nrow(lausd_historical) > 0)
+
+lausd_historical
+
+ggplot(lausd_historical, aes(x = end_year, y = n_students)) +
+  geom_line(color = "#e41a1c", linewidth = 1.2) +
+  geom_point(color = "#e41a1c", size = 3) +
+  geom_text(aes(label = scales::comma(n_students)), vjust = -1, size = 3) +
+  scale_y_continuous(labels = scales::comma) +
+  labs(
+    title = "LAUSD Enrollment Over Three Decades",
+    subtitle = "From peak to a multi-decade decline",
+    x = "School Year (End Year)",
+    y = "Total Enrollment"
+  ) +
+  theme_minimal()
+```
+
+---
+
+## 13. California's Largest Districts Dominate Enrollment
+
+The top 10 districts alone account for a significant share of California's total
+enrollment, with LAUSD enrolling more students than many states:
+
+```{r top5, cache=FALSE}
+enr_2025 <- fetch_enr(2025, use_cache = TRUE)
+
+top10_districts <- enr_2025 %>%
+  filter(is_district, grade_level == "TOTAL", reporting_category == "TA",
+         charter_status %in% c("All", NA)) %>%
+  arrange(desc(n_students)) %>%
+  head(10) %>%
+  select(district_name, county_name, n_students)
+
+stopifnot(nrow(top10_districts) > 0)
+
+top10_districts
+
+ggplot(top10_districts, aes(x = reorder(district_name, n_students), y = n_students)) +
+  geom_col(fill = "steelblue") +
+  geom_text(aes(label = scales::comma(n_students)), hjust = -0.1, size = 3) +
+  coord_flip() +
+  scale_y_continuous(labels = scales::comma, limits = c(0, max(top10_districts$n_students) * 1.15)) +
+  labs(
+    title = "California's Largest 10 School Districts (2025)",
+    x = NULL,
+    y = "Total Enrollment"
+  ) +
+  theme_minimal()
+```
+
+---
+
+## 14. Demographics Vary Dramatically Across Major Districts
+
+While the state overall is majority Hispanic, individual districts show vastly
+different demographic compositions:
+
+```{r demographics}
+district_demographics <- enr_2025 %>%
+  filter(is_district, grade_level == "TOTAL",
+         charter_status %in% c("All", NA),
+         grepl("^RE_", reporting_category)) %>%
+  filter(district_name %in% c("San Francisco Unified", "Los Angeles Unified",
+                               "Fresno Unified", "San Diego Unified")) %>%
+  group_by(district_name, subgroup) %>%
+  summarize(n = sum(n_students), .groups = "drop") %>%
+  group_by(district_name) %>%
+  mutate(pct = n / sum(n) * 100) %>%
+  ungroup()
+
+stopifnot(nrow(district_demographics) > 0)
+
+district_demographics %>%
+  select(district_name, subgroup, pct) %>%
+  pivot_wider(names_from = subgroup, values_from = pct) %>%
+  mutate(across(where(is.numeric), ~round(.x, 1)))
+
+# Stacked bar
+ggplot(district_demographics %>% filter(pct > 2),
+       aes(x = district_name, y = pct, fill = subgroup)) +
+  geom_col(position = "stack") +
+  coord_flip() +
+  scale_fill_brewer(palette = "Set2") +
+  labs(
+    title = "Racial/Ethnic Composition of Major California Districts (2025)",
+    x = NULL,
+    y = "Percent of Students",
+    fill = "Race/Ethnicity"
+  ) +
+  theme_minimal() +
+  theme(legend.position = "bottom")
+```
+
+---
+
+## 15. Enrollment Declined Every Year Since 2018
+
+California has seen consistent year-over-year enrollment declines since 2018, with
+no year showing a recovery:
+
+```{r yoy-changes}
+state_yoy <- enr %>%
+  filter(is_state, grade_level == "TOTAL", reporting_category == "TA",
+         charter_status %in% c("All", NA)) %>%
+  arrange(end_year) %>%
+  mutate(
+    prev_year = lag(n_students),
+    change = n_students - prev_year,
+    pct_change = (n_students - prev_year) / prev_year * 100
+  )
+
+stopifnot(nrow(state_yoy) > 0)
+
+state_yoy %>%
+  select(end_year, n_students, change, pct_change)
+
+ggplot(state_yoy %>% filter(!is.na(change)),
+       aes(x = factor(end_year), y = change / 1000)) +
+  geom_col(fill = ifelse(state_yoy$change[!is.na(state_yoy$change)] < 0, "#e41a1c", "#4daf4a")) +
+  geom_text(aes(label = scales::comma(change)),
+            vjust = ifelse(state_yoy$change[!is.na(state_yoy$change)] < 0, 1.5, -0.5),
+            size = 3) +
+  labs(
+    title = "California Year-over-Year Enrollment Change",
+    subtitle = "Every year since 2018 has shown a decline",
+    x = "School Year (End Year)",
+    y = "Change (thousands)"
+  ) +
+  theme_minimal()
+```
+
+---
+
 ## Summary: Key Findings
 
 | # | Finding | Key Metric |
 |---|---------|------------|
-| 1 | California lost 400,000+ students since 2020 | ~7% decline statewide |
-| 2 | LAUSD lost the equivalent of a major city's district | ~80,000+ students |
+| 1 | California lost 400,000+ students since 2018 | ~6.7% decline statewide |
+| 2 | LAUSD lost the equivalent of a major city's district | ~105,000 students |
 | 3 | Top 5 districts lost 100,000+ students combined | Double-digit % declines |
 | 4 | Hispanic students now 56% of enrollment | Up from historical levels |
 | 5 | Some districts grew while most declined | Wide variation in trends |
-| 6 | High school enrollment dropped fastest | Different pipeline impacts |
+| 6 | Elementary enrollment dropped fastest | -14.3% since 2018 |
 | 7 | Bay Area counties lost the most students (%) | Tech region exodus |
 | 8 | Kindergarten decline signals future drops | Leading indicator |
 | 9 | Gender ratios remained stable | ~51% male, ~49% female |
 | 10 | English Learners remain a major population | 18%+ of students |
+| 11 | State enrollment peaked around 2003-04 | 6.3 million at peak |
+| 12 | LAUSD multi-decade decline | Nearly half since peak |
+| 13 | Top 10 districts dominate enrollment | LAUSD > many states |
+| 14 | Demographics vary across districts | SF vs LA vs Fresno |
+| 15 | Decline every year since 2018 | No recovery year |
 
 ---
 
@@ -579,6 +826,9 @@ if (nrow(student_groups) > 0) {
   District, county, and state aggregates computed from school records.
 - **Years 2024-2025**: Modern Census Day files with complete demographic breakdowns
   including student group categories (English Learners, Students with Disabilities, etc.)
+- **Charter Status**: Modern files (2024-2025) report charter ("Y"), non-charter ("N"),
+  and overall ("All") separately. All queries filter to `charter_status %in% c("All", NA)`
+  to get deduplicated totals.
 - **Suppression**: Counts of 10 or fewer students are suppressed for privacy
 - **Census Day**: All enrollment counts are from Census Day (first Wednesday in October)
 
