@@ -1,3 +1,7 @@
+usethis
+devtools
+testthat
 caschooldata
 dplyr
 ggplot2
+tidyr

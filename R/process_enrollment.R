@@ -137,9 +137,12 @@ process_enr_modern <- function(raw_data, end_year) {
   }
 
   # Charter Status (All/Y/N)
+  # Note: CDE changed from "All" to "ALL" in modern data; normalize to "All"
   charter_col <- find_col(c("^Charter", "^CHARTER$"))
   if (!is.null(charter_col)) {
-    result$charter_status <- raw_data[[charter_col]]
+    charter_vals <- raw_data[[charter_col]]
+    charter_vals[toupper(charter_vals) == "ALL"] <- "All"
+    result$charter_status <- charter_vals
   }
 
   # Reporting Category (demographic subgroup)
