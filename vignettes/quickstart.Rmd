@@ -27,7 +27,7 @@ The `caschooldata` package provides tools for fetching and analyzing California 
 - 8 years of enrollment data (2018-2025)
 - 5.8+ million students across 1,000+ districts
 - Demographic breakdowns by race/ethnicity, gender, and student groups
-- Trends showing 400,000+ student decline since COVID-19
+- Trends showing 400,000+ student decline since 2018
 
 For a deep dive into trends and findings, see the [District Trends & Demographics](district-highlights.html) vignette.
 
@@ -46,17 +46,17 @@ remotes::install_github("almartin82/caschooldata")
 
 The main function is `fetch_enr()`, which downloads and processes enrollment data for a given school year:
 
-```{r fetch-data, eval=FALSE}
+```{r fetch-data}
 library(caschooldata)
 library(dplyr)
 
-# Fetch 2024 enrollment data (2023-24 school year)
-enr <- fetch_enr(2024)
+# Fetch 2025 enrollment data (2024-25 school year)
+enr <- fetch_enr(2025, use_cache = TRUE)
 
 head(enr)
 ```
 
-The `end_year` parameter refers to the spring semester year. For example, `end_year = 2024` fetches data for the 2023-24 school year.
+The `end_year` parameter refers to the spring semester year. For example, `end_year = 2025` fetches data for the 2024-25 school year.
 
 ### Available Years
 
@@ -65,33 +65,31 @@ The package supports Census Day enrollment data from 2018-2025:
 - **2024-2025**: Modern Census Day files with full demographic breakdowns
 - **2018-2023**: Historical school-level files with race/ethnicity and gender data
 
-```{r years-example, eval=FALSE}
+```{r years-example}
 # Fetch the most recent year
-enr_2025 <- fetch_enr(2025)
+enr_2025 <- enr  # already fetched above
 
-# Fetch historical data
-enr_2020 <- fetch_enr(2020)
-
-# Fetch all years for trend analysis
-enr_all <- fetch_enr_multi(2018:2025)
+# State totals (filter to charter_status "All" to avoid tripling in 2024+)
+enr_2025 %>%
+  filter(is_state, subgroup == "total_enrollment", grade_level == "TOTAL",
+         charter_status %in% c("All", NA))
 ```
 
 ### Wide vs. Tidy Format
 
 By default, `fetch_enr()` returns data in **tidy (long) format**, which is ideal for analysis with dplyr and ggplot2:
 
-```{r tidy-format, eval=FALSE}
+```{r tidy-format}
 # Default: tidy format
-enr_tidy <- fetch_enr(2024)
-names(enr_tidy)
+names(enr)
 # Includes: grade_level, reporting_category, subgroup, n_students
 ```
 
 For wide format (one column per grade), set `tidy = FALSE`:
 
-```{r wide-format, eval=FALSE}
+```{r wide-format}
 # Wide format: one column per grade
-enr_wide <- fetch_enr(2024, tidy = FALSE)
+enr_wide <- fetch_enr(2025, tidy = FALSE, use_cache = TRUE)
 names(enr_wide)
 # Includes: grade_tk, grade_k, grade_01, ..., grade_12, total_enrollment
 ```
@@ -100,13 +98,14 @@ names(enr_wide)
 
 Use `fetch_enr_multi()` to download data for multiple years at once:
 
-```{r multi-year, eval=FALSE}
+```{r multi-year}
 # Fetch 2024 and 2025 data
-all_years <- fetch_enr_multi(c(2024, 2025))
+all_years <- fetch_enr_multi(c(2024, 2025), use_cache = TRUE)
 
 # Analyze enrollment trends
 all_years %>%
-  filter(is_state, subgroup == "total", grade_level == "TOTAL") %>%
+  filter(is_state, subgroup == "total_enrollment", grade_level == "TOTAL",
+         charter_status %in% c("All", NA)) %>%
   select(end_year, n_students)
 ```
 
@@ -140,25 +139,24 @@ The tidy enrollment data includes the following columns:
 
 The data includes four aggregation levels:
 
-```{r agg-levels, eval=FALSE}
+```{r agg-levels}
 # State-level totals
 state <- enr %>%
-  filter(agg_level == "T")
-# or equivalently:
-state <- enr %>%
-  filter(is_state)
+  filter(is_state, subgroup == "total_enrollment", grade_level == "TOTAL",
+         charter_status %in% c("All", NA))
+cat("State total:", scales::comma(state$n_students), "\n")
 
 # County-level (58 California counties)
 counties <- enr %>%
-  filter(is_county)
+  filter(is_county, subgroup == "total_enrollment", grade_level == "TOTAL",
+         charter_status %in% c("All", NA))
+cat("Number of counties:", nrow(counties), "\n")
 
 # District-level
 districts <- enr %>%
-  filter(is_district)
-
-# School-level
-schools <- enr %>%
-  filter(is_school)
+  filter(is_district, subgroup == "total_enrollment", grade_level == "TOTAL",
+         charter_status %in% c("All", NA))
+cat("Number of districts:", nrow(districts), "\n")
 ```
 
 ### Demographic Subgroups
@@ -167,7 +165,7 @@ The `reporting_category` column contains CDE codes, while `subgroup` provides hu
 
 | Category | Code | Subgroup Name |
 |----------|------|---------------|
-| Total | TA | total |
+| Total | TA | total_enrollment |
 | Race/Ethnicity | RE_H | hispanic |
 | Race/Ethnicity | RE_W | white |
 | Race/Ethnicity | RE_A | asian |
@@ -180,15 +178,16 @@ The `reporting_category` column contains CDE codes, while `subgroup` provides hu
 | Gender | GN_M | male |
 | Gender | GN_X | nonbinary |
 | Student Groups | SG_EL | english_learner |
-| Student Groups | SG_DS | students_with_disabilities |
-| Student Groups | SG_SD | socioeconomically_disadvantaged |
+| Student Groups | SG_DS | special_ed |
+| Student Groups | SG_SD | econ_disadv |
 | Student Groups | SG_FS | foster_youth |
 | Student Groups | SG_HM | homeless |
 | Student Groups | SG_MG | migrant |
 
-```{r subgroups, eval=FALSE}
-# View all available subgroups
+```{r subgroups}
+# View all available subgroups for 2025
 enr %>%
+  filter(is_state, grade_level == "TOTAL", charter_status %in% c("All", NA)) %>%
   distinct(reporting_category, subgroup) %>%
   arrange(reporting_category)
 ```
@@ -197,35 +196,21 @@ enr %>%
 
 Individual grades range from Transitional Kindergarten (TK) through 12th grade:
 
-```{r grades, eval=FALSE}
+```{r grades}
 # Available grade levels
 enr %>%
   distinct(grade_level) %>%
   arrange(grade_level)
-
-# Filter to specific grades
-elementary <- enr %>%
-  filter(grade_level %in% c("TK", "K", "01", "02", "03", "04", "05"))
-
-middle_school <- enr %>%
-  filter(grade_level %in% c("06", "07", "08"))
-
-high_school <- enr %>%
-  filter(grade_level %in% c("09", "10", "11", "12"))
 ```
 
 ## Filtering and Analysis Examples
 
 ### Top 10 Largest Districts
 
-```{r top-districts, eval=FALSE}
-library(caschooldata)
-library(dplyr)
-
-enr <- fetch_enr(2024)
-
+```{r top-districts}
 enr %>%
-  filter(is_district, subgroup == "total", grade_level == "TOTAL") %>%
+  filter(is_district, subgroup == "total_enrollment", grade_level == "TOTAL",
+         charter_status %in% c("All", NA)) %>%
   arrange(desc(n_students)) %>%
   select(district_name, county_name, n_students) %>%
   head(10)
@@ -233,10 +218,11 @@ enr %>%
 
 ### County-Level Analysis
 
-```{r county-analysis, eval=FALSE}
+```{r county-analysis}
 # Enrollment by county
 county_enrollment <- enr %>%
-  filter(is_county, subgroup == "total", grade_level == "TOTAL") %>%
+  filter(is_county, subgroup == "total_enrollment", grade_level == "TOTAL",
+         charter_status %in% c("All", NA)) %>%
   arrange(desc(n_students)) %>%
   select(county_name, n_students)
 
@@ -246,12 +232,13 @@ head(county_enrollment, 5)
 
 ### Demographic Breakdown
 
-```{r demographics, eval=FALSE}
+```{r demographics}
 # State-level race/ethnicity breakdown
 enr %>%
   filter(
     is_state,
     grade_level == "TOTAL",
+    charter_status %in% c("All", NA),
     grepl("^RE_", reporting_category)
   ) %>%
   mutate(pct = n_students / sum(n_students) * 100) %>%
@@ -261,12 +248,12 @@ enr %>%
 
 ### Charter vs. Non-Charter Comparison
 
-```{r charter-comparison, eval=FALSE}
-# State-level charter enrollment
+```{r charter-comparison}
+# State-level charter enrollment (only available 2024+)
 charter_comparison <- enr %>%
-  filter(is_state, subgroup == "total", grade_level == "TOTAL") %>%
-  group_by(charter_status) %>%
-  summarize(total_enrollment = sum(n_students, na.rm = TRUE))
+  filter(is_state, subgroup == "total_enrollment", grade_level == "TOTAL") %>%
+  select(charter_status, n_students) %>%
+  arrange(charter_status)
 
 charter_comparison
 ```
@@ -275,13 +262,13 @@ charter_comparison
 
 Use `enr_grade_aggs()` to create grade band summaries:
 
-```{r grade-aggs, eval=FALSE}
+```{r grade-aggs}
 # Create K-8, HS, K-12 aggregations
 grade_bands <- enr_grade_aggs(enr)
 
-# View state-level grade bands
+# View state-level grade bands (filter charter_status)
 grade_bands %>%
-  filter(is_state) %>%
+  filter(is_state, charter_status %in% c("All", NA)) %>%
   select(grade_level, n_students)
 ```
 
@@ -293,28 +280,23 @@ California uses a 14-digit County-District-School (CDS) code system:
 - **Positions 3-7**: District code (5 digits)
 - **Positions 8-14**: School code (7 digits)
 
-```{r cds-codes, eval=FALSE}
+```{r cds-codes}
 # Parse a CDS code
 parse_cds_code("19647331932334")
 # Returns: list(county = "19", district = "64733", school = "1932334")
-
-# Filter to a specific district using CDS pattern
-lausd <- enr %>%
-  filter(grepl("^1964733", cds_code), is_school)
 ```
 
 ## Visualization Examples
 
 ### Bar Chart: Top Counties
 
-```{r viz-counties, eval=FALSE}
+```{r viz-counties}
 library(ggplot2)
-
-enr <- fetch_enr(2024)
 
 # Top 10 counties by enrollment
 top_counties <- enr %>%
-  filter(is_county, subgroup == "total", grade_level == "TOTAL") %>%
+  filter(is_county, subgroup == "total_enrollment", grade_level == "TOTAL",
+         charter_status %in% c("All", NA)) %>%
   arrange(desc(n_students)) %>%
   head(10)
 
@@ -324,7 +306,7 @@ ggplot(top_counties, aes(x = reorder(county_name, n_students), y = n_students)) 
   scale_y_continuous(labels = scales::comma) +
   labs(
     title = "Top 10 California Counties by Enrollment",
-    subtitle = "2023-24 School Year",
+    subtitle = "2024-25 School Year",
     x = NULL,
     y = "Total Enrollment"
   ) +
@@ -333,64 +315,38 @@ ggplot(top_counties, aes(x = reorder(county_name, n_students), y = n_students)) 
 
 ### Demographic Composition
 
-```{r viz-demographics, eval=FALSE}
-library(ggplot2)
-
-# Race/ethnicity pie chart data
+```{r viz-demographics}
+# Race/ethnicity bar chart
 race_data <- enr %>%
   filter(
     is_state,
     grade_level == "TOTAL",
+    charter_status %in% c("All", NA),
     grepl("^RE_", reporting_category)
   ) %>%
-  mutate(pct = n_students / sum(n_students)) %>%
-  select(subgroup, n_students, pct)
+  mutate(pct = n_students / sum(n_students) * 100) %>%
+  select(subgroup, n_students, pct) %>%
+  arrange(desc(pct))
 
-ggplot(race_data, aes(x = "", y = pct, fill = subgroup)) +
-  geom_bar(stat = "identity", width = 1) +
-  coord_polar("y", start = 0) +
-  labs(title = "California Enrollment by Race/Ethnicity") +
-  theme_void() +
-  theme(legend.position = "right")
-```
-
-### Enrollment Trend (Multi-Year)
-
-```{r viz-trend, eval=FALSE}
-library(ggplot2)
-
-# Fetch multiple years
-all_years <- fetch_enr_multi(c(2024, 2025))
-
-# State enrollment over time
-state_trend <- all_years %>%
-  filter(is_state, subgroup == "total", grade_level == "TOTAL")
-
-ggplot(state_trend, aes(x = end_year, y = n_students)) +
-  geom_line(color = "steelblue", size = 1.5) +
-  geom_point(color = "steelblue", size = 3) +
-  scale_y_continuous(labels = scales::comma) +
+ggplot(race_data, aes(x = reorder(subgroup, pct), y = pct, fill = subgroup)) +
+  geom_col() +
+  coord_flip() +
   labs(
-    title = "California K-12 Enrollment",
-    x = "School Year (End Year)",
-    y = "Total Enrollment"
+    title = "California Enrollment by Race/Ethnicity (2025)",
+    x = NULL,
+    y = "Percent"
   ) +
-  theme_minimal()
+  theme_minimal() +
+  theme(legend.position = "none")
 ```
 
 ## Cache Management
 
 The package caches downloaded data locally to avoid repeated downloads:
 
-```{r cache-management, eval=FALSE}
+```{r cache-management}
 # Check what's cached
 cache_status()
-
-# Clear cache for a specific year
-clear_enr_cache(2024)
-
-# Force a fresh download (bypass cache)
-enr_fresh <- fetch_enr(2024, use_cache = FALSE)
 ```
 
 The cache is stored in a user-specific application data directory (via `rappdirs`). Cached data persists between R sessions.
@@ -399,7 +355,7 @@ The cache is stored in a user-specific application data directory (via `rappdirs
 
 - Enrollment counts are based on **Census Day** (first Wednesday in October)
 - Some cells may be suppressed for privacy (small counts)
-- Charter and non-charter enrollments are reported separately
+- **Charter Status (2024+)**: Modern data reports "All", "N", "Y" separately. Always filter to `charter_status %in% c("All", NA)` for deduplicated totals.
 - State and county totals may include students not assigned to specific schools
 
 ## Next Steps
@@ -408,3 +364,9 @@ The cache is stored in a user-specific application data directory (via `rappdirs
 - Explore the [Data Quality QA vignette](data-quality-qa.html) for validation examples
 - Check the function reference for detailed documentation: `?fetch_enr`, `?tidy_enr`
 - Visit the [package website](https://almartin82.github.io/caschooldata/) for more resources
+
+## Session Info
+
+```{r session-info}
+sessionInfo()
+```
