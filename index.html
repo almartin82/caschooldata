@@ -59,25 +59,31 @@
 </h1></div>
 <!-- badges: start -->
 
-<p><strong><a href="https://almartin82.github.io/caschooldata/">Documentation</a></strong> | <strong><a href="https://almartin82.github.io/caschooldata/articles/quickstart.html">Getting Started</a></strong> | <strong><a href="https://almartin82.github.io/caschooldata/articles/district-highlights.html">Enrollment Analysis</a></strong> | <strong><a href="https://almartin82.github.io/caschooldata/articles/california-assessment.html">Assessment Analysis</a></strong></p>
-<p>Fetch and analyze California school enrollment and assessment data from the California Department of Education in R or Python.</p>
-<p>Part of the <a href="https://github.com/almartin82/njschooldata" class="external-link">njschooldata</a> family of state education data packages, providing programmatic access to official state DOE data with a consistent API across all 50 states.</p>
+<p>Fetch and analyze California school enrollment, assessment, and graduation data from the California Department of Education in R or Python. 44 years of enrollment data (1982-2025), CAASPP assessment results (2015-2024), and graduation rates (2017-2025) for 5.8 million students across 1,000+ districts.</p>
+<p>Part of the <a href="https://github.com/almartin82/njschooldata" class="external-link">njschooldata</a> family.</p>
+<p><strong><a href="https://almartin82.github.io/caschooldata/">Full documentation</a></strong> — all 15 stories with interactive charts, getting-started guide, and complete function reference.</p>
 <div class="section level2">
-<h2 id="what-can-you-find-with-caschooldata">What can you find with caschooldata?<a class="anchor" aria-label="anchor" href="#what-can-you-find-with-caschooldata"></a>
+<h2 id="highlights">Highlights<a class="anchor" aria-label="anchor" href="#highlights"></a>
 </h2>
-<p><strong>44 years of enrollment data (1982-2025) plus CAASPP assessment results (2015-2024).</strong> 5.8 million students today. Over 1,000 districts. Here are twenty stories hiding in the numbers:</p>
-<hr>
-<div class="section level3">
-<h3 id="id_1-california-lost-400000-students-since-2020">1. California lost 400,000+ students since 2020<a class="anchor" aria-label="anchor" href="#id_1-california-lost-400000-students-since-2020"></a>
-</h3>
-<p>The most striking trend: California public schools have lost over 400,000 students since the pandemic began. This represents a decline of roughly 7% in just five years.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://almartin82.github.io/caschooldata/">caschooldata</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org" class="external-link">dplyr</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://tidyr.tidyverse.org" class="external-link">tidyr</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://ggplot2.tidyverse.org" class="external-link">ggplot2</a></span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">enr</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/fetch_enr_multi.html">fetch_enr_multi</a></span><span class="op">(</span><span class="fl">2018</span><span class="op">:</span><span class="fl">2025</span><span class="op">)</span></span>
+<span><span class="co"># Fetch enrollment data (2018-2025)</span></span>
+<span><span class="va">years</span> <span class="op">&lt;-</span> <span class="fl">2018</span><span class="op">:</span><span class="fl">2025</span></span>
+<span><span class="va">enr</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/fetch_enr_multi.html">fetch_enr_multi</a></span><span class="op">(</span><span class="va">years</span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">state_trend</span> <span class="op">&lt;-</span> <span class="va">enr</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span><span class="co"># Fetch 2024 assessment data</span></span>
+<span><span class="va">assess_2024</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/fetch_assess.html">fetch_assess</a></span><span class="op">(</span><span class="fl">2024</span>, tidy <span class="op">=</span> <span class="cn">TRUE</span>, use_cache <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
+<hr>
+<div class="section level3">
+<h3 id="id_1-california-lost-400000-students-since-2020">1. California Lost 400,000+ Students Since 2020<a class="anchor" aria-label="anchor" href="#id_1-california-lost-400000-students-since-2020"></a>
+</h3>
+<p>The most striking finding: California public schools have lost over 400,000 students since the pandemic began. This represents a decline of roughly 7% in just five years.</p>
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">state_trend</span> <span class="op">&lt;-</span> <span class="va">enr</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">is_state</span>, <span class="va">grade_level</span> <span class="op">==</span> <span class="st">"TOTAL"</span>, <span class="va">reporting_category</span> <span class="op">==</span> <span class="st">"TA"</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/arrange.html" class="external-link">arrange</a></span><span class="op">(</span><span class="va">end_year</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span></span>
@@ -85,399 +91,27 @@
 <span>    pct_change <span class="op">=</span> <span class="op">(</span><span class="va">n_students</span> <span class="op">-</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/nth.html" class="external-link">first</a></span><span class="op">(</span><span class="va">n_students</span><span class="op">)</span><span class="op">)</span> <span class="op">/</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/nth.html" class="external-link">first</a></span><span class="op">(</span><span class="va">n_students</span><span class="op">)</span> <span class="op">*</span> <span class="fl">100</span></span>
 <span>  <span class="op">)</span></span>
 <span></span>
-<span><span class="va">state_trend</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">end_year</span>, <span class="va">n_students</span>, <span class="va">cumulative_change</span>, <span class="va">pct_change</span><span class="op">)</span></span></code></pre></div>
+<span><span class="co"># Calculate the specific decline from 2020 peak</span></span>
+<span><span class="va">peak_2020</span> <span class="op">&lt;-</span> <span class="va">state_trend</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">end_year</span> <span class="op">==</span> <span class="fl">2020</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/pull.html" class="external-link">pull</a></span><span class="op">(</span><span class="va">n_students</span><span class="op">)</span></span>
+<span><span class="va">current</span> <span class="op">&lt;-</span> <span class="va">state_trend</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">end_year</span> <span class="op">==</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">max</a></span><span class="op">(</span><span class="va">end_year</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/pull.html" class="external-link">pull</a></span><span class="op">(</span><span class="va">n_students</span><span class="op">)</span></span>
+<span><span class="va">decline</span> <span class="op">&lt;-</span> <span class="va">peak_2020</span> <span class="op">-</span> <span class="va">current</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">"Peak enrollment (2020): %s students\n"</span>, <span class="fu">scales</span><span class="fu">::</span><span class="fu"><a href="https://scales.r-lib.org/reference/comma.html" class="external-link">comma</a></span><span class="op">(</span><span class="va">peak_2020</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">"Current enrollment: %s students\n"</span>, <span class="fu">scales</span><span class="fu">::</span><span class="fu"><a href="https://scales.r-lib.org/reference/comma.html" class="external-link">comma</a></span><span class="op">(</span><span class="va">current</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">"Total decline: %s students (%.1f%%)\n"</span>,</span>
+<span>            <span class="fu">scales</span><span class="fu">::</span><span class="fu"><a href="https://scales.r-lib.org/reference/comma.html" class="external-link">comma</a></span><span class="op">(</span><span class="va">decline</span><span class="op">)</span>,</span>
+<span>            <span class="va">decline</span> <span class="op">/</span> <span class="va">peak_2020</span> <span class="op">*</span> <span class="fl">100</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <div class="float">
 <img src="https://almartin82.github.io/caschooldata/articles/district-highlights_files/figure-html/finding-1-1.png" alt="State enrollment trend"><div class="figcaption">State enrollment trend</div>
 </div>
+<p><a href="https://almartin82.github.io/caschooldata/articles/district-highlights.html#california-lost-400000-students-since-2020">(source)</a></p>
 <hr>
 </div>
 <div class="section level3">
-<h3 id="id_2-lausd-has-lost-the-equivalent-of-a-major-citys-school-district">2. LAUSD has lost the equivalent of a major city’s school district<a class="anchor" aria-label="anchor" href="#id_2-lausd-has-lost-the-equivalent-of-a-major-citys-school-district"></a>
-</h3>
-<p>Los Angeles Unified, the nation’s second-largest school district, has experienced dramatic enrollment losses.</p>
-<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">lausd</span> <span class="op">&lt;-</span> <span class="va">enr</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span></span>
-<span>    <span class="va">is_district</span>,</span>
-<span>    <span class="va">grade_level</span> <span class="op">==</span> <span class="st">"TOTAL"</span>,</span>
-<span>    <span class="va">reporting_category</span> <span class="op">==</span> <span class="st">"TA"</span>,</span>
-<span>    <span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">grepl</a></span><span class="op">(</span><span class="st">"Los Angeles Unified"</span>, <span class="va">district_name</span>, ignore.case <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
-<span>  <span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/arrange.html" class="external-link">arrange</a></span><span class="op">(</span><span class="va">end_year</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span></span>
-<span>    change <span class="op">=</span> <span class="va">n_students</span> <span class="op">-</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/lead-lag.html" class="external-link">lag</a></span><span class="op">(</span><span class="va">n_students</span><span class="op">)</span>,</span>
-<span>    cumulative_change <span class="op">=</span> <span class="va">n_students</span> <span class="op">-</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/nth.html" class="external-link">first</a></span><span class="op">(</span><span class="va">n_students</span><span class="op">)</span></span>
-<span>  <span class="op">)</span></span>
-<span></span>
-<span><span class="va">lausd</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">end_year</span>, <span class="va">n_students</span>, <span class="va">change</span>, <span class="va">cumulative_change</span><span class="op">)</span></span></code></pre></div>
-<div class="float">
-<img src="https://almartin82.github.io/caschooldata/articles/district-highlights_files/figure-html/finding-2-1.png" alt="LAUSD decline"><div class="figcaption">LAUSD decline</div>
-</div>
-<hr>
-</div>
-<div class="section level3">
-<h3 id="id_3-the-top-5-districts-lost-over-100000-students-combined">3. The top 5 districts lost over 100,000 students combined<a class="anchor" aria-label="anchor" href="#id_3-the-top-5-districts-lost-over-100000-students-combined"></a>
-</h3>
-<p>California’s five largest districts all face significant enrollment challenges.</p>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Find the 5 largest districts (by 2025 enrollment)</span></span>
-<span><span class="va">top5_districts</span> <span class="op">&lt;-</span> <span class="va">enr</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span></span>
-<span>    <span class="va">is_district</span>,</span>
-<span>    <span class="va">end_year</span> <span class="op">==</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">max</a></span><span class="op">(</span><span class="va">end_year</span><span class="op">)</span>,</span>
-<span>    <span class="va">grade_level</span> <span class="op">==</span> <span class="st">"TOTAL"</span>,</span>
-<span>    <span class="va">reporting_category</span> <span class="op">==</span> <span class="st">"TA"</span></span>
-<span>  <span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/arrange.html" class="external-link">arrange</a></span><span class="op">(</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/desc.html" class="external-link">desc</a></span><span class="op">(</span><span class="va">n_students</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fl">5</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/pull.html" class="external-link">pull</a></span><span class="op">(</span><span class="va">district_name</span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">top5_trend</span> <span class="op">&lt;-</span> <span class="va">enr</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span></span>
-<span>    <span class="va">is_district</span>,</span>
-<span>    <span class="va">grade_level</span> <span class="op">==</span> <span class="st">"TOTAL"</span>,</span>
-<span>    <span class="va">reporting_category</span> <span class="op">==</span> <span class="st">"TA"</span>,</span>
-<span>    <span class="va">district_name</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="va">top5_districts</span></span>
-<span>  <span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/arrange.html" class="external-link">arrange</a></span><span class="op">(</span><span class="va">district_name</span>, <span class="va">end_year</span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">top5_trend</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html" class="external-link">group_by</a></span><span class="op">(</span><span class="va">district_name</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/summarise.html" class="external-link">summarize</a></span><span class="op">(</span></span>
-<span>    enr_first <span class="op">=</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/nth.html" class="external-link">first</a></span><span class="op">(</span><span class="va">n_students</span><span class="op">)</span>,</span>
-<span>    enr_last <span class="op">=</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/nth.html" class="external-link">last</a></span><span class="op">(</span><span class="va">n_students</span><span class="op">)</span>,</span>
-<span>    change <span class="op">=</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/nth.html" class="external-link">last</a></span><span class="op">(</span><span class="va">n_students</span><span class="op">)</span> <span class="op">-</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/nth.html" class="external-link">first</a></span><span class="op">(</span><span class="va">n_students</span><span class="op">)</span>,</span>
-<span>    pct_change <span class="op">=</span> <span class="op">(</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/nth.html" class="external-link">last</a></span><span class="op">(</span><span class="va">n_students</span><span class="op">)</span> <span class="op">-</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/nth.html" class="external-link">first</a></span><span class="op">(</span><span class="va">n_students</span><span class="op">)</span><span class="op">)</span> <span class="op">/</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/nth.html" class="external-link">first</a></span><span class="op">(</span><span class="va">n_students</span><span class="op">)</span> <span class="op">*</span> <span class="fl">100</span></span>
-<span>  <span class="op">)</span></span></code></pre></div>
-<div class="float">
-<img src="https://almartin82.github.io/caschooldata/articles/district-highlights_files/figure-html/finding-3-1.png" alt="Top 5 districts"><div class="figcaption">Top 5 districts</div>
-</div>
-<hr>
-</div>
-<div class="section level3">
-<h3 id="id_4-hispanic-students-now-comprise-56-of-californias-enrollment">4. Hispanic students now comprise 56% of California’s enrollment<a class="anchor" aria-label="anchor" href="#id_4-hispanic-students-now-comprise-56-of-californias-enrollment"></a>
-</h3>
-<p>California’s demographic makeup has shifted significantly over the past few decades.</p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">race_by_year</span> <span class="op">&lt;-</span> <span class="va">enr</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span></span>
-<span>    <span class="va">is_state</span>,</span>
-<span>    <span class="va">grade_level</span> <span class="op">==</span> <span class="st">"TOTAL"</span>,</span>
-<span>    <span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">grepl</a></span><span class="op">(</span><span class="st">"^RE_"</span>, <span class="va">reporting_category</span><span class="op">)</span></span>
-<span>  <span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html" class="external-link">group_by</a></span><span class="op">(</span><span class="va">end_year</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span></span>
-<span>    total <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="va">n_students</span>, na.rm <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>,</span>
-<span>    pct <span class="op">=</span> <span class="va">n_students</span> <span class="op">/</span> <span class="va">total</span> <span class="op">*</span> <span class="fl">100</span></span>
-<span>  <span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html" class="external-link">ungroup</a></span><span class="op">(</span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">race_by_year</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">end_year</span> <span class="op">==</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">max</a></span><span class="op">(</span><span class="va">end_year</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/arrange.html" class="external-link">arrange</a></span><span class="op">(</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/desc.html" class="external-link">desc</a></span><span class="op">(</span><span class="va">pct</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">subgroup</span>, <span class="va">n_students</span>, <span class="va">pct</span><span class="op">)</span></span></code></pre></div>
-<div class="float">
-<img src="https://almartin82.github.io/caschooldata/articles/district-highlights_files/figure-html/finding-4-1.png" alt="Demographics"><div class="figcaption">Demographics</div>
-</div>
-<hr>
-</div>
-<div class="section level3">
-<h3 id="id_5-some-districts-grew-while-others-collapsed">5. Some districts grew while others collapsed<a class="anchor" aria-label="anchor" href="#id_5-some-districts-grew-while-others-collapsed"></a>
-</h3>
-<p>Not all districts experienced decline. A handful of districts bucked the statewide trend with substantial growth since 2020.</p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">district_changes</span> <span class="op">&lt;-</span> <span class="va">enr</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span></span>
-<span>    <span class="va">is_district</span>,</span>
-<span>    <span class="va">grade_level</span> <span class="op">==</span> <span class="st">"TOTAL"</span>,</span>
-<span>    <span class="va">reporting_category</span> <span class="op">==</span> <span class="st">"TA"</span>,</span>
-<span>    <span class="va">end_year</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2020</span>, <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">max</a></span><span class="op">(</span><span class="va">end_year</span><span class="op">)</span><span class="op">)</span></span>
-<span>  <span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu">tidyr</span><span class="fu">::</span><span class="fu"><a href="https://tidyr.tidyverse.org/reference/pivot_wider.html" class="external-link">pivot_wider</a></span><span class="op">(</span></span>
-<span>    id_cols <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">district_name</span>, <span class="va">county_name</span>, <span class="va">cds_code</span><span class="op">)</span>,</span>
-<span>    names_from <span class="op">=</span> <span class="va">end_year</span>,</span>
-<span>    values_from <span class="op">=</span> <span class="va">n_students</span>,</span>
-<span>    names_prefix <span class="op">=</span> <span class="st">"enr_"</span></span>
-<span>  <span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">enr_2020</span><span class="op">)</span> <span class="op">&amp;</span> <span class="va">enr_2020</span> <span class="op">&gt;</span> <span class="fl">1000</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span></span>
-<span>    change <span class="op">=</span> <span class="va">enr_2025</span> <span class="op">-</span> <span class="va">enr_2020</span>,</span>
-<span>    pct_change <span class="op">=</span> <span class="va">change</span> <span class="op">/</span> <span class="va">enr_2020</span> <span class="op">*</span> <span class="fl">100</span></span>
-<span>  <span class="op">)</span></span>
-<span></span>
-<span><span class="co"># Top 10 growing districts</span></span>
-<span><span class="va">district_changes</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/arrange.html" class="external-link">arrange</a></span><span class="op">(</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/desc.html" class="external-link">desc</a></span><span class="op">(</span><span class="va">pct_change</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fl">10</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">district_name</span>, <span class="va">county_name</span>, <span class="va">enr_2020</span>, <span class="va">change</span>, <span class="va">pct_change</span><span class="op">)</span></span></code></pre></div>
-<hr>
-</div>
-<div class="section level3">
-<h3 id="id_6-high-school-enrollment-dropped-faster-than-elementary">6. High school enrollment dropped faster than elementary<a class="anchor" aria-label="anchor" href="#id_6-high-school-enrollment-dropped-faster-than-elementary"></a>
-</h3>
-<p>Enrollment loss varied significantly by grade level, with high schools seeing the earliest and steepest declines.</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">grade_trends</span> <span class="op">&lt;-</span> <span class="va">enr</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span></span>
-<span>    <span class="va">is_state</span>,</span>
-<span>    <span class="va">reporting_category</span> <span class="op">==</span> <span class="st">"TA"</span>,</span>
-<span>    <span class="va">grade_level</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"K"</span>, <span class="st">"01"</span>, <span class="st">"02"</span>, <span class="st">"03"</span>, <span class="st">"04"</span>, <span class="st">"05"</span>,</span>
-<span>                        <span class="st">"06"</span>, <span class="st">"07"</span>, <span class="st">"08"</span>, <span class="st">"09"</span>, <span class="st">"10"</span>, <span class="st">"11"</span>, <span class="st">"12"</span><span class="op">)</span></span>
-<span>  <span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span></span>
-<span>    grade_band <span class="op">=</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/case-and-replace-when.html" class="external-link">case_when</a></span><span class="op">(</span></span>
-<span>      <span class="va">grade_level</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"K"</span>, <span class="st">"01"</span>, <span class="st">"02"</span>, <span class="st">"03"</span>, <span class="st">"04"</span>, <span class="st">"05"</span><span class="op">)</span> <span class="op">~</span> <span class="st">"Elementary (K-5)"</span>,</span>
-<span>      <span class="va">grade_level</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"06"</span>, <span class="st">"07"</span>, <span class="st">"08"</span><span class="op">)</span> <span class="op">~</span> <span class="st">"Middle (6-8)"</span>,</span>
-<span>      <span class="cn">TRUE</span> <span class="op">~</span> <span class="st">"High (9-12)"</span></span>
-<span>    <span class="op">)</span></span>
-<span>  <span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html" class="external-link">group_by</a></span><span class="op">(</span><span class="va">end_year</span>, <span class="va">grade_band</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/summarise.html" class="external-link">summarize</a></span><span class="op">(</span>n_students <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="va">n_students</span>, na.rm <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>, .groups <span class="op">=</span> <span class="st">"drop"</span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">grade_trends</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html" class="external-link">group_by</a></span><span class="op">(</span><span class="va">grade_band</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>index <span class="op">=</span> <span class="va">n_students</span> <span class="op">/</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/nth.html" class="external-link">first</a></span><span class="op">(</span><span class="va">n_students</span><span class="op">)</span> <span class="op">*</span> <span class="fl">100</span><span class="op">)</span></span></code></pre></div>
-<div class="float">
-<img src="https://almartin82.github.io/caschooldata/articles/district-highlights_files/figure-html/grade-bands-1.png" alt="Grade bands"><div class="figcaption">Grade bands</div>
-</div>
-<hr>
-</div>
-<div class="section level3">
-<h3 id="id_7-the-bay-area-exodus-tech-counties-lost-the-most-students">7. The Bay Area exodus: Tech counties lost the most students<a class="anchor" aria-label="anchor" href="#id_7-the-bay-area-exodus-tech-counties-lost-the-most-students"></a>
-</h3>
-<p>San Francisco, Santa Clara, and other Bay Area counties experienced some of the steepest enrollment drops percentage-wise.</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">county_changes</span> <span class="op">&lt;-</span> <span class="va">enr</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span></span>
-<span>    <span class="va">is_county</span>,</span>
-<span>    <span class="va">grade_level</span> <span class="op">==</span> <span class="st">"TOTAL"</span>,</span>
-<span>    <span class="va">reporting_category</span> <span class="op">==</span> <span class="st">"TA"</span>,</span>
-<span>    <span class="va">end_year</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2020</span>, <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">max</a></span><span class="op">(</span><span class="va">end_year</span><span class="op">)</span><span class="op">)</span></span>
-<span>  <span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu">tidyr</span><span class="fu">::</span><span class="fu"><a href="https://tidyr.tidyverse.org/reference/pivot_wider.html" class="external-link">pivot_wider</a></span><span class="op">(</span></span>
-<span>    id_cols <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">county_name</span><span class="op">)</span>,</span>
-<span>    names_from <span class="op">=</span> <span class="va">end_year</span>,</span>
-<span>    values_from <span class="op">=</span> <span class="va">n_students</span>,</span>
-<span>    names_prefix <span class="op">=</span> <span class="st">"enr_"</span></span>
-<span>  <span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">enr_2020</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span></span>
-<span>    change <span class="op">=</span> <span class="va">enr_2025</span> <span class="op">-</span> <span class="va">enr_2020</span>,</span>
-<span>    pct_change <span class="op">=</span> <span class="va">change</span> <span class="op">/</span> <span class="va">enr_2020</span> <span class="op">*</span> <span class="fl">100</span></span>
-<span>  <span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/arrange.html" class="external-link">arrange</a></span><span class="op">(</span><span class="va">pct_change</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># Top 10 counties with biggest percentage decline</span></span>
-<span><span class="va">county_changes</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fl">10</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">county_name</span>, <span class="va">enr_2020</span>, <span class="va">change</span>, <span class="va">pct_change</span><span class="op">)</span></span></code></pre></div>
-<div class="float">
-<img src="https://almartin82.github.io/caschooldata/articles/district-highlights_files/figure-html/county-analysis-1.png" alt="County analysis"><div class="figcaption">County analysis</div>
-</div>
-<hr>
-</div>
-<div class="section level3">
-<h3 id="id_8-kindergarten-enrollment-signals-future-decline">8. Kindergarten enrollment signals future decline<a class="anchor" aria-label="anchor" href="#id_8-kindergarten-enrollment-signals-future-decline"></a>
-</h3>
-<p>Kindergarten enrollment is a leading indicator for future enrollment. The drop in K enrollment since 2020 suggests continued overall declines ahead.</p>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">k_trend</span> <span class="op">&lt;-</span> <span class="va">enr</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span></span>
-<span>    <span class="va">is_state</span>,</span>
-<span>    <span class="va">reporting_category</span> <span class="op">==</span> <span class="st">"TA"</span>,</span>
-<span>    <span class="va">grade_level</span> <span class="op">==</span> <span class="st">"K"</span></span>
-<span>  <span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/arrange.html" class="external-link">arrange</a></span><span class="op">(</span><span class="va">end_year</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span></span>
-<span>    change <span class="op">=</span> <span class="va">n_students</span> <span class="op">-</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/lead-lag.html" class="external-link">lag</a></span><span class="op">(</span><span class="va">n_students</span><span class="op">)</span>,</span>
-<span>    pct_change <span class="op">=</span> <span class="op">(</span><span class="va">n_students</span> <span class="op">-</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/lead-lag.html" class="external-link">lag</a></span><span class="op">(</span><span class="va">n_students</span><span class="op">)</span><span class="op">)</span> <span class="op">/</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/lead-lag.html" class="external-link">lag</a></span><span class="op">(</span><span class="va">n_students</span><span class="op">)</span> <span class="op">*</span> <span class="fl">100</span></span>
-<span>  <span class="op">)</span></span>
-<span></span>
-<span><span class="va">k_trend</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">end_year</span>, <span class="va">n_students</span>, <span class="va">change</span>, <span class="va">pct_change</span><span class="op">)</span></span></code></pre></div>
-<div class="float">
-<img src="https://almartin82.github.io/caschooldata/articles/district-highlights_files/figure-html/kindergarten-1.png" alt="Kindergarten trend"><div class="figcaption">Kindergarten trend</div>
-</div>
-<hr>
-</div>
-<div class="section level3">
-<h3 id="id_9-gender-ratios-have-remained-remarkably-stable">9. Gender ratios have remained remarkably stable<a class="anchor" aria-label="anchor" href="#id_9-gender-ratios-have-remained-remarkably-stable"></a>
-</h3>
-<p>Despite major enrollment shifts, the gender ratio has stayed nearly constant at roughly 51% male, 49% female.</p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">gender_trend</span> <span class="op">&lt;-</span> <span class="va">enr</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span></span>
-<span>    <span class="va">is_state</span>,</span>
-<span>    <span class="va">grade_level</span> <span class="op">==</span> <span class="st">"TOTAL"</span>,</span>
-<span>    <span class="va">reporting_category</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"GN_F"</span>, <span class="st">"GN_M"</span><span class="op">)</span></span>
-<span>  <span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html" class="external-link">group_by</a></span><span class="op">(</span><span class="va">end_year</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span></span>
-<span>    total <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="va">n_students</span><span class="op">)</span>,</span>
-<span>    pct <span class="op">=</span> <span class="va">n_students</span> <span class="op">/</span> <span class="va">total</span> <span class="op">*</span> <span class="fl">100</span></span>
-<span>  <span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html" class="external-link">ungroup</a></span><span class="op">(</span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">gender_trend</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">end_year</span>, <span class="va">subgroup</span>, <span class="va">n_students</span>, <span class="va">pct</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu">tidyr</span><span class="fu">::</span><span class="fu"><a href="https://tidyr.tidyverse.org/reference/pivot_wider.html" class="external-link">pivot_wider</a></span><span class="op">(</span>names_from <span class="op">=</span> <span class="va">subgroup</span>, values_from <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">n_students</span>, <span class="va">pct</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<div class="float">
-<img src="https://almartin82.github.io/caschooldata/articles/district-highlights_files/figure-html/gender-1.png" alt="Gender distribution"><div class="figcaption">Gender distribution</div>
-</div>
-<hr>
-</div>
-<div class="section level3">
-<h3 id="id_10-english-learners-remain-a-substantial-population">10. English Learners remain a substantial population<a class="anchor" aria-label="anchor" href="#id_10-english-learners-remain-a-substantial-population"></a>
-</h3>
-<p>English Learners represent approximately 18% of California’s student population (data available for 2024-2025).</p>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">el_data</span> <span class="op">&lt;-</span> <span class="va">enr</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span></span>
-<span>    <span class="va">is_state</span>,</span>
-<span>    <span class="va">grade_level</span> <span class="op">==</span> <span class="st">"TOTAL"</span>,</span>
-<span>    <span class="va">reporting_category</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"TA"</span>, <span class="st">"SG_EL"</span><span class="op">)</span>,</span>
-<span>    <span class="va">end_year</span> <span class="op">&gt;=</span> <span class="fl">2024</span></span>
-<span>  <span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu">tidyr</span><span class="fu">::</span><span class="fu"><a href="https://tidyr.tidyverse.org/reference/pivot_wider.html" class="external-link">pivot_wider</a></span><span class="op">(</span></span>
-<span>    id_cols <span class="op">=</span> <span class="va">end_year</span>,</span>
-<span>    names_from <span class="op">=</span> <span class="va">reporting_category</span>,</span>
-<span>    values_from <span class="op">=</span> <span class="va">n_students</span></span>
-<span>  <span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>el_pct <span class="op">=</span> <span class="va">SG_EL</span> <span class="op">/</span> <span class="va">TA</span> <span class="op">*</span> <span class="fl">100</span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">el_data</span></span></code></pre></div>
-<hr>
-</div>
-<div class="section level3">
-<h3 id="id_11-state-enrollment-peaked-around-2003-04-at-63-million">11. State enrollment peaked around 2003-04 at 6.3 million<a class="anchor" aria-label="anchor" href="#id_11-state-enrollment-peaked-around-2003-04-at-63-million"></a>
-</h3>
-<p>California’s K-12 enrollment peaked around 2003-04 at 6.3 million students. Today it’s under 5.8 million, a decline of nearly half a million students from the peak.</p>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">enr_historical</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/fetch_enr_multi.html">fetch_enr_multi</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1985</span>, <span class="fl">1995</span>, <span class="fl">2005</span>, <span class="fl">2015</span>, <span class="fl">2025</span><span class="op">)</span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">enr_historical</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">is_state</span>, <span class="va">grade_level</span> <span class="op">==</span> <span class="st">"TOTAL"</span>, <span class="va">reporting_category</span> <span class="op">==</span> <span class="st">"TA"</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">end_year</span>, <span class="va">n_students</span><span class="op">)</span></span></code></pre></div>
-<div class="float">
-<img src="https://almartin82.github.io/caschooldata/articles/district-highlights_files/figure-html/state-trend-1.png" alt="State trend long-term"><div class="figcaption">State trend long-term</div>
-</div>
-<hr>
-</div>
-<div class="section level3">
-<h3 id="id_12-lausd-has-seen-a-multi-decade-decline">12. LAUSD has seen a multi-decade decline<a class="anchor" aria-label="anchor" href="#id_12-lausd-has-seen-a-multi-decade-decline"></a>
-</h3>
-<p>The nation’s second-largest district has lost nearly half its enrollment since its peak, making it a case study in urban enrollment decline.</p>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">lausd_long</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/fetch_enr_multi.html">fetch_enr_multi</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1990</span>, <span class="fl">2000</span>, <span class="fl">2010</span>, <span class="fl">2020</span>, <span class="fl">2025</span><span class="op">)</span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">lausd_long</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">is_district</span>, <span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">grepl</a></span><span class="op">(</span><span class="st">"Los Angeles Unified"</span>, <span class="va">district_name</span><span class="op">)</span>,</span>
-<span>         <span class="va">grade_level</span> <span class="op">==</span> <span class="st">"TOTAL"</span>, <span class="va">reporting_category</span> <span class="op">==</span> <span class="st">"TA"</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">end_year</span>, <span class="va">district_name</span>, <span class="va">n_students</span><span class="op">)</span></span></code></pre></div>
-<div class="float">
-<img src="https://almartin82.github.io/caschooldata/articles/district-highlights_files/figure-html/lausd-1.png" alt="LAUSD long-term"><div class="figcaption">LAUSD long-term</div>
-</div>
-<hr>
-</div>
-<div class="section level3">
-<h3 id="id_13-californias-largest-districts-dominate-enrollment">13. California’s largest districts dominate enrollment<a class="anchor" aria-label="anchor" href="#id_13-californias-largest-districts-dominate-enrollment"></a>
-</h3>
-<p>The top 5 districts alone account for a significant share of California’s total enrollment, with LAUSD enrolling more students than many states.</p>
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">enr_2025</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/fetch_enr.html">fetch_enr</a></span><span class="op">(</span><span class="fl">2025</span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">enr_2025</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">is_district</span>, <span class="va">grade_level</span> <span class="op">==</span> <span class="st">"TOTAL"</span>, <span class="va">reporting_category</span> <span class="op">==</span> <span class="st">"TA"</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/arrange.html" class="external-link">arrange</a></span><span class="op">(</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/desc.html" class="external-link">desc</a></span><span class="op">(</span><span class="va">n_students</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fl">10</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">district_name</span>, <span class="va">county_name</span>, <span class="va">n_students</span><span class="op">)</span></span></code></pre></div>
-<div class="float">
-<img src="https://almartin82.github.io/caschooldata/articles/district-highlights_files/figure-html/top5-1.png" alt="Top districts"><div class="figcaption">Top districts</div>
-</div>
-<hr>
-</div>
-<div class="section level3">
-<h3 id="id_14-demographics-vary-dramatically-across-major-districts">14. Demographics vary dramatically across major districts<a class="anchor" aria-label="anchor" href="#id_14-demographics-vary-dramatically-across-major-districts"></a>
-</h3>
-<p>While the state overall is majority Hispanic, individual districts show vastly different demographic compositions: majority Hispanic in LA and Fresno, highly diverse in SF and San Diego.</p>
-<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">enr_2025</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">is_district</span>, <span class="va">grade_level</span> <span class="op">==</span> <span class="st">"TOTAL"</span>, <span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">grepl</a></span><span class="op">(</span><span class="st">"^RE_"</span>, <span class="va">reporting_category</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">district_name</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"San Francisco Unified"</span>, <span class="st">"Los Angeles Unified"</span>,</span>
-<span>                               <span class="st">"Fresno Unified"</span>, <span class="st">"San Diego Unified"</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html" class="external-link">group_by</a></span><span class="op">(</span><span class="va">district_name</span>, <span class="va">subgroup</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/summarise.html" class="external-link">summarize</a></span><span class="op">(</span>n <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="va">n_students</span><span class="op">)</span>, .groups <span class="op">=</span> <span class="st">"drop"</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html" class="external-link">group_by</a></span><span class="op">(</span><span class="va">district_name</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>pct <span class="op">=</span> <span class="va">n</span> <span class="op">/</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="va">n</span><span class="op">)</span> <span class="op">*</span> <span class="fl">100</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu">tidyr</span><span class="fu">::</span><span class="fu"><a href="https://tidyr.tidyverse.org/reference/pivot_wider.html" class="external-link">pivot_wider</a></span><span class="op">(</span>id_cols <span class="op">=</span> <span class="va">district_name</span>, names_from <span class="op">=</span> <span class="va">subgroup</span>, values_from <span class="op">=</span> <span class="va">pct</span><span class="op">)</span></span></code></pre></div>
-<div class="float">
-<img src="https://almartin82.github.io/caschooldata/articles/district-highlights_files/figure-html/demographics-1.png" alt="Demographics by district"><div class="figcaption">Demographics by district</div>
-</div>
-<hr>
-</div>
-<div class="section level3">
-<h3 id="id_15-enrollment-declined-every-year-since-2020">15. Enrollment declined every year since 2020<a class="anchor" aria-label="anchor" href="#id_15-enrollment-declined-every-year-since-2020"></a>
-</h3>
-<p>California has seen consistent year-over-year enrollment declines since 2020, with no year showing a recovery.</p>
-<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">enr_recent</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/fetch_enr_multi.html">fetch_enr_multi</a></span><span class="op">(</span><span class="fl">2018</span><span class="op">:</span><span class="fl">2025</span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">state_yoy</span> <span class="op">&lt;-</span> <span class="va">enr_recent</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">is_state</span>, <span class="va">grade_level</span> <span class="op">==</span> <span class="st">"TOTAL"</span>, <span class="va">reporting_category</span> <span class="op">==</span> <span class="st">"TA"</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/arrange.html" class="external-link">arrange</a></span><span class="op">(</span><span class="va">end_year</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span></span>
-<span>    prev_year <span class="op">=</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/lead-lag.html" class="external-link">lag</a></span><span class="op">(</span><span class="va">n_students</span><span class="op">)</span>,</span>
-<span>    change <span class="op">=</span> <span class="va">n_students</span> <span class="op">-</span> <span class="va">prev_year</span>,</span>
-<span>    pct_change <span class="op">=</span> <span class="op">(</span><span class="va">n_students</span> <span class="op">-</span> <span class="va">prev_year</span><span class="op">)</span> <span class="op">/</span> <span class="va">prev_year</span> <span class="op">*</span> <span class="fl">100</span></span>
-<span>  <span class="op">)</span></span>
-<span></span>
-<span><span class="va">state_yoy</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">end_year</span>, <span class="va">n_students</span>, <span class="va">change</span>, <span class="va">pct_change</span><span class="op">)</span></span></code></pre></div>
-<div class="float">
-<img src="https://almartin82.github.io/caschooldata/articles/data-quality-qa_files/figure-html/state-plot-1.png" alt="Year-over-year changes"><div class="figcaption">Year-over-year changes</div>
-</div>
-<hr>
-</div>
-</div>
-<div class="section level2">
-<h2 id="assessment-data-caaspp-results">Assessment Data: CAASPP Results<a class="anchor" aria-label="anchor" href="#assessment-data-caaspp-results"></a>
-</h2>
-<p>California’s CAASPP (California Assessment of Student Performance and Progress) system includes the Smarter Balanced assessments for English Language Arts (ELA) and Mathematics. Data available from 2015-2024 (no 2020 due to COVID-19).</p>
-<hr>
-<div class="section level3">
-<h3 id="id_16-statewide-proficiency-47-in-ela-36-in-math">16. Statewide proficiency: 47% in ELA, 36% in Math<a class="anchor" aria-label="anchor" href="#id_16-statewide-proficiency-47-in-ela-36-in-math"></a>
-</h3>
-<p>California’s 11th graders showed a 20+ point gap between ELA and Math proficiency in 2024.</p>
-<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://almartin82.github.io/caschooldata/">caschooldata</a></span><span class="op">)</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org" class="external-link">dplyr</a></span><span class="op">)</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://tidyr.tidyverse.org" class="external-link">tidyr</a></span><span class="op">)</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://ggplot2.tidyverse.org" class="external-link">ggplot2</a></span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># Set theme</span></span>
-<span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/get_theme.html" class="external-link">theme_set</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html" class="external-link">theme_minimal</a></span><span class="op">(</span>base_size <span class="op">=</span> <span class="fl">12</span><span class="op">)</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># Fetch 2024 assessment data</span></span>
-<span><span class="va">assess_2024</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/fetch_assess.html">fetch_assess</a></span><span class="op">(</span><span class="fl">2024</span>, tidy <span class="op">=</span> <span class="cn">TRUE</span>, use_cache <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># State-level proficiency by subject (Grade 11)</span></span>
-<span><span class="va">state_g11</span> <span class="op">&lt;-</span> <span class="va">assess_2024</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">is_state</span>, <span class="va">grade</span> <span class="op">==</span> <span class="st">"11"</span>, <span class="va">metric_type</span> <span class="op">==</span> <span class="st">"pct_met_and_above"</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">subject</span>, <span class="va">metric_value</span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">state_g11</span></span></code></pre></div>
-<div class="float">
-<img src="https://almartin82.github.io/caschooldata/articles/california-assessment_files/figure-html/finding-1-plot-1.png" alt="Grade 11 Proficiency"><div class="figcaption">Grade 11 Proficiency</div>
-</div>
-<hr>
-</div>
-<div class="section level3">
-<h3 id="id_17-elementary-students-outperform-high-schoolers-in-ela">17. Elementary students outperform high schoolers in ELA<a class="anchor" aria-label="anchor" href="#id_17-elementary-students-outperform-high-schoolers-in-ela"></a>
+<h3 id="id_2-elementary-students-outperform-high-schoolers-in-ela">2. Elementary students outperform high schoolers in ELA<a class="anchor" aria-label="anchor" href="#id_2-elementary-students-outperform-high-schoolers-in-ela"></a>
 </h3>
 <p>Third graders actually have higher ELA proficiency than 11th graders, suggesting early reading interventions may be working.</p>
-<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># ELA proficiency by grade</span></span>
 <span><span class="va">ela_by_grade</span> <span class="op">&lt;-</span> <span class="va">assess_2024</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">is_state</span>, <span class="va">subject</span> <span class="op">==</span> <span class="st">"ELA"</span>,</span>
@@ -490,84 +124,145 @@
 <div class="float">
 <img src="https://almartin82.github.io/caschooldata/articles/california-assessment_files/figure-html/finding-2-plot-1.png" alt="ELA by Grade"><div class="figcaption">ELA by Grade</div>
 </div>
+<p><a href="https://almartin82.github.io/caschooldata/articles/california-assessment.html#elementary-students-outperform-high-schoolers-in-ela">(source)</a></p>
 <hr>
 </div>
 <div class="section level3">
-<h3 id="id_18-math-proficiency-drops-dramatically-by-middle-school">18. Math proficiency drops dramatically by middle school<a class="anchor" aria-label="anchor" href="#id_18-math-proficiency-drops-dramatically-by-middle-school"></a>
+<h3 id="id_3-the-bay-area-exodus-tech-counties-lost-the-most-students">3. The Bay Area Exodus: Tech Counties Lost the Most Students<a class="anchor" aria-label="anchor" href="#id_3-the-bay-area-exodus-tech-counties-lost-the-most-students"></a>
 </h3>
-<p>Math proficiency peaks in Grade 3-4 at around 45% and falls to under 32% by Grade 8.</p>
-<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Math proficiency by grade</span></span>
-<span><span class="va">math_by_grade</span> <span class="op">&lt;-</span> <span class="va">assess_2024</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">is_state</span>, <span class="va">subject</span> <span class="op">==</span> <span class="st">"Math"</span>,</span>
-<span>         <span class="va">metric_type</span> <span class="op">==</span> <span class="st">"pct_met_and_above"</span>,</span>
-<span>         <span class="va">grade</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">"%02d"</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">3</span><span class="op">:</span><span class="fl">8</span>, <span class="fl">11</span><span class="op">)</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">grade</span>, <span class="va">metric_value</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/arrange.html" class="external-link">arrange</a></span><span class="op">(</span><span class="va">grade</span><span class="op">)</span></span>
+<p>San Francisco, Santa Clara, and other Bay Area counties experienced some of the steepest enrollment drops:</p>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">county_changes</span> <span class="op">&lt;-</span> <span class="va">enr</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span></span>
+<span>    <span class="va">is_county</span>,</span>
+<span>    <span class="va">grade_level</span> <span class="op">==</span> <span class="st">"TOTAL"</span>,</span>
+<span>    <span class="va">reporting_category</span> <span class="op">==</span> <span class="st">"TA"</span>,</span>
+<span>    <span class="va">end_year</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2020</span>, <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">max</a></span><span class="op">(</span><span class="va">end_year</span><span class="op">)</span><span class="op">)</span></span>
+<span>  <span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://tidyr.tidyverse.org/reference/pivot_wider.html" class="external-link">pivot_wider</a></span><span class="op">(</span></span>
+<span>    id_cols <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">county_name</span><span class="op">)</span>,</span>
+<span>    names_from <span class="op">=</span> <span class="va">end_year</span>,</span>
+<span>    values_from <span class="op">=</span> <span class="va">n_students</span>,</span>
+<span>    names_prefix <span class="op">=</span> <span class="st">"enr_"</span></span>
+<span>  <span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">enr_2020</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span></span>
+<span>    change <span class="op">=</span> <span class="va">.</span><span class="op">[[</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">ncol</a></span><span class="op">(</span><span class="va">.</span><span class="op">)</span><span class="op">]</span><span class="op">]</span> <span class="op">-</span> <span class="va">enr_2020</span>,</span>
+<span>    pct_change <span class="op">=</span> <span class="va">change</span> <span class="op">/</span> <span class="va">enr_2020</span> <span class="op">*</span> <span class="fl">100</span></span>
+<span>  <span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/arrange.html" class="external-link">arrange</a></span><span class="op">(</span><span class="va">pct_change</span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">math_by_grade</span></span></code></pre></div>
+<span><span class="co"># Top 10 counties with biggest percentage decline</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"Top 10 Counties with Largest Enrollment Decline (2020 to Present):\n\n"</span><span class="op">)</span></span>
+<span><span class="va">county_changes</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fl">10</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">county_name</span>, <span class="va">enr_2020</span>, <span class="va">change</span>, <span class="va">pct_change</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span></span>
+<span>    enr_2020 <span class="op">=</span> <span class="fu">scales</span><span class="fu">::</span><span class="fu"><a href="https://scales.r-lib.org/reference/comma.html" class="external-link">comma</a></span><span class="op">(</span><span class="va">enr_2020</span><span class="op">)</span>,</span>
+<span>    change <span class="op">=</span> <span class="fu">scales</span><span class="fu">::</span><span class="fu"><a href="https://scales.r-lib.org/reference/comma.html" class="external-link">comma</a></span><span class="op">(</span><span class="va">change</span><span class="op">)</span>,</span>
+<span>    pct_change <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">"%.1f%%"</span>, <span class="va">pct_change</span><span class="op">)</span></span>
+<span>  <span class="op">)</span></span></code></pre></div>
 <div class="float">
-<img src="https://almartin82.github.io/caschooldata/articles/california-assessment_files/figure-html/finding-3-plot-1.png" alt="Math by Grade"><div class="figcaption">Math by Grade</div>
+<img src="https://almartin82.github.io/caschooldata/articles/district-highlights_files/figure-html/county-analysis-1.png" alt="County analysis"><div class="figcaption">County analysis</div>
 </div>
-<hr>
-</div>
-<div class="section level3">
-<h3 id="id_19-multi-year-trends-recovery-from-covid">19. Multi-year trends: Recovery from COVID<a class="anchor" aria-label="anchor" href="#id_19-multi-year-trends-recovery-from-covid"></a>
-</h3>
-<p>Proficiency rates are recovering from the 2021 pandemic lows but remain below 2019 levels.</p>
-<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Fetch multiple years</span></span>
-<span><span class="va">assess_multi</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/fetch_assess_multi.html">fetch_assess_multi</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2019</span>, <span class="fl">2021</span>, <span class="fl">2022</span>, <span class="fl">2023</span>, <span class="fl">2024</span><span class="op">)</span>,</span>
-<span>                                    tidy <span class="op">=</span> <span class="cn">TRUE</span>, use_cache <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># State-level trend</span></span>
-<span><span class="va">state_trend</span> <span class="op">&lt;-</span> <span class="va">assess_multi</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">is_state</span>, <span class="va">grade</span> <span class="op">==</span> <span class="st">"11"</span>, <span class="va">metric_type</span> <span class="op">==</span> <span class="st">"pct_met_and_above"</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">end_year</span>, <span class="va">subject</span>, <span class="va">metric_value</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/arrange.html" class="external-link">arrange</a></span><span class="op">(</span><span class="va">subject</span>, <span class="va">end_year</span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">state_trend</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://tidyr.tidyverse.org/reference/pivot_wider.html" class="external-link">pivot_wider</a></span><span class="op">(</span>names_from <span class="op">=</span> <span class="va">subject</span>, values_from <span class="op">=</span> <span class="va">metric_value</span><span class="op">)</span></span></code></pre></div>
-<div class="float">
-<img src="https://almartin82.github.io/caschooldata/articles/california-assessment_files/figure-html/finding-5-plot-1.png" alt="COVID Recovery"><div class="figcaption">COVID Recovery</div>
-</div>
-<hr>
-</div>
-<div class="section level3">
-<h3 id="id_20-ela-math-gap-is-consistent-across-grades">20. ELA-Math gap is consistent across grades<a class="anchor" aria-label="anchor" href="#id_20-ela-math-gap-is-consistent-across-grades"></a>
-</h3>
-<p>The ELA advantage over Math proficiency is remarkably consistent (10-20 points) across all tested grades.</p>
-<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># ELA-Math gap by grade</span></span>
-<span><span class="va">ela_math_gap</span> <span class="op">&lt;-</span> <span class="va">assess_2024</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">is_state</span>, <span class="va">metric_type</span> <span class="op">==</span> <span class="st">"pct_met_and_above"</span>,</span>
-<span>         <span class="va">grade</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">"%02d"</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">3</span><span class="op">:</span><span class="fl">8</span>, <span class="fl">11</span><span class="op">)</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">grade</span>, <span class="va">subject</span>, <span class="va">metric_value</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://tidyr.tidyverse.org/reference/pivot_wider.html" class="external-link">pivot_wider</a></span><span class="op">(</span>names_from <span class="op">=</span> <span class="va">subject</span>, values_from <span class="op">=</span> <span class="va">metric_value</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>gap <span class="op">=</span> <span class="va">ELA</span> <span class="op">-</span> <span class="va">Math</span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">ela_math_gap</span></span></code></pre></div>
-<div class="float">
-<img src="https://almartin82.github.io/caschooldata/articles/california-assessment_files/figure-html/finding-14-plot-1.png" alt="ELA-Math Gap"><div class="figcaption">ELA-Math Gap</div>
-</div>
+<p><a href="https://almartin82.github.io/caschooldata/articles/district-highlights.html#the-bay-area-exodus-tech-counties-lost-the-most-students">(source)</a></p>
 <hr>
 </div>
 </div>
 <div class="section level2">
-<h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
+<h2 id="data-taxonomy">Data Taxonomy<a class="anchor" aria-label="anchor" href="#data-taxonomy"></a>
 </h2>
-<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># install.packages("remotes")</span></span>
-<span><span class="fu">remotes</span><span class="fu">::</span><span class="fu">install_github</span><span class="op">(</span><span class="st">"almartin82/caschooldata"</span><span class="op">)</span></span></code></pre></div>
+<table class="table">
+<colgroup>
+<col width="27%">
+<col width="19%">
+<col width="27%">
+<col width="25%">
+</colgroup>
+<thead><tr class="header">
+<th>Category</th>
+<th>Years</th>
+<th>Function</th>
+<th>Details</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td><strong>Enrollment</strong></td>
+<td>1982-2025</td>
+<td>
+<code><a href="reference/fetch_enr.html">fetch_enr()</a></code> / <code><a href="reference/fetch_enr_multi.html">fetch_enr_multi()</a></code>
+</td>
+<td>State, county, district, school. Race, gender, EL, FRPL, SpEd</td>
+</tr>
+<tr class="even">
+<td><strong>Assessments</strong></td>
+<td>2015-2024</td>
+<td>
+<code><a href="reference/fetch_assess.html">fetch_assess()</a></code> / <code><a href="reference/fetch_assess_multi.html">fetch_assess_multi()</a></code>
+</td>
+<td>CAASPP ELA &amp; Math. Grades 3-8, 11. State, district, school</td>
+</tr>
+<tr class="odd">
+<td><strong>Graduation</strong></td>
+<td>2017-2025</td>
+<td>
+<code><a href="reference/fetch_graduation.html">fetch_graduation()</a></code> / <code><a href="reference/fetch_graduation_multi.html">fetch_graduation_multi()</a></code>
+</td>
+<td>4-yr, 5-yr, 6-yr cohort. State, county, district, school</td>
+</tr>
+<tr class="even">
+<td>Directory</td>
+<td>—</td>
+<td>—</td>
+<td>Not yet available</td>
+</tr>
+<tr class="odd">
+<td>Per-Pupil Spending</td>
+<td>—</td>
+<td>—</td>
+<td>Not yet available</td>
+</tr>
+<tr class="even">
+<td>Accountability</td>
+<td>—</td>
+<td>—</td>
+<td>Not yet available</td>
+</tr>
+<tr class="odd">
+<td>Chronic Absence</td>
+<td>—</td>
+<td>—</td>
+<td>Not yet available</td>
+</tr>
+<tr class="even">
+<td>EL Progress</td>
+<td>—</td>
+<td>—</td>
+<td>Not yet available</td>
+</tr>
+<tr class="odd">
+<td>Special Ed</td>
+<td>—</td>
+<td>—</td>
+<td>Not yet available</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p>See <a href="DATA-CATEGORY-TAXONOMY.html">DATA-CATEGORY-TAXONOMY.md</a> for what each category covers.</p>
+</blockquote>
 </div>
 <div class="section level2">
-<h2 id="quick-start">Quick start<a class="anchor" aria-label="anchor" href="#quick-start"></a>
+<h2 id="quick-start">Quick Start<a class="anchor" aria-label="anchor" href="#quick-start"></a>
 </h2>
 <div class="section level3">
 <h3 id="r">R<a class="anchor" aria-label="anchor" href="#r"></a>
 </h3>
-<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://almartin82.github.io/caschooldata/">caschooldata</a></span><span class="op">)</span></span>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># install.packages("remotes")</span></span>
+<span><span class="fu">remotes</span><span class="fu">::</span><span class="fu">install_github</span><span class="op">(</span><span class="st">"almartin82/caschooldata"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://almartin82.github.io/caschooldata/">caschooldata</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org" class="external-link">dplyr</a></span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Fetch one year</span></span>
@@ -597,133 +292,51 @@
 <div class="section level3">
 <h3 id="python">Python<a class="anchor" aria-label="anchor" href="#python"></a>
 </h3>
-<div class="sourceCode" id="cb23"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb23-1"><a href="#cb23-1" tabindex="-1"></a><span class="im">import</span> pycaschooldata <span class="im">as</span> ca</span>
-<span id="cb23-2"><a href="#cb23-2" tabindex="-1"></a></span>
-<span id="cb23-3"><a href="#cb23-3" tabindex="-1"></a><span class="co"># Check available years</span></span>
-<span id="cb23-4"><a href="#cb23-4" tabindex="-1"></a>years <span class="op">=</span> ca.get_available_years()</span>
-<span id="cb23-5"><a href="#cb23-5" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Data available from </span><span class="sc">{</span>years[<span class="st">'min_year'</span>]<span class="sc">}</span><span class="ss"> to </span><span class="sc">{</span>years[<span class="st">'max_year'</span>]<span class="sc">}</span><span class="ss">"</span>)</span>
-<span id="cb23-6"><a href="#cb23-6" tabindex="-1"></a></span>
-<span id="cb23-7"><a href="#cb23-7" tabindex="-1"></a><span class="co"># Fetch one year</span></span>
-<span id="cb23-8"><a href="#cb23-8" tabindex="-1"></a>enr_2025 <span class="op">=</span> ca.fetch_enr(<span class="dv">2025</span>)</span>
-<span id="cb23-9"><a href="#cb23-9" tabindex="-1"></a></span>
-<span id="cb23-10"><a href="#cb23-10" tabindex="-1"></a><span class="co"># Fetch multiple years</span></span>
-<span id="cb23-11"><a href="#cb23-11" tabindex="-1"></a>enr_recent <span class="op">=</span> ca.fetch_enr_multi([<span class="dv">2023</span>, <span class="dv">2024</span>, <span class="dv">2025</span>])</span>
-<span id="cb23-12"><a href="#cb23-12" tabindex="-1"></a></span>
-<span id="cb23-13"><a href="#cb23-13" tabindex="-1"></a><span class="co"># State totals</span></span>
-<span id="cb23-14"><a href="#cb23-14" tabindex="-1"></a>state_total <span class="op">=</span> enr_2025[</span>
-<span id="cb23-15"><a href="#cb23-15" tabindex="-1"></a>    (enr_2025[<span class="st">'is_state'</span>] <span class="op">==</span> <span class="va">True</span>) <span class="op">&amp;</span></span>
-<span id="cb23-16"><a href="#cb23-16" tabindex="-1"></a>    (enr_2025[<span class="st">'grade_level'</span>] <span class="op">==</span> <span class="st">'TOTAL'</span>) <span class="op">&amp;</span></span>
-<span id="cb23-17"><a href="#cb23-17" tabindex="-1"></a>    (enr_2025[<span class="st">'subgroup'</span>] <span class="op">==</span> <span class="st">'total'</span>)</span>
-<span id="cb23-18"><a href="#cb23-18" tabindex="-1"></a>]</span>
-<span id="cb23-19"><a href="#cb23-19" tabindex="-1"></a></span>
-<span id="cb23-20"><a href="#cb23-20" tabindex="-1"></a><span class="co"># District breakdown</span></span>
-<span id="cb23-21"><a href="#cb23-21" tabindex="-1"></a>district_totals <span class="op">=</span> enr_2025[</span>
-<span id="cb23-22"><a href="#cb23-22" tabindex="-1"></a>    (enr_2025[<span class="st">'is_district'</span>] <span class="op">==</span> <span class="va">True</span>) <span class="op">&amp;</span></span>
-<span id="cb23-23"><a href="#cb23-23" tabindex="-1"></a>    (enr_2025[<span class="st">'grade_level'</span>] <span class="op">==</span> <span class="st">'TOTAL'</span>) <span class="op">&amp;</span></span>
-<span id="cb23-24"><a href="#cb23-24" tabindex="-1"></a>    (enr_2025[<span class="st">'subgroup'</span>] <span class="op">==</span> <span class="st">'total'</span>)</span>
-<span id="cb23-25"><a href="#cb23-25" tabindex="-1"></a>].sort_values(<span class="st">'n_students'</span>, ascending<span class="op">=</span><span class="va">False</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb6"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a><span class="im">import</span> pycaschooldata <span class="im">as</span> ca</span>
+<span id="cb6-2"><a href="#cb6-2" tabindex="-1"></a></span>
+<span id="cb6-3"><a href="#cb6-3" tabindex="-1"></a><span class="co"># Check available years</span></span>
+<span id="cb6-4"><a href="#cb6-4" tabindex="-1"></a>years <span class="op">=</span> ca.get_available_years()</span>
+<span id="cb6-5"><a href="#cb6-5" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Data available from </span><span class="sc">{</span>years[<span class="st">'min_year'</span>]<span class="sc">}</span><span class="ss"> to </span><span class="sc">{</span>years[<span class="st">'max_year'</span>]<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb6-6"><a href="#cb6-6" tabindex="-1"></a></span>
+<span id="cb6-7"><a href="#cb6-7" tabindex="-1"></a><span class="co"># Fetch one year</span></span>
+<span id="cb6-8"><a href="#cb6-8" tabindex="-1"></a>enr_2025 <span class="op">=</span> ca.fetch_enr(<span class="dv">2025</span>)</span>
+<span id="cb6-9"><a href="#cb6-9" tabindex="-1"></a></span>
+<span id="cb6-10"><a href="#cb6-10" tabindex="-1"></a><span class="co"># Fetch multiple years</span></span>
+<span id="cb6-11"><a href="#cb6-11" tabindex="-1"></a>enr_recent <span class="op">=</span> ca.fetch_enr_multi([<span class="dv">2023</span>, <span class="dv">2024</span>, <span class="dv">2025</span>])</span>
+<span id="cb6-12"><a href="#cb6-12" tabindex="-1"></a></span>
+<span id="cb6-13"><a href="#cb6-13" tabindex="-1"></a><span class="co"># State totals</span></span>
+<span id="cb6-14"><a href="#cb6-14" tabindex="-1"></a>state_total <span class="op">=</span> enr_2025[</span>
+<span id="cb6-15"><a href="#cb6-15" tabindex="-1"></a>    (enr_2025[<span class="st">'is_state'</span>] <span class="op">==</span> <span class="va">True</span>) <span class="op">&amp;</span></span>
+<span id="cb6-16"><a href="#cb6-16" tabindex="-1"></a>    (enr_2025[<span class="st">'grade_level'</span>] <span class="op">==</span> <span class="st">'TOTAL'</span>) <span class="op">&amp;</span></span>
+<span id="cb6-17"><a href="#cb6-17" tabindex="-1"></a>    (enr_2025[<span class="st">'subgroup'</span>] <span class="op">==</span> <span class="st">'total'</span>)</span>
+<span id="cb6-18"><a href="#cb6-18" tabindex="-1"></a>]</span>
+<span id="cb6-19"><a href="#cb6-19" tabindex="-1"></a></span>
+<span id="cb6-20"><a href="#cb6-20" tabindex="-1"></a><span class="co"># District breakdown</span></span>
+<span id="cb6-21"><a href="#cb6-21" tabindex="-1"></a>district_totals <span class="op">=</span> enr_2025[</span>
+<span id="cb6-22"><a href="#cb6-22" tabindex="-1"></a>    (enr_2025[<span class="st">'is_district'</span>] <span class="op">==</span> <span class="va">True</span>) <span class="op">&amp;</span></span>
+<span id="cb6-23"><a href="#cb6-23" tabindex="-1"></a>    (enr_2025[<span class="st">'grade_level'</span>] <span class="op">==</span> <span class="st">'TOTAL'</span>) <span class="op">&amp;</span></span>
+<span id="cb6-24"><a href="#cb6-24" tabindex="-1"></a>    (enr_2025[<span class="st">'subgroup'</span>] <span class="op">==</span> <span class="st">'total'</span>)</span>
+<span id="cb6-25"><a href="#cb6-25" tabindex="-1"></a>].sort_values(<span class="st">'n_students'</span>, ascending<span class="op">=</span><span class="va">False</span>)</span></code></pre></div>
 </div>
 </div>
 <div class="section level2">
-<h2 id="data-availability">Data availability<a class="anchor" aria-label="anchor" href="#data-availability"></a>
+<h2 id="explore-more">Explore More<a class="anchor" aria-label="anchor" href="#explore-more"></a>
 </h2>
-<div class="section level3">
-<h3 id="enrollment-data">Enrollment Data<a class="anchor" aria-label="anchor" href="#enrollment-data"></a>
-</h3>
-<table class="table">
-<colgroup>
-<col width="12%">
-<col width="14%">
-<col width="34%">
-<col width="25%">
-<col width="12%">
-</colgroup>
-<thead><tr class="header">
-<th>Years</th>
-<th>Source</th>
-<th>Aggregation Levels</th>
-<th>Demographics</th>
-<th>Notes</th>
-</tr></thead>
-<tbody>
-<tr class="odd">
-<td><strong>2024-2025</strong></td>
-<td>Census Day files</td>
-<td>State, County, District, School</td>
-<td>Race, Gender, Student Groups (EL, FRPM, SWD, etc.)</td>
-<td>Full detail, TK included</td>
-</tr>
-<tr class="even">
-<td><strong>2008-2023</strong></td>
-<td>Historical files</td>
-<td>School (aggregates computed)</td>
-<td>Race, Gender</td>
-<td>Entity names included</td>
-</tr>
-<tr class="odd">
-<td><strong>1994-2007</strong></td>
-<td>Historical files</td>
-<td>School (aggregates computed)</td>
-<td>Race, Gender</td>
-<td>No entity names (CDS codes only)</td>
-</tr>
-<tr class="even">
-<td><strong>1982-1993</strong></td>
-<td>Historical files</td>
-<td>School (aggregates computed)</td>
-<td>Race, Gender</td>
-<td>Letter-based race codes (mapped)</td>
-</tr>
-</tbody>
-</table>
-</div>
-<div class="section level3">
-<h3 id="assessment-data-caaspp">Assessment Data (CAASPP)<a class="anchor" aria-label="anchor" href="#assessment-data-caaspp"></a>
-</h3>
-<table class="table">
-<colgroup>
-<col width="17%">
-<col width="20%">
-<col width="25%">
-<col width="20%">
-<col width="17%">
-</colgroup>
-<thead><tr class="header">
-<th>Years</th>
-<th>Source</th>
-<th>Subjects</th>
-<th>Grades</th>
-<th>Notes</th>
-</tr></thead>
-<tbody><tr class="odd">
-<td><strong>2015-2019, 2021-2024</strong></td>
-<td>CAASPP Research Files</td>
-<td>ELA, Math</td>
-<td>3-8, 11</td>
-<td>No 2020 due to COVID-19</td>
-</tr></tbody>
-</table>
-</div>
-<div class="section level3">
-<h3 id="whats-available-by-year-range">What’s available by year range<a class="anchor" aria-label="anchor" href="#whats-available-by-year-range"></a>
-</h3>
 <ul>
+<li><a href="https://almartin82.github.io/caschooldata/">Full documentation</a></li>
 <li>
-<strong>Subgroups</strong>: Race/ethnicity and gender available for all years. Student groups (English Learners, FRPM, Special Ed) only available 2024+.</li>
+<a href="https://almartin82.github.io/caschooldata/articles/district-highlights.html">Enrollment trends</a> — 10 stories</li>
 <li>
-<strong>Grade levels</strong>: K-12 available for all years. Transitional Kindergarten (TK) only available 2024+.</li>
-<li>
-<strong>Aggregation</strong>: Modern files (2024+) include pre-computed state/county/district totals. Historical files only have school-level data; this package computes aggregates automatically.</li>
-<li>
-<strong>Entity names</strong>: School/district names available 2008+ and 1982-1993. Not available for 1994-2007 (use CDS code lookups).</li>
+<a href="https://almartin82.github.io/caschooldata/articles/california-assessment.html">Assessment analysis</a> — 15 stories</li>
+<li><a href="https://almartin82.github.io/caschooldata/articles/graduation-rates.html">Graduation rates</a></li>
+<li><a href="https://almartin82.github.io/caschooldata/reference/">Function reference</a></li>
 </ul>
-</div>
 </div>
 <div class="section level2">
 <h2 id="data-notes">Data Notes<a class="anchor" aria-label="anchor" href="#data-notes"></a>
 </h2>
 <div class="section level3">
-<h3 id="enrollment-data-1">Enrollment Data<a class="anchor" aria-label="anchor" href="#enrollment-data-1"></a>
+<h3 id="enrollment-data">Enrollment Data<a class="anchor" aria-label="anchor" href="#enrollment-data"></a>
 </h3>
 <ul>
 <li>
@@ -738,7 +351,7 @@
 </ul>
 </div>
 <div class="section level3">
-<h3 id="assessment-data-caaspp-1">Assessment Data (CAASPP)<a class="anchor" aria-label="anchor" href="#assessment-data-caaspp-1"></a>
+<h3 id="assessment-data-caaspp">Assessment Data (CAASPP)<a class="anchor" aria-label="anchor" href="#assessment-data-caaspp"></a>
 </h3>
 <ul>
 <li>
@@ -754,22 +367,416 @@
 <strong>Performance Levels</strong>: Standard Exceeded, Standard Met, Standard Nearly Met, Standard Not Met</li>
 </ul>
 </div>
+<div class="section level3">
+<h3 id="graduation-data">Graduation Data<a class="anchor" aria-label="anchor" href="#graduation-data"></a>
+</h3>
+<ul>
+<li>
+<strong>Source</strong>: California Department of Education graduation rate files</li>
+<li>
+<strong>Years Available</strong>: 2017-2025</li>
+<li>
+<strong>Cohort Types</strong>: 4-year, 5-year, 6-year adjusted cohort graduation rates</li>
+</ul>
+</div>
 </div>
 <div class="section level2">
-<h2 id="part-of-the-state-schooldata-project">Part of the State Schooldata Project<a class="anchor" aria-label="anchor" href="#part-of-the-state-schooldata-project"></a>
+<h2 id="deeper-dive">Deeper Dive<a class="anchor" aria-label="anchor" href="#deeper-dive"></a>
 </h2>
-<p>This package is part of the <a href="https://github.com/almartin82/njschooldata" class="external-link">njschooldata</a> family, providing a simple, consistent interface for accessing state-published school data in Python and R.</p>
-<p><strong>All 50 state packages:</strong> <a href="https://github.com/almartin82?tab=repositories&amp;q=schooldata" class="external-link">github.com/almartin82</a></p>
+<hr>
+<div class="section level3">
+<h3 id="id_4-lausd-has-lost-the-equivalent-of-a-major-citys-school-district">4. LAUSD Has Lost the Equivalent of a Major City’s School District<a class="anchor" aria-label="anchor" href="#id_4-lausd-has-lost-the-equivalent-of-a-major-citys-school-district"></a>
+</h3>
+<p>Los Angeles Unified, the nation’s second-largest school district, has experienced dramatic enrollment losses:</p>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">lausd</span> <span class="op">&lt;-</span> <span class="va">enr</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span></span>
+<span>    <span class="va">is_district</span>,</span>
+<span>    <span class="va">grade_level</span> <span class="op">==</span> <span class="st">"TOTAL"</span>,</span>
+<span>    <span class="va">reporting_category</span> <span class="op">==</span> <span class="st">"TA"</span>,</span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">grepl</a></span><span class="op">(</span><span class="st">"Los Angeles Unified"</span>, <span class="va">district_name</span>, ignore.case <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span>  <span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/arrange.html" class="external-link">arrange</a></span><span class="op">(</span><span class="va">end_year</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span></span>
+<span>    change <span class="op">=</span> <span class="va">n_students</span> <span class="op">-</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/lead-lag.html" class="external-link">lag</a></span><span class="op">(</span><span class="va">n_students</span><span class="op">)</span>,</span>
+<span>    cumulative_change <span class="op">=</span> <span class="va">n_students</span> <span class="op">-</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/nth.html" class="external-link">first</a></span><span class="op">(</span><span class="va">n_students</span><span class="op">)</span></span>
+<span>  <span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">"LAUSD 2018: %s students\n"</span>, <span class="fu">scales</span><span class="fu">::</span><span class="fu"><a href="https://scales.r-lib.org/reference/comma.html" class="external-link">comma</a></span><span class="op">(</span><span class="va">lausd</span><span class="op">$</span><span class="va">n_students</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">"LAUSD 2025: %s students\n"</span>, <span class="fu">scales</span><span class="fu">::</span><span class="fu"><a href="https://scales.r-lib.org/reference/comma.html" class="external-link">comma</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">tail</a></span><span class="op">(</span><span class="va">lausd</span><span class="op">$</span><span class="va">n_students</span>, <span class="fl">1</span><span class="op">)</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">"Total loss: %s students (%.1f%%)\n"</span>,</span>
+<span>            <span class="fu">scales</span><span class="fu">::</span><span class="fu"><a href="https://scales.r-lib.org/reference/comma.html" class="external-link">comma</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/MathFun.html" class="external-link">abs</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">tail</a></span><span class="op">(</span><span class="va">lausd</span><span class="op">$</span><span class="va">cumulative_change</span>, <span class="fl">1</span><span class="op">)</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>            <span class="fu"><a href="https://rdrr.io/r/base/MathFun.html" class="external-link">abs</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">tail</a></span><span class="op">(</span><span class="va">lausd</span><span class="op">$</span><span class="va">cumulative_change</span>, <span class="fl">1</span><span class="op">)</span><span class="op">)</span> <span class="op">/</span> <span class="va">lausd</span><span class="op">$</span><span class="va">n_students</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span> <span class="op">*</span> <span class="fl">100</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<div class="float">
+<img src="https://almartin82.github.io/caschooldata/articles/district-highlights_files/figure-html/finding-2-1.png" alt="LAUSD decline"><div class="figcaption">LAUSD decline</div>
 </div>
-<div class="section level2">
-<h2 id="author">Author<a class="anchor" aria-label="anchor" href="#author"></a>
-</h2>
-<p><a href="https://github.com/almartin82" class="external-link">Andy Martin</a> (<a href="mailto:almartin@gmail.com" class="email">almartin@gmail.com</a>)</p>
+<p><a href="https://almartin82.github.io/caschooldata/articles/district-highlights.html#lausd-has-lost-the-equivalent-of-a-major-citys-school-district">(source)</a></p>
+<hr>
 </div>
-<div class="section level2">
-<h2 id="license">License<a class="anchor" aria-label="anchor" href="#license"></a>
-</h2>
-<p>MIT</p>
+<div class="section level3">
+<h3 id="id_5-the-top-5-districts-lost-over-100000-students-combined">5. The Top 5 Districts Lost Over 100,000 Students Combined<a class="anchor" aria-label="anchor" href="#id_5-the-top-5-districts-lost-over-100000-students-combined"></a>
+</h3>
+<p>California’s five largest districts all face significant enrollment challenges:</p>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Find the 5 largest districts (by 2025 enrollment)</span></span>
+<span><span class="va">top5_districts</span> <span class="op">&lt;-</span> <span class="va">enr</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span></span>
+<span>    <span class="va">is_district</span>,</span>
+<span>    <span class="va">end_year</span> <span class="op">==</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">max</a></span><span class="op">(</span><span class="va">end_year</span><span class="op">)</span>,</span>
+<span>    <span class="va">grade_level</span> <span class="op">==</span> <span class="st">"TOTAL"</span>,</span>
+<span>    <span class="va">reporting_category</span> <span class="op">==</span> <span class="st">"TA"</span></span>
+<span>  <span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/arrange.html" class="external-link">arrange</a></span><span class="op">(</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/desc.html" class="external-link">desc</a></span><span class="op">(</span><span class="va">n_students</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fl">5</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/pull.html" class="external-link">pull</a></span><span class="op">(</span><span class="va">district_name</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">top5_trend</span> <span class="op">&lt;-</span> <span class="va">enr</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span></span>
+<span>    <span class="va">is_district</span>,</span>
+<span>    <span class="va">grade_level</span> <span class="op">==</span> <span class="st">"TOTAL"</span>,</span>
+<span>    <span class="va">reporting_category</span> <span class="op">==</span> <span class="st">"TA"</span>,</span>
+<span>    <span class="va">district_name</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="va">top5_districts</span></span>
+<span>  <span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/arrange.html" class="external-link">arrange</a></span><span class="op">(</span><span class="va">district_name</span>, <span class="va">end_year</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Calculate change from first to last year</span></span>
+<span><span class="va">top5_change</span> <span class="op">&lt;-</span> <span class="va">top5_trend</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html" class="external-link">group_by</a></span><span class="op">(</span><span class="va">district_name</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/summarise.html" class="external-link">summarize</a></span><span class="op">(</span></span>
+<span>    enr_first <span class="op">=</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/nth.html" class="external-link">first</a></span><span class="op">(</span><span class="va">n_students</span><span class="op">)</span>,</span>
+<span>    enr_last <span class="op">=</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/nth.html" class="external-link">last</a></span><span class="op">(</span><span class="va">n_students</span><span class="op">)</span>,</span>
+<span>    change <span class="op">=</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/nth.html" class="external-link">last</a></span><span class="op">(</span><span class="va">n_students</span><span class="op">)</span> <span class="op">-</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/nth.html" class="external-link">first</a></span><span class="op">(</span><span class="va">n_students</span><span class="op">)</span>,</span>
+<span>    pct_change <span class="op">=</span> <span class="op">(</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/nth.html" class="external-link">last</a></span><span class="op">(</span><span class="va">n_students</span><span class="op">)</span> <span class="op">-</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/nth.html" class="external-link">first</a></span><span class="op">(</span><span class="va">n_students</span><span class="op">)</span><span class="op">)</span> <span class="op">/</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/nth.html" class="external-link">first</a></span><span class="op">(</span><span class="va">n_students</span><span class="op">)</span> <span class="op">*</span> <span class="fl">100</span>,</span>
+<span>    .groups <span class="op">=</span> <span class="st">"drop"</span></span>
+<span>  <span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/arrange.html" class="external-link">arrange</a></span><span class="op">(</span><span class="va">change</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">top5_change</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span></span>
+<span>    district_name <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">gsub</a></span><span class="op">(</span><span class="st">" School District$| Unified$| Unified School District$"</span>, <span class="st">""</span>, <span class="va">district_name</span><span class="op">)</span>,</span>
+<span>    change_fmt <span class="op">=</span> <span class="fu">scales</span><span class="fu">::</span><span class="fu"><a href="https://scales.r-lib.org/reference/comma.html" class="external-link">comma</a></span><span class="op">(</span><span class="va">change</span><span class="op">)</span>,</span>
+<span>    pct_fmt <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">"%.1f%%"</span>, <span class="va">pct_change</span><span class="op">)</span></span>
+<span>  <span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">district_name</span>, <span class="va">enr_first</span>, <span class="va">enr_last</span>, <span class="va">change_fmt</span>, <span class="va">pct_fmt</span><span class="op">)</span></span></code></pre></div>
+<div class="float">
+<img src="https://almartin82.github.io/caschooldata/articles/district-highlights_files/figure-html/finding-3-1.png" alt="Top 5 districts"><div class="figcaption">Top 5 districts</div>
+</div>
+<p><a href="https://almartin82.github.io/caschooldata/articles/district-highlights.html#the-top-5-districts-lost-over-100000-students-combined">(source)</a></p>
+<hr>
+</div>
+<div class="section level3">
+<h3 id="id_6-hispanic-students-now-comprise-56-of-californias-enrollment">6. Hispanic Students Now Comprise 56% of California’s Enrollment<a class="anchor" aria-label="anchor" href="#id_6-hispanic-students-now-comprise-56-of-californias-enrollment"></a>
+</h3>
+<p>California’s demographic makeup has shifted significantly:</p>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Calculate race/ethnicity percentages by year (2024-2025 only have full demographic data)</span></span>
+<span><span class="va">race_by_year</span> <span class="op">&lt;-</span> <span class="va">enr</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span></span>
+<span>    <span class="va">is_state</span>,</span>
+<span>    <span class="va">grade_level</span> <span class="op">==</span> <span class="st">"TOTAL"</span>,</span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">grepl</a></span><span class="op">(</span><span class="st">"^RE_"</span>, <span class="va">reporting_category</span><span class="op">)</span></span>
+<span>  <span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html" class="external-link">group_by</a></span><span class="op">(</span><span class="va">end_year</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span></span>
+<span>    total <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="va">n_students</span>, na.rm <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>,</span>
+<span>    pct <span class="op">=</span> <span class="va">n_students</span> <span class="op">/</span> <span class="va">total</span> <span class="op">*</span> <span class="fl">100</span></span>
+<span>  <span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html" class="external-link">ungroup</a></span><span class="op">(</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Latest year breakdown</span></span>
+<span><span class="va">latest_race</span> <span class="op">&lt;-</span> <span class="va">race_by_year</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">end_year</span> <span class="op">==</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">max</a></span><span class="op">(</span><span class="va">end_year</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/arrange.html" class="external-link">arrange</a></span><span class="op">(</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/desc.html" class="external-link">desc</a></span><span class="op">(</span><span class="va">pct</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">subgroup</span>, <span class="va">n_students</span>, <span class="va">pct</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>pct_fmt <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">"%.1f%%"</span>, <span class="va">pct</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">latest_race</span></span></code></pre></div>
+<div class="float">
+<img src="https://almartin82.github.io/caschooldata/articles/district-highlights_files/figure-html/finding-4-1.png" alt="Demographics"><div class="figcaption">Demographics</div>
+</div>
+<p><a href="https://almartin82.github.io/caschooldata/articles/district-highlights.html#hispanic-students-now-comprise-56-of-californias-enrollment">(source)</a></p>
+<hr>
+</div>
+<div class="section level3">
+<h3 id="id_7-some-districts-grew-while-others-collapsed">7. Some Districts Grew While Others Collapsed<a class="anchor" aria-label="anchor" href="#id_7-some-districts-grew-while-others-collapsed"></a>
+</h3>
+<p>Not all districts experienced decline. A handful of districts bucked the statewide trend with substantial growth:</p>
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Calculate district change from 2020 to latest year</span></span>
+<span><span class="va">district_changes</span> <span class="op">&lt;-</span> <span class="va">enr</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span></span>
+<span>    <span class="va">is_district</span>,</span>
+<span>    <span class="va">grade_level</span> <span class="op">==</span> <span class="st">"TOTAL"</span>,</span>
+<span>    <span class="va">reporting_category</span> <span class="op">==</span> <span class="st">"TA"</span>,</span>
+<span>    <span class="va">end_year</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2020</span>, <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">max</a></span><span class="op">(</span><span class="va">end_year</span><span class="op">)</span><span class="op">)</span></span>
+<span>  <span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://tidyr.tidyverse.org/reference/pivot_wider.html" class="external-link">pivot_wider</a></span><span class="op">(</span></span>
+<span>    id_cols <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">district_name</span>, <span class="va">county_name</span>, <span class="va">cds_code</span><span class="op">)</span>,</span>
+<span>    names_from <span class="op">=</span> <span class="va">end_year</span>,</span>
+<span>    values_from <span class="op">=</span> <span class="va">n_students</span>,</span>
+<span>    names_prefix <span class="op">=</span> <span class="st">"enr_"</span></span>
+<span>  <span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">enr_2020</span><span class="op">)</span> <span class="op">&amp;</span> <span class="va">enr_2020</span> <span class="op">&gt;</span> <span class="fl">1000</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span>  <span class="co"># Filter to districts with baseline data</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span></span>
+<span>    change <span class="op">=</span> <span class="va">.</span><span class="op">[[</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">ncol</a></span><span class="op">(</span><span class="va">.</span><span class="op">)</span><span class="op">]</span><span class="op">]</span> <span class="op">-</span> <span class="va">enr_2020</span>,</span>
+<span>    pct_change <span class="op">=</span> <span class="va">change</span> <span class="op">/</span> <span class="va">enr_2020</span> <span class="op">*</span> <span class="fl">100</span></span>
+<span>  <span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Top 10 growing districts</span></span>
+<span><span class="va">top_growers</span> <span class="op">&lt;-</span> <span class="va">district_changes</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/arrange.html" class="external-link">arrange</a></span><span class="op">(</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/desc.html" class="external-link">desc</a></span><span class="op">(</span><span class="va">pct_change</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fl">10</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">district_name</span>, <span class="va">county_name</span>, <span class="va">enr_2020</span>, <span class="va">change</span>, <span class="va">pct_change</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span></span>
+<span>    enr_2020 <span class="op">=</span> <span class="fu">scales</span><span class="fu">::</span><span class="fu"><a href="https://scales.r-lib.org/reference/comma.html" class="external-link">comma</a></span><span class="op">(</span><span class="va">enr_2020</span><span class="op">)</span>,</span>
+<span>    change <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"+"</span>, <span class="fu">scales</span><span class="fu">::</span><span class="fu"><a href="https://scales.r-lib.org/reference/comma.html" class="external-link">comma</a></span><span class="op">(</span><span class="va">change</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>    pct_change <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">"+%.1f%%"</span>, <span class="va">pct_change</span><span class="op">)</span></span>
+<span>  <span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"Top 10 Growing Districts (2020 to Present):\n\n"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">top_growers</span>, n <span class="op">=</span> <span class="fl">10</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Top 10 declining districts (by percentage)</span></span>
+<span><span class="va">top_decliners</span> <span class="op">&lt;-</span> <span class="va">district_changes</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">enr_2020</span> <span class="op">&gt;</span> <span class="fl">5000</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span>  <span class="co"># Only larger districts</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/arrange.html" class="external-link">arrange</a></span><span class="op">(</span><span class="va">pct_change</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fl">10</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">district_name</span>, <span class="va">county_name</span>, <span class="va">enr_2020</span>, <span class="va">change</span>, <span class="va">pct_change</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span></span>
+<span>    enr_2020 <span class="op">=</span> <span class="fu">scales</span><span class="fu">::</span><span class="fu"><a href="https://scales.r-lib.org/reference/comma.html" class="external-link">comma</a></span><span class="op">(</span><span class="va">enr_2020</span><span class="op">)</span>,</span>
+<span>    change <span class="op">=</span> <span class="fu">scales</span><span class="fu">::</span><span class="fu"><a href="https://scales.r-lib.org/reference/comma.html" class="external-link">comma</a></span><span class="op">(</span><span class="va">change</span><span class="op">)</span>,</span>
+<span>    pct_change <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">"%.1f%%"</span>, <span class="va">pct_change</span><span class="op">)</span></span>
+<span>  <span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"\nTop 10 Declining Districts (2020 to Present, Districts &gt;5,000 students):\n\n"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">top_decliners</span>, n <span class="op">=</span> <span class="fl">10</span><span class="op">)</span></span></code></pre></div>
+<hr>
+</div>
+<div class="section level3">
+<h3 id="id_8-high-school-enrollment-dropped-faster-than-elementary">8. High School Enrollment Dropped Faster Than Elementary<a class="anchor" aria-label="anchor" href="#id_8-high-school-enrollment-dropped-faster-than-elementary"></a>
+</h3>
+<p>Enrollment loss varied significantly by grade level:</p>
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Grade-level trends (state level)</span></span>
+<span><span class="va">grade_trends</span> <span class="op">&lt;-</span> <span class="va">enr</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span></span>
+<span>    <span class="va">is_state</span>,</span>
+<span>    <span class="va">reporting_category</span> <span class="op">==</span> <span class="st">"TA"</span>,</span>
+<span>    <span class="va">grade_level</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"K"</span>, <span class="st">"01"</span>, <span class="st">"02"</span>, <span class="st">"03"</span>, <span class="st">"04"</span>, <span class="st">"05"</span>,</span>
+<span>                        <span class="st">"06"</span>, <span class="st">"07"</span>, <span class="st">"08"</span>, <span class="st">"09"</span>, <span class="st">"10"</span>, <span class="st">"11"</span>, <span class="st">"12"</span><span class="op">)</span></span>
+<span>  <span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span></span>
+<span>    grade_band <span class="op">=</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/case-and-replace-when.html" class="external-link">case_when</a></span><span class="op">(</span></span>
+<span>      <span class="va">grade_level</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"K"</span>, <span class="st">"01"</span>, <span class="st">"02"</span>, <span class="st">"03"</span>, <span class="st">"04"</span>, <span class="st">"05"</span><span class="op">)</span> <span class="op">~</span> <span class="st">"Elementary (K-5)"</span>,</span>
+<span>      <span class="va">grade_level</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"06"</span>, <span class="st">"07"</span>, <span class="st">"08"</span><span class="op">)</span> <span class="op">~</span> <span class="st">"Middle (6-8)"</span>,</span>
+<span>      <span class="cn">TRUE</span> <span class="op">~</span> <span class="st">"High (9-12)"</span></span>
+<span>    <span class="op">)</span></span>
+<span>  <span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html" class="external-link">group_by</a></span><span class="op">(</span><span class="va">end_year</span>, <span class="va">grade_band</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/summarise.html" class="external-link">summarize</a></span><span class="op">(</span>n_students <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="va">n_students</span>, na.rm <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>, .groups <span class="op">=</span> <span class="st">"drop"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Calculate change from first year</span></span>
+<span><span class="va">grade_change</span> <span class="op">&lt;-</span> <span class="va">grade_trends</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html" class="external-link">group_by</a></span><span class="op">(</span><span class="va">grade_band</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span></span>
+<span>    pct_of_first <span class="op">=</span> <span class="va">n_students</span> <span class="op">/</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/nth.html" class="external-link">first</a></span><span class="op">(</span><span class="va">n_students</span><span class="op">)</span> <span class="op">*</span> <span class="fl">100</span>,</span>
+<span>    index <span class="op">=</span> <span class="va">n_students</span> <span class="op">/</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/nth.html" class="external-link">first</a></span><span class="op">(</span><span class="va">n_students</span><span class="op">)</span> <span class="op">*</span> <span class="fl">100</span></span>
+<span>  <span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html" class="external-link">ungroup</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
+<div class="float">
+<img src="https://almartin82.github.io/caschooldata/articles/district-highlights_files/figure-html/grade-bands-1.png" alt="Grade bands"><div class="figcaption">Grade bands</div>
+</div>
+<p><a href="https://almartin82.github.io/caschooldata/articles/district-highlights.html#high-school-enrollment-dropped-faster-than-elementary">(source)</a></p>
+<hr>
+</div>
+<div class="section level3">
+<h3 id="id_9-kindergarten-enrollment-signals-future-decline">9. Kindergarten Enrollment Signals Future Decline<a class="anchor" aria-label="anchor" href="#id_9-kindergarten-enrollment-signals-future-decline"></a>
+</h3>
+<p>Kindergarten enrollment is a leading indicator for future enrollment. The drop in K enrollment since 2020 suggests continued overall declines ahead:</p>
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">k_trend</span> <span class="op">&lt;-</span> <span class="va">enr</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span></span>
+<span>    <span class="va">is_state</span>,</span>
+<span>    <span class="va">reporting_category</span> <span class="op">==</span> <span class="st">"TA"</span>,</span>
+<span>    <span class="va">grade_level</span> <span class="op">==</span> <span class="st">"K"</span></span>
+<span>  <span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/arrange.html" class="external-link">arrange</a></span><span class="op">(</span><span class="va">end_year</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span></span>
+<span>    change <span class="op">=</span> <span class="va">n_students</span> <span class="op">-</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/lead-lag.html" class="external-link">lag</a></span><span class="op">(</span><span class="va">n_students</span><span class="op">)</span>,</span>
+<span>    pct_change <span class="op">=</span> <span class="op">(</span><span class="va">n_students</span> <span class="op">-</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/lead-lag.html" class="external-link">lag</a></span><span class="op">(</span><span class="va">n_students</span><span class="op">)</span><span class="op">)</span> <span class="op">/</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/lead-lag.html" class="external-link">lag</a></span><span class="op">(</span><span class="va">n_students</span><span class="op">)</span> <span class="op">*</span> <span class="fl">100</span></span>
+<span>  <span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">"Kindergarten Enrollment 2018: %s\n"</span>, <span class="fu">scales</span><span class="fu">::</span><span class="fu"><a href="https://scales.r-lib.org/reference/comma.html" class="external-link">comma</a></span><span class="op">(</span><span class="va">k_trend</span><span class="op">$</span><span class="va">n_students</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">"Kindergarten Enrollment %d: %s\n"</span>, <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">max</a></span><span class="op">(</span><span class="va">k_trend</span><span class="op">$</span><span class="va">end_year</span><span class="op">)</span>,</span>
+<span>            <span class="fu">scales</span><span class="fu">::</span><span class="fu"><a href="https://scales.r-lib.org/reference/comma.html" class="external-link">comma</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">tail</a></span><span class="op">(</span><span class="va">k_trend</span><span class="op">$</span><span class="va">n_students</span>, <span class="fl">1</span><span class="op">)</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">"Change: %s (%.1f%%)\n"</span>,</span>
+<span>            <span class="fu">scales</span><span class="fu">::</span><span class="fu"><a href="https://scales.r-lib.org/reference/comma.html" class="external-link">comma</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">tail</a></span><span class="op">(</span><span class="va">k_trend</span><span class="op">$</span><span class="va">n_students</span>, <span class="fl">1</span><span class="op">)</span> <span class="op">-</span> <span class="va">k_trend</span><span class="op">$</span><span class="va">n_students</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span><span class="op">)</span>,</span>
+<span>            <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">tail</a></span><span class="op">(</span><span class="va">k_trend</span><span class="op">$</span><span class="va">n_students</span>, <span class="fl">1</span><span class="op">)</span> <span class="op">-</span> <span class="va">k_trend</span><span class="op">$</span><span class="va">n_students</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span><span class="op">)</span> <span class="op">/</span> <span class="va">k_trend</span><span class="op">$</span><span class="va">n_students</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span> <span class="op">*</span> <span class="fl">100</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<div class="float">
+<img src="https://almartin82.github.io/caschooldata/articles/district-highlights_files/figure-html/kindergarten-1.png" alt="Kindergarten trend"><div class="figcaption">Kindergarten trend</div>
+</div>
+<p><a href="https://almartin82.github.io/caschooldata/articles/district-highlights.html#kindergarten-enrollment-signals-future-decline">(source)</a></p>
+<hr>
+</div>
+<div class="section level3">
+<h3 id="id_10-gender-ratios-have-remained-remarkably-stable">10. Gender Ratios Have Remained Remarkably Stable<a class="anchor" aria-label="anchor" href="#id_10-gender-ratios-have-remained-remarkably-stable"></a>
+</h3>
+<p>Despite major enrollment shifts, the gender ratio has stayed nearly constant:</p>
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">gender_trend</span> <span class="op">&lt;-</span> <span class="va">enr</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span></span>
+<span>    <span class="va">is_state</span>,</span>
+<span>    <span class="va">grade_level</span> <span class="op">==</span> <span class="st">"TOTAL"</span>,</span>
+<span>    <span class="va">reporting_category</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"GN_F"</span>, <span class="st">"GN_M"</span><span class="op">)</span></span>
+<span>  <span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html" class="external-link">group_by</a></span><span class="op">(</span><span class="va">end_year</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span></span>
+<span>    total <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="va">n_students</span><span class="op">)</span>,</span>
+<span>    pct <span class="op">=</span> <span class="va">n_students</span> <span class="op">/</span> <span class="va">total</span> <span class="op">*</span> <span class="fl">100</span></span>
+<span>  <span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html" class="external-link">ungroup</a></span><span class="op">(</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">gender_wide</span> <span class="op">&lt;-</span> <span class="va">gender_trend</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">end_year</span>, <span class="va">subgroup</span>, <span class="va">pct</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://tidyr.tidyverse.org/reference/pivot_wider.html" class="external-link">pivot_wider</a></span><span class="op">(</span>names_from <span class="op">=</span> <span class="va">subgroup</span>, values_from <span class="op">=</span> <span class="va">pct</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">gender_wide</span></span></code></pre></div>
+<div class="float">
+<img src="https://almartin82.github.io/caschooldata/articles/district-highlights_files/figure-html/gender-1.png" alt="Gender distribution"><div class="figcaption">Gender distribution</div>
+</div>
+<p><a href="https://almartin82.github.io/caschooldata/articles/district-highlights.html#gender-ratios-have-remained-remarkably-stable">(source)</a></p>
+<hr>
+</div>
+<div class="section level3">
+<h3 id="id_11-english-learner-population-remains-substantial">11. English Learner Population Remains Substantial<a class="anchor" aria-label="anchor" href="#id_11-english-learner-population-remains-substantial"></a>
+</h3>
+<p>English Learners represent a significant and consistent portion of California’s student population (data available for 2024-2025):</p>
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">el_data</span> <span class="op">&lt;-</span> <span class="va">enr</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span></span>
+<span>    <span class="va">is_state</span>,</span>
+<span>    <span class="va">grade_level</span> <span class="op">==</span> <span class="st">"TOTAL"</span>,</span>
+<span>    <span class="va">reporting_category</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"TA"</span>, <span class="st">"SG_EL"</span><span class="op">)</span>,</span>
+<span>    <span class="va">end_year</span> <span class="op">&gt;=</span> <span class="fl">2024</span>  <span class="co"># SG_EL only available in modern data</span></span>
+<span>  <span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://tidyr.tidyverse.org/reference/pivot_wider.html" class="external-link">pivot_wider</a></span><span class="op">(</span></span>
+<span>    id_cols <span class="op">=</span> <span class="va">end_year</span>,</span>
+<span>    names_from <span class="op">=</span> <span class="va">reporting_category</span>,</span>
+<span>    values_from <span class="op">=</span> <span class="va">n_students</span></span>
+<span>  <span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span></span>
+<span>    el_pct <span class="op">=</span> <span class="va">SG_EL</span> <span class="op">/</span> <span class="va">TA</span> <span class="op">*</span> <span class="fl">100</span></span>
+<span>  <span class="op">)</span></span>
+<span></span>
+<span><span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">el_data</span><span class="op">)</span> <span class="op">&gt;</span> <span class="fl">0</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"English Learner Enrollment:\n"</span><span class="op">)</span></span>
+<span>  <span class="va">el_data</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span></span>
+<span>      total <span class="op">=</span> <span class="fu">scales</span><span class="fu">::</span><span class="fu"><a href="https://scales.r-lib.org/reference/comma.html" class="external-link">comma</a></span><span class="op">(</span><span class="va">TA</span><span class="op">)</span>,</span>
+<span>      el <span class="op">=</span> <span class="fu">scales</span><span class="fu">::</span><span class="fu"><a href="https://scales.r-lib.org/reference/comma.html" class="external-link">comma</a></span><span class="op">(</span><span class="va">SG_EL</span><span class="op">)</span>,</span>
+<span>      el_pct <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">"%.1f%%"</span>, <span class="va">el_pct</span><span class="op">)</span></span>
+<span>    <span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">end_year</span>, <span class="va">total</span>, <span class="va">el</span>, <span class="va">el_pct</span><span class="op">)</span></span>
+<span><span class="op">}</span></span>
+<span></span>
+<span><span class="co"># Show student group breakdown for latest year</span></span>
+<span><span class="va">student_groups</span> <span class="op">&lt;-</span> <span class="va">enr</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span></span>
+<span>    <span class="va">is_state</span>,</span>
+<span>    <span class="va">grade_level</span> <span class="op">==</span> <span class="st">"TOTAL"</span>,</span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">grepl</a></span><span class="op">(</span><span class="st">"^SG_"</span>, <span class="va">reporting_category</span><span class="op">)</span>,</span>
+<span>    <span class="va">end_year</span> <span class="op">==</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">max</a></span><span class="op">(</span><span class="va">end_year</span><span class="op">)</span></span>
+<span>  <span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/arrange.html" class="external-link">arrange</a></span><span class="op">(</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/desc.html" class="external-link">desc</a></span><span class="op">(</span><span class="va">n_students</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">subgroup</span>, <span class="va">n_students</span><span class="op">)</span></span>
+<span></span>
+<span><span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">student_groups</span><span class="op">)</span> <span class="op">&gt;</span> <span class="fl">0</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"\nStudent Group Populations (Latest Year):\n"</span><span class="op">)</span></span>
+<span>  <span class="va">student_groups</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>n_students <span class="op">=</span> <span class="fu">scales</span><span class="fu">::</span><span class="fu"><a href="https://scales.r-lib.org/reference/comma.html" class="external-link">comma</a></span><span class="op">(</span><span class="va">n_students</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="op">}</span></span></code></pre></div>
+<hr>
+</div>
+<div class="section level3">
+<h3 id="id_12-statewide-proficiency-47-in-ela-36-in-math">12. Statewide proficiency: 47% in ELA, 36% in Math<a class="anchor" aria-label="anchor" href="#id_12-statewide-proficiency-47-in-ela-36-in-math"></a>
+</h3>
+<p>California’s 11th graders showed a 20+ point gap between ELA and Math proficiency in 2024.</p>
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># State-level proficiency by subject (Grade 11)</span></span>
+<span><span class="va">state_g11</span> <span class="op">&lt;-</span> <span class="va">assess_2024</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">is_state</span>, <span class="va">grade</span> <span class="op">==</span> <span class="st">"11"</span>, <span class="va">metric_type</span> <span class="op">==</span> <span class="st">"pct_met_and_above"</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">subject</span>, <span class="va">metric_value</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">state_g11</span></span></code></pre></div>
+<div class="float">
+<img src="https://almartin82.github.io/caschooldata/articles/california-assessment_files/figure-html/finding-1-plot-1.png" alt="Grade 11 Proficiency"><div class="figcaption">Grade 11 Proficiency</div>
+</div>
+<p><a href="https://almartin82.github.io/caschooldata/articles/california-assessment.html#statewide-proficiency-47-in-ela-36-in-math">(source)</a></p>
+<hr>
+</div>
+<div class="section level3">
+<h3 id="id_13-math-proficiency-drops-dramatically-by-middle-school">13. Math proficiency drops dramatically by middle school<a class="anchor" aria-label="anchor" href="#id_13-math-proficiency-drops-dramatically-by-middle-school"></a>
+</h3>
+<p>Math proficiency peaks in Grade 3-4 at around 45% and falls to under 32% by Grade 8.</p>
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Math proficiency by grade</span></span>
+<span><span class="va">math_by_grade</span> <span class="op">&lt;-</span> <span class="va">assess_2024</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">is_state</span>, <span class="va">subject</span> <span class="op">==</span> <span class="st">"Math"</span>,</span>
+<span>         <span class="va">metric_type</span> <span class="op">==</span> <span class="st">"pct_met_and_above"</span>,</span>
+<span>         <span class="va">grade</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">"%02d"</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">3</span><span class="op">:</span><span class="fl">8</span>, <span class="fl">11</span><span class="op">)</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">grade</span>, <span class="va">metric_value</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/arrange.html" class="external-link">arrange</a></span><span class="op">(</span><span class="va">grade</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">math_by_grade</span></span></code></pre></div>
+<div class="float">
+<img src="https://almartin82.github.io/caschooldata/articles/california-assessment_files/figure-html/finding-3-plot-1.png" alt="Math by Grade"><div class="figcaption">Math by Grade</div>
+</div>
+<p><a href="https://almartin82.github.io/caschooldata/articles/california-assessment.html#math-proficiency-drops-dramatically-by-middle-school">(source)</a></p>
+<hr>
+</div>
+<div class="section level3">
+<h3 id="id_14-multi-year-trends-recovery-from-covid">14. Multi-year trends: Recovery from COVID<a class="anchor" aria-label="anchor" href="#id_14-multi-year-trends-recovery-from-covid"></a>
+</h3>
+<p>Proficiency rates are recovering from the 2021 pandemic lows but remain below 2019 levels.</p>
+<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Fetch multiple years</span></span>
+<span><span class="va">assess_multi</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/fetch_assess_multi.html">fetch_assess_multi</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2019</span>, <span class="fl">2021</span>, <span class="fl">2022</span>, <span class="fl">2023</span>, <span class="fl">2024</span><span class="op">)</span>,</span>
+<span>                                    tidy <span class="op">=</span> <span class="cn">TRUE</span>, use_cache <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># State-level trend</span></span>
+<span><span class="va">state_trend</span> <span class="op">&lt;-</span> <span class="va">assess_multi</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">is_state</span>, <span class="va">grade</span> <span class="op">==</span> <span class="st">"11"</span>, <span class="va">metric_type</span> <span class="op">==</span> <span class="st">"pct_met_and_above"</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">end_year</span>, <span class="va">subject</span>, <span class="va">metric_value</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/arrange.html" class="external-link">arrange</a></span><span class="op">(</span><span class="va">subject</span>, <span class="va">end_year</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">state_trend</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://tidyr.tidyverse.org/reference/pivot_wider.html" class="external-link">pivot_wider</a></span><span class="op">(</span>names_from <span class="op">=</span> <span class="va">subject</span>, values_from <span class="op">=</span> <span class="va">metric_value</span><span class="op">)</span></span></code></pre></div>
+<div class="float">
+<img src="https://almartin82.github.io/caschooldata/articles/california-assessment_files/figure-html/finding-5-plot-1.png" alt="COVID Recovery"><div class="figcaption">COVID Recovery</div>
+</div>
+<p><a href="https://almartin82.github.io/caschooldata/articles/california-assessment.html#multi-year-trends-recovery-from-covid">(source)</a></p>
+<hr>
+</div>
+<div class="section level3">
+<h3 id="id_15-ela-math-gap-is-consistent-across-grades">15. ELA-Math gap is consistent across grades<a class="anchor" aria-label="anchor" href="#id_15-ela-math-gap-is-consistent-across-grades"></a>
+</h3>
+<p>The ELA advantage over Math proficiency is remarkably consistent (10-20 points) across all tested grades.</p>
+<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># ELA-Math gap by grade</span></span>
+<span><span class="va">ela_math_gap</span> <span class="op">&lt;-</span> <span class="va">assess_2024</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">is_state</span>, <span class="va">metric_type</span> <span class="op">==</span> <span class="st">"pct_met_and_above"</span>,</span>
+<span>         <span class="va">grade</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">"%02d"</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">3</span><span class="op">:</span><span class="fl">8</span>, <span class="fl">11</span><span class="op">)</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">grade</span>, <span class="va">subject</span>, <span class="va">metric_value</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://tidyr.tidyverse.org/reference/pivot_wider.html" class="external-link">pivot_wider</a></span><span class="op">(</span>names_from <span class="op">=</span> <span class="va">subject</span>, values_from <span class="op">=</span> <span class="va">metric_value</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>gap <span class="op">=</span> <span class="va">ELA</span> <span class="op">-</span> <span class="va">Math</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">ela_math_gap</span></span></code></pre></div>
+<div class="float">
+<img src="https://almartin82.github.io/caschooldata/articles/california-assessment_files/figure-html/finding-14-plot-1.png" alt="ELA-Math Gap"><div class="figcaption">ELA-Math Gap</div>
+</div>
+<p><a href="https://almartin82.github.io/caschooldata/articles/california-assessment.html#ela-math-gap-is-consistent-across-grades">(source)</a></p>
+<hr>
+</div>
 </div>
 </div>
   </main><aside class="col-md-3"><div class="links">
